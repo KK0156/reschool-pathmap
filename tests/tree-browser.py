@@ -41,7 +41,7 @@ with sync_playwright() as p:
  for width in [320,390,768]:
   page.set_viewport_size({'width':width,'height':844});page.locator('#show-sample').click()
   assert page.evaluate('document.documentElement.scrollWidth<=innerWidth'),width
-  page.locator('[data-node="roots"]').click();assert page.locator('#node-detail').evaluate('(el)=>el===document.activeElement')
+  page.locator('[data-node="roots"]').focus();page.locator('[data-node="roots"]').click();assert page.locator('#node-detail').evaluate('(el)=>el===document.activeElement')
   if width==390:page.screenshot(path='/workspace/retree-mobile.png',full_page=True)
  page.wait_for_load_state('networkidle');page.unroute_all(behavior='wait');context.unroute_all(behavior='wait')
  assert not errors,errors

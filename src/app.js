@@ -1,4 +1,4 @@
-import {mountTree} from '../retree-mindmap/src/app.js?v=feature-10';
+import {mountTree} from '../retree-mindmap/src/app.js?v=feature-11';
 import {treeFeatureView} from '../retree-mindmap/src/feature-view.js';
 import {followUps} from './consultation-data.js';
 import {consultationView} from './consultation.js?v=ai-consult-04';

@@ -15,7 +15,7 @@ export function editNode(tree,id,changes){
 export function addNode(tree,parent){
  const next=structuredClone(tree);let index=1;while(next.nodes.some(n=>n.id===`note-${index}`))index++;
  const node={id:`note-${index}`,parent,label:'自分で加えた項目',type:'action',detail:'ここに考えたことを書いてください。',evidence:'未確認',risk:'未確認',next_action:'未確認'};next.nodes.push(node);
- if(!validateTree(next))throw new Error('項目は40個まで、枝の深さは12段までです。');return {tree:next,id:node.id};
+ if(!validateTree(next))throw new Error('項目は200個まで、枝の深さは12段までです。');return {tree:next,id:node.id};
 }
 export function deleteNode(tree,id){
  const node=tree.nodes.find(n=>n.id===id);if(!node||node.parent===null)throw new Error('中心問いは消せません。内容を書き換えることはできます。');

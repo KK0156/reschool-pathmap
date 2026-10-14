@@ -14,7 +14,7 @@ test('branch editing supports moves and rejects cycles and invalid text',()=>{
 test('adding uses unique ids, deletion removes descendants and protects root and original data',()=>{
  const first=addNode(sampleTree,'reschool'),second=addNode(first.tree,'reschool');assert.notEqual(first.id,second.id);assert.ok(validateTree(second.tree));
  const deleted=deleteNode(second.tree,'reschool');assert.ok(!deleted.nodes.some(n=>['reschool','teacher-workload',first.id,second.id].includes(n.id)));assert.ok(validateTree(deleted));assert.equal(sampleTree.nodes.length,10);assert.throws(()=>deleteNode(sampleTree,'root'));
- let full=sampleTree;while(full.nodes.length<40)full=addNode(full,'root').tree;assert.throws(()=>addNode(full,'root'));
+ let full=sampleTree;while(full.nodes.length<200)full=addNode(full,'root').tree;assert.throws(()=>addNode(full,'root'));
 });
 test('optional background is omitted when blank and included only for known nonempty fields',()=>{
  assert.equal(composeMemo('  相談  ',{grades:' ',subjects:''}),'相談');

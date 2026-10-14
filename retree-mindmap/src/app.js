@@ -71,6 +71,7 @@ $('#clear-all').addEventListener('click',()=>{
 $('#tree-container').addEventListener('click',e=>{
  const button=e.target.closest('[data-node]');if(!button||!state.tree)return;
  if(state.editing&&!confirm('書き直し中の内容を破棄して、別の項目を開きますか？'))return;state.editing=false;state.selected=button.dataset.node;renderMap();
+ if(mapView.isExpanded()){mapView.closeExpanded();}
  if(innerWidth<1000||$('#node-detail').getBoundingClientRect().top>innerHeight-80){$('#node-detail').focus({preventScroll:true});scrollTo($('#node-detail'));}
  else $('#tree-container').querySelector(`[data-node="${state.selected}"]`).focus({preventScroll:true});
 });
@@ -87,18 +88,23 @@ $('#memo-form').addEventListener('submit',async e=>{
  catch(error){if(state.revision===revision)display(samplePrompts[state.sampleIndex].tree,'sample',`AI生成に失敗しました。代わりにサンプルツリーを表示しています。${error.name==='AbortError'?'回答に時間がかかっています。':error.message}`);}
  finally{clearTimeout(timeout);if(state.revision===revision){state.pending=false;$('#generate').disabled=false;$('#generate').textContent='AIでツリーを作る';}}
 });
-function applyChange(tree,selected=state.selected){
+function applyChange(tree,selected=state.selected,focusDetail=true){
  cancel();
- state.undo={tree:structuredClone(state.tree),selected:state.selected,edited:state.edited};state.tree=tree;state.selected=selected;state.edited=true;state.editing=false;
- renderOverview();renderMap();renderSummaries();$('#tree-status').textContent='手直しを反映しました。保存やAIへの送信は行っていません。';$('#node-detail').focus({preventScroll:true});
+ state.undo={tree:structuredClone(state.tree),selected:state.selected,edited:state.edited,positions:mapView.getPositions()};state.tree=tree;state.selected=selected;state.edited=true;state.editing=false;
+ renderOverview();renderMap();renderSummaries();$('#tree-status').textContent='手直しを反映しました。保存やAIへの送信は行っていません。';if(focusDetail&&!mapView.isExpanded())$('#node-detail').focus({preventScroll:true});
 }
+$('#tree-container').addEventListener('canvas-change',()=>{cancel();state.edited=true;renderOverview();$('#tree-status').textContent='配置を変更しました。保存やAIへの送信は行っていません。';});
+$('#tree-container').addEventListener('canvas-add-node',e=>{
+ try{if(state.editing&&!confirm('書き直し中の内容を破棄して、新しい枝を追加しますか？'))return;const next=addNode(state.tree,e.detail.parent);next.tree=editNode(next.tree,next.id,{label:e.detail.label});applyChange(next.tree,next.id,false);mapView.setPosition(next.id,e.detail.position);renderMap();$('.mind-map-viewport').focus({preventScroll:true});$('#tree-status').textContent='キャンバスに枝を追加しました。項目をドラッグして配置できます。';}
+ catch(error){const status=$('.canvas-message');if(status)status.textContent=error.message;}
+});
 $('#node-detail').addEventListener('click',e=>{
  try{
  if(e.target.closest('[data-edit-start]')){cancel();state.editing=true;renderMap();$('#edit-label').focus();}
  else if(e.target.closest('[data-edit-cancel]')){state.editing=false;renderMap();$('#node-detail [data-edit-start]').focus();}
  else if(e.target.closest('[data-edit-add]')){const next=addNode(state.tree,state.selected);applyChange(next.tree,next.id);state.editing=true;renderMap();$('#edit-label').focus();}
  else if(e.target.closest('[data-edit-delete]')){const count=descendants(state.tree,state.selected).size;if(!confirm(`この枝と、その下の項目（計${count}個）を消しますか？`))return;const parent=state.tree.nodes.find(n=>n.id===state.selected).parent;applyChange(deleteNode(state.tree,state.selected),parent);}
- else if(e.target.closest('[data-edit-undo]')){cancel();const previous=state.undo;state.tree=previous.tree;state.selected=previous.selected;state.edited=previous.edited;state.undo=null;state.editing=false;renderOverview();renderMap();renderSummaries();$('#tree-status').textContent='直前の変更を戻しました。';}
+ else if(e.target.closest('[data-edit-undo]')){cancel();const previous=state.undo;state.tree=previous.tree;state.selected=previous.selected;state.edited=previous.edited;state.undo=null;state.editing=false;mapView.restorePositions(previous.positions);renderOverview();renderMap();renderSummaries();$('#tree-status').textContent='直前の変更を戻しました。';}
  }catch(error){$('#tree-status').textContent=error.message;}
 });
 $('#node-detail').addEventListener('submit',e=>{

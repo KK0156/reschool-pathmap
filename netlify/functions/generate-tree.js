@@ -32,7 +32,7 @@ export function createTreeHandler({env=process.env,fetchImpl=fetch}={}){
    if(!response.ok)return json({error:response.status===429?'AIへの接続が混み合っているか、利用上限に達しています。':'AIに接続できませんでした。管理者がAPIの設定を確認する必要があります。'},response.status===429?429:502);
    const result=await response.json();if(result.status&&result.status!=='completed')return json({error:'ツリーを最後まで生成できませんでした。'},502);
    const text=result.output?.flatMap(item=>item.content||[]).filter(item=>item.type==='output_text').map(item=>item.text).join('');
-   const tree=JSON.parse(text||'');if(!validateTree(tree))return json({error:'ツリーのつながりや形式を確認できませんでした。'},502);
+   const tree=JSON.parse(text||'');if(!validateTree(tree,{maxNodes:40}))return json({error:'ツリーのつながりや形式を確認できませんでした。'},502);
    return json(tree);
   }catch(error){return json({error:error.name==='TimeoutError'||error.name==='AbortError'?'生成に時間がかかっています。':'ツリーを受け取れませんでした。'},502);}
  };
