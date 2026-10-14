@@ -1,6 +1,7 @@
+import {createMindMapView} from './mind-map-view.js';
 import {composeMemo,contextFields,optionalContextView,editorView,editNode,addNode,deleteNode,descendants} from './tree-edit.js';
 import {samplePrompts} from './sample-tree.js';
-import {nodeTypes,escapeHtml,validateTree,renderTree,renderDetail} from './tree-renderer.js';
+import {nodeTypes,escapeHtml,validateTree,renderDetail} from './tree-renderer.js';
 export async function requestMindTree(memo,signal){
  const response=await fetch('/.netlify/functions/generate-tree',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({memo}),signal});
  let data;try{data=await response.json();}catch{throw new Error('接続先を確認できませんでした。');}
@@ -14,6 +15,7 @@ const $=selector=>container.querySelector(selector);
 $('#privacy-note').insertAdjacentHTML('beforebegin',optionalContextView);
 const context=()=>Object.fromEntries(contextFields.map(([id])=>[id,$('#context-'+id).value]));
 const completeMemo=()=>composeMemo($('#memo').value,context());
+const mapView=createMindMapView($('#tree-container'));
 const state={tree:null,selected:null,source:null,pending:false,revision:0,sampleIndex:0,edited:false,editing:false,undo:null};
 let controller=null;
 const scrollTo=element=>element.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'});
@@ -26,7 +28,7 @@ if($('#tree-example')){
 $('#tree-legend').innerHTML=Object.entries(nodeTypes).map(([type,label])=>`<span class="type-${type}">${label}</span>`).join('');
 function display(tree,source,message){
  if($('#tree-example')&&source==='sample')$('#tree-example').value=String(state.sampleIndex);
- state.tree=structuredClone(tree);state.source=source;state.edited=false;state.editing=false;state.undo=null;state.selected=tree.nodes.find(n=>n.parent===null).id;
+ mapView.reset();state.tree=structuredClone(tree);state.source=source;state.edited=false;state.editing=false;state.undo=null;state.selected=tree.nodes.find(n=>n.parent===null).id;
  $('#tree-empty').hidden=true;$('#map-workspace').hidden=false;
  $('#tree-status').textContent=message;
  renderOverview();
@@ -38,7 +40,7 @@ function renderOverview(){
  $('#tree-overview').innerHTML=`<span>${state.edited?'自分で手直し済み / ':''}${source==='sample'?'サンプルツリー / 入力メモの分析結果ではありません':'メモをもとに生成したツリー / 内容は要確認'}</span><h3>${escapeHtml(tree.core_question)}</h3><p>${escapeHtml(tree.summary)}</p>`;
 }
 function renderMap(){
- $('#tree-container').innerHTML=renderTree(state.tree,state.selected);
+ mapView.render(state.tree,state.selected);
  $('#node-detail').innerHTML=state.editing?editorView(state.tree,state.selected):renderDetail(state.tree.nodes.find(n=>n.id===state.selected),state.source)+`<div class="edit-actions"><button type="button" class="secondary" data-edit-start>この項目を書き直す</button><button type="button" class="secondary" data-edit-add>ここに枝を加える</button>${state.tree.nodes.find(n=>n.id===state.selected).parent!==null?'<button type="button" class="text-button" data-edit-delete>この枝を消す</button>':''}${state.undo?'<button type="button" class="text-button" data-edit-undo>直前の変更を戻す</button>':''}</div><p class="caption">手直しは保存・送信されません。ページを再読み込みすると消えます。</p>`;
 }
 function renderSummaries(){
@@ -69,7 +71,7 @@ $('#clear-all').addEventListener('click',()=>{
 $('#tree-container').addEventListener('click',e=>{
  const button=e.target.closest('[data-node]');if(!button||!state.tree)return;
  if(state.editing&&!confirm('書き直し中の内容を破棄して、別の項目を開きますか？'))return;state.editing=false;state.selected=button.dataset.node;renderMap();
- if(innerWidth<1000){$('#node-detail').focus({preventScroll:true});scrollTo($('#node-detail'));}
+ if(innerWidth<1000||$('#node-detail').getBoundingClientRect().top>innerHeight-80){$('#node-detail').focus({preventScroll:true});scrollTo($('#node-detail'));}
  else $('#tree-container').querySelector(`[data-node="${state.selected}"]`).focus({preventScroll:true});
 });
 $('#memo-form').addEventListener('submit',async e=>{
