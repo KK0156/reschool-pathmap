@@ -19,11 +19,16 @@ with sync_playwright() as p:
   page.goto('http://localhost:8000/#/'+route)
   assert page.locator('h1').count()==1
  page.goto('http://localhost:8000/#/finder')
- page.locator('button[type=submit]').click()
+ page.locator('[data-next-question]').click()
  assert '印のない問い' in page.locator('#form-error').inner_text()
  page.get_by_label('技術・データ',exact=True).check()
+ page.locator('[data-next-question]').click()
  page.get_by_label('つくって試す',exact=True).check()
+ page.locator('[data-next-question]').click()
  page.get_by_label('新しいものを生む',exact=True).check()
+ page.locator('[data-question="1"]').first.click()
+ assert page.get_by_label('技術・データ',exact=True).is_checked()
+ page.locator('[data-question="3"]').first.click()
  page.locator('button[type=submit]').click()
  assert page.locator('#finder-results .path-card').count()==3
  assert '技術で可能性' in page.locator('#finder-results .path-card').first.inner_text()
@@ -43,6 +48,9 @@ with sync_playwright() as p:
  page.reload()
  assert page.locator('.consult').count()==0
  page.goto('http://localhost:8000/#/cases')
+ page.locator('[data-record=B]').first.click()
+ assert '自然と未来' in page.locator('.case-card h2').inner_text()
+ assert page.locator('[data-record=B]').first.get_attribute('aria-pressed')=='true'
  page.locator('[data-case-filter="世界・ことば"]').click()
  assert page.locator('.case-card').count()==1
  assert page.evaluate('localStorage.length + sessionStorage.length')==0
@@ -50,6 +58,12 @@ with sync_playwright() as p:
  for route in ['','finder','paths','paths/technology','cases','dashboard','research']:
   mobile.goto('http://localhost:8000/#/'+route)
   assert mobile.evaluate('document.documentElement.scrollWidth <= innerWidth'),route
+ mobile.goto('http://localhost:8000/#/cases')
+ mobile.locator('.site-contents summary').click()
+ assert mobile.locator('.site-nav a[aria-current]').is_visible()
+ mobile.locator('.record-toc summary').click()
+ mobile.locator('[data-record=B]').first.click()
+ assert '自然と未来' in mobile.locator('.case-card h2').inner_text()
  mobile.goto('http://localhost:8000')
  mobile.screenshot(path='/tmp/pathmap-mobile.png',full_page=True)
  page.goto('http://localhost:8000/original.html')
