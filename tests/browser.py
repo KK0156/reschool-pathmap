@@ -29,7 +29,7 @@ with sync_playwright() as p:
  page.locator('[data-question="1"]').first.click()
  assert page.get_by_label('プログラミング・AI',exact=True).is_checked()
  page.locator('[data-question="3"]').first.click()
- page.locator('button[type=submit]').click()
+ page.locator('[data-offline]').click()
  assert 1 <= page.locator('#finder-results .path-card').count() <= 6
  assert '情報を学び' in page.locator('#finder-results .path-card').first.inner_text()
  page.locator('[data-reset]').click()
@@ -38,7 +38,7 @@ with sync_playwright() as p:
  page.get_by_label('まだ分からない',exact=True).check()
  page.locator('[data-next-question]').click()
  page.get_by_label('今は特にない',exact=True).check()
- page.locator('button[type=submit]').click()
+ page.locator('[data-offline]').click()
  assert page.locator('#finder-results .path-card').count()==6
  assert 'まず確認できる' in page.locator('#finder-results h2').first.inner_text()
  page.goto('http://localhost:8000/#/paths')

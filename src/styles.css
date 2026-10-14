@@ -310,3 +310,21 @@ select:focus-visible { outline:3px solid var(--green); outline-offset:4px; }
  .record-options { max-height:430px; }
 }
 @media print { .school-selector,.filter-control { display:none; } }
+.api-consent { border-top:1px solid var(--line); padding-top:20px; margin-top:25px; }
+.api-consent p { font-size:13px; }
+.api-consent label { display:flex; align-items:start; gap:14px; font-size:14px; line-height:1.9; }
+.api-consent input { width:22px; height:22px; accent-color:var(--green); flex-shrink:0; margin-top:3px; }
+.ai-consultation { margin-top:55px; }
+.ai-reply { background:var(--sheet); border:1px solid var(--line); padding:28px; margin:25px 0; }
+.ai-reply-text { white-space:pre-wrap; line-height:2; font-size:16px; margin-top:25px; }
+.ai-references,.teacher-questions { border-top:1px solid var(--line); padding-top:15px; margin-top:25px; }
+.ai-references h3,.teacher-questions h3 { font-size:18px; }
+.ai-references ul,.teacher-questions ul { padding-left:23px; }
+.ai-references li { margin:12px 0; }
+.chosen-answer { padding:15px; background:var(--margin); font-size:14px; }
+.ai-followup { border-left:3px solid var(--green); padding:5px 0 10px 23px; margin-top:30px; }
+.ai-followup .choice { text-align:left; color:var(--ink); }
+.ai-error { border-left:3px solid #7d3d2e; padding:20px; background:var(--sheet); }
+.ai-loading { padding:25px; border:1px solid var(--line); }
+button:disabled { cursor:wait; opacity:.65; }
+@media print { .api-consent,.ai-followup,.ai-error { display:none; } .ai-reply { break-inside:avoid; } }
