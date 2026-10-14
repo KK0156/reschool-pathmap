@@ -86,3 +86,12 @@ RE:Tree / RE:Path FinderをHome・Mind Tree・Case Library・Choice Cards・Rese
 既存のv1とPath Mapの画面は残す。Prototype 2とEvidence Pack本体は未掲載として表示し、現在の保存版を別のバージョンとして扱わない。国際比較の因果関係や利用者への効果は未確認。研究ノートでは、読み取れる実装、仮説、反論、未確認の項目を区別する。
 
 鉛筆と学校の掲示板の雰囲気を追加。ローカルで作成したコルクのSVG、木枠、画びょう、紙の折り返し、罫線、鉛筆風の接続線を使用。参照写真の画像は素材として使用せず、外部フォントや画像通信も追加しない。本文と編集欄は読みやすい既存の文字を保つ。
+
+## 全ページを掲示板として統一
+
+参照（2026-10-14確認）：
+- コクヨのドット入り罫線：https://www.kokuyo.com/stationery/series/campus/campus-notebook/dot-ruled/ — 文頭や図の位置を揃える考え方を、見出しと本文の整列に反映。
+- ほぼ日手帳のページ解説：https://www.1101.com/store/techo/ja/2018/sp/all_about/original/ — 薄い方眼と余白を、書く・読む紙の表現に反映。
+- Adobe Expressの学校ポスター案内：https://www.adobe.com/jp/express/create/poster/school — 見出し、余白、限られた配色による情報の整理を参考にした。
+
+ロゴや商品デザインをそのまま再現せず、黒板の名前札・紙の見出し・コルク掲示面・ピン・資料ファイルという独自の構成にする。Homeだけでなく、Case Library、Choice Cards、研究ノート、アーカイブ、相談フォームとまとめも統一。長文は白い紙で読み、コルク上へ直接本文を置かない。HTMLの意味・フォーカス・操作対象は維持し、装飾を操作導線として誤認させない。

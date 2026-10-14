@@ -4,6 +4,7 @@ import {escapeHtml as esc} from '../retree-mindmap/src/tree-renderer.js';
 import {researchStages,assumptions,researchTopics,resources,conversionConditions,choiceCards,researchCases,caseCategories,archiveItems} from './research-data.js';
 const root=document.querySelector('#root');
 const nav=[['/','Home'],['/tree','Mind Tree'],['/cases','Case Library'],['/choices','Choice Cards'],['/research','Research Note'],['/archive','Archive']];
+const navNotes={'/':'机の入口','/tree':'考える地図','/cases':'参考の記録','/choices':'残す選択肢','/research':'問いの変化','/archive':'過去の試作'};
 const aliases={'/finder':'/tree','/paths':'/choices','/dashboard':'/archive'};
 const seeds=['RE:SchoolとROOTS、どちらを中心にすべきか迷っている。選択肢と、まだ確かめていない点を整理したい。','日本比較研究をどうCoD活動に接続するか。調べたことと、まだ証拠が足りない部分を分けて説明したい。','教育、保育、AI、国際比較がバラバラに見える。共通点だけでなく、つながらない部分も残して考えたい。','自分にまだある選択肢を整理したい。今の関心から見えていない道や、相談する人を考えたい。','何を作れば研究として説明しやすくなるか。試作品、資料比較、聞き取りなど、次に試す方法を整理したい。'];
 let treeElement=null,caseFilter='すべて';
@@ -29,7 +30,7 @@ function createTree(){
 function current(){const raw=location.hash.slice(1)||'/';const [path,query]=raw.split('?');return {path:aliases[path]||path,params:new URLSearchParams(query)};}
 function render(focus=false){
  const {path,params}=current();const body=path==='/'?home():path==='/tree'?tree():path==='/cases'?cases(params):path==='/choices'?choiceView():path==='/research'?research():path==='/archive'?archive():head('ページを確認してください','このページは見つかりません。','Homeから、読みたい資料やMind Treeへ進めます。');
- root.innerHTML=`<div class="research-desk"><header class="desk-masthead"><a class="desk-brand" href="#/">RE:Tree <span>/ RE:Path Finder</span></a><p>個人の研究机 <span>Research Prototype</span></p></header><nav class="desk-nav" aria-label="メインメニュー">${nav.map(([url,label])=>`<a href="#${url}" ${path===url?'aria-current="page"':''}>${label}</a>`).join('')}</nav><main id="main" class="desk-main" tabindex="-1">${body}</main><footer class="desk-footer"><div><b>RE:Tree</b><p>迷いを、地図にする。</p></div><div><p>これは研究用の試作品です。AIは答えを決めません。<br>個人情報は入力しすぎないでください。重要な判断は、信頼できる大人と相談してください。</p><p class="desk-small">入力・編集・配置は保存せず、再読み込みで消えます。実際のマッチング・連絡先の交換・ログイン・解析は行いません。AIへ送信するときだけ確認済みのメモと任意欄を送ります。</p>${link('/archive','研究の過程を残すアーカイブ →')}</div></footer></div>`;
+ root.innerHTML=`<div class="research-desk"><header class="desk-masthead"><a class="desk-brand" href="#/">RE:Tree <span>/ RE:Path Finder</span></a><p>個人の研究机 <span>Research Prototype</span></p></header><nav class="desk-nav" aria-label="メインメニュー">${nav.map(([url,label])=>`<a href="#${url}" ${path===url?'aria-current="page"':''}>${label}<small>${navNotes[url]}</small></a>`).join('')}</nav><main id="main" class="desk-main" tabindex="-1">${body}</main><footer class="desk-footer"><div><b>RE:Tree</b><p>迷いを、地図にする。</p></div><div><p>これは研究用の試作品です。AIは答えを決めません。<br>個人情報は入力しすぎないでください。重要な判断は、信頼できる大人と相談してください。</p><p class="desk-small">入力・編集・配置は保存せず、再読み込みで消えます。実際のマッチング・連絡先の交換・ログイン・解析は行いません。AIへ送信するときだけ確認済みのメモと任意欄を送ります。</p>${link('/archive','研究の過程を残すアーカイブ →')}</div></footer></div>`;
  if(path==='/tree')document.querySelector('#desk-tree-host').append(treeElement||createTree());
  document.title=(nav.find(([url])=>url===path)?.[1]||'ページの確認')+' | RE:Tree — 迷いを、地図にする。';
  if(focus){document.querySelector('#main').focus({preventScroll:true});window.scrollTo(0,0);}
