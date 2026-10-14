@@ -1,0 +1,9 @@
+.archive-note { padding: 15px 22px; border-bottom: 1px solid #c9c5bb; color: #17283c; font-size: 13px; line-height: 1.9; background: #f6f3ec; }
+.back-to-pathmap { position: fixed; right: 18px; bottom: 18px; z-index: 9999; background: #17283c; color: #fff; text-decoration: none; padding: 12px 16px; font-size: 13px; line-height: 1.7; border: 1px solid rgba(255,255,255,.35); }
+.back-to-pathmap:focus-visible, .archive-skip:focus-visible { outline: 3px solid #627a69; outline-offset: 3px; }
+.archive-skip { position: absolute; top: -100px; background: #17283c; color: white; padding: 15px; z-index: 10000; }
+.archive-skip:focus { top: 0; }
+.archive-field-note { color: #53616b; padding: 15px 0; font-size: 13px; }
+body { padding-bottom: 85px; }
+@media(max-width:600px) { .back-to-pathmap { left: 18px; right: 18px; text-align: center; } }
+@media print { .back-to-pathmap, .archive-skip { display: none; } }
