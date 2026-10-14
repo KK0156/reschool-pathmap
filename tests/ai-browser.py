@@ -6,7 +6,7 @@ with sync_playwright() as p:
  errors=[]
  page.on('pageerror',lambda e:errors.append(str(e)))
  def select_answers():
-  page.goto('http://localhost:8001/#/finder')
+  page.goto('http://localhost:8001/reschool.html#/finder')
   page.get_by_label('プログラミング・AI',exact=True).check()
   page.locator('[data-next-question]').click()
   page.get_by_label('プログラムや道具を作る',exact=True).check()

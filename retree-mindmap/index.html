@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="RE:Treeは、相談メモを中心問い・選択肢・証拠・リスク・次の行動のマインドツリーに整理する研究試作品です。">
+<meta name="theme-color" content="#17283c"><link rel="icon" href="/favicon.svg">
+<title>RE:Tree — Research Mapping Prototype</title>
+<link rel="stylesheet" href="/retree-mindmap/src/styles.css?v=0.1">
+<script type="module" src="/retree-mindmap/src/app.js?v=0.1"></script>
+</head>
+<body><a class="skip" href="#main">本文へ移動</a>
+<header><a class="brand" href="/">RE:<span>Tree</span></a><span>Research Mapping Prototype / v0.1</span></header>
+<nav aria-label="ページ内メニュー"><a href="#concept">概要</a><a href="#consultation">相談メモ</a><a href="#mind-tree">マインドツリー</a><a href="#summaries">まとめ</a><a href="/reschool.html">RE:Schoolを見る ↗</a></nav>
+<main id="main" tabindex="-1">
+<section id="concept" class="concept"><div class="eyebrow">考えを整理するための研究試作品</div><h1>RE:Tree</h1><h2>AIと相談して、選択肢を<br>マインドツリーにする。</h2><div class="concept-text"><p>研究テーマがいくつかある。どこから調べればよいか分からない。集めた資料を、どうつなげればよいか迷っている。</p><p>相談メモをもとに、中心の問い、選択肢、経験、証拠、リスク、聞く相手、次の行動を一つの木に整理します。項目を選ぶと、詳しい内容や未確認の点を読めます。</p><p><strong>AIは答えを決めません。</strong>判断を任せるのではなく、先生・保護者・信頼できる大人と相談するための整理に使う試作品です。</p></div><div class="actions"><a class="primary" href="#consultation">マインドツリーを作る →</a><button class="secondary" type="button" id="show-sample">サンプルを見る</button></div></section>
+<section id="consultation" class="consultation"><div class="section-number">01 / 相談メモ</div><h2>今考えていることを書いてください</h2><p>迷っていること、選択肢、調べたこと、まだ確かめていないことを、そのまま書けます。</p><div class="sample-prompts" id="sample-prompts" aria-label="相談メモの例"></div>
+<form id="memo-form"><label class="memo-label" for="memo">相談メモ</label><textarea id="memo" name="memo" maxlength="3000" rows="8" aria-describedby="privacy-note memo-count memo-error" placeholder="例：教育に興味があるけど、RE:School、ROOTS、AI半DXのどれを中心にすればいいか分からない。CoD出願にもつなげたい。"></textarea><div class="memo-footer"><span id="memo-count">0 / 3000文字</span><button type="button" id="clear-all" class="text-button">入力とツリーを消す</button></div>
+<aside id="privacy-note" class="privacy"><b>個人情報は入力しないでください。この試作品では入力内容を保存しません。</b><p>名前、学校名、連絡先、成績、他の人を特定できる情報は書かないでください。生成するときだけ、メモをNetlify Functions経由でOpenAIへ送ります。サイト側では保存せず、API提供者側のデータの扱いは別です。実際の証拠や最新情報を検索する機能はありません。</p><label class="consent"><input id="send-consent" type="checkbox"> 個人情報を含めず、このメモをAIサービスへ送ることを確認しました</label></aside><p id="memo-error" role="alert"></p><div class="actions"><button id="generate" type="submit" class="primary">AIでマインドツリー化</button><button id="sample-without-api" type="button" class="secondary">送信せず、サンプルを見る</button></div></form></section>
+<section id="mind-tree" class="mind-tree" tabindex="-1"><div class="section-number">02 / マインドツリー</div><h2>問いと選択肢のつながり</h2><p>項目を選ぶと、詳しい内容・証拠・リスク・次の行動が表示されます。</p><div id="tree-status" class="status" role="status" aria-live="polite"></div><div id="tree-empty" class="empty"><p>相談メモを送るか、「サンプルを見る」を押すと、ここにツリーが表示されます。</p></div><div id="map-workspace" class="map-workspace" hidden><div class="tree-board"><div id="tree-overview"></div><div id="tree-legend" class="legend" aria-label="項目の種類"></div><div id="tree-container"></div></div><aside id="node-detail" class="node-detail" aria-live="polite" tabindex="-1" aria-label="選んだ項目の詳細"></aside></div></section>
+<section id="summaries" class="summaries"><div class="section-number">03 / まとめ</div><h2>研究や相談に使うメモ</h2><p>ここに表示するのは整理用の草案です。活動実績や証拠として使う前に、自分で確認してください。</p><div id="summary-content" class="summary-grid"><p>ツリーを作ると、研究の問い、次の行動、確認する証拠をまとめて読めます。</p></div></section>
+<footer><div><b>RE:Tree</b><p>迷いを、問い・選択肢・証拠・リスク・次の行動に整理する。</p></div><div><span>ログイン・保存・解析・ファイルアップロードなし</span><br><a href="/reschool.html">RE:School Path Mapを見る</a></div></footer>
+</main><noscript>このツリーの操作にはJavaScriptが必要です。入力内容を保存する機能はありません。</noscript>
+</body></html>

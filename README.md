@@ -1,3 +1,15 @@
+# RE:Tree / RE:School — Research Prototypes
+
+公開トップを **RE:Tree v0.1** に変更しました。相談メモを、中心問い・選択肢・経験・証拠・リスク・聞く相手・次の行動・成果物のツリーに整理する試作品です。APIが未設定でも、サンプル表示だと明示して操作できます。
+
+- `/` / `/retree-mindmap/`：RE:Tree
+- `/reschool.html`：既存のRE:School Path Map
+- `/original.html`：RE:School v1
+- RE:Treeの仕様・起動・検証は [retree-mindmap/README.md](retree-mindmap/README.md)
+- ビルド・Functions設定は共通。Netlifyで `OPENAI_API_KEY` を設定し、GitHubから再デプロイするとAI接続を試せます
+
+---
+
 # RE:School Path Map — AI相談 / 試作品3号
 
 CoD出願に向けた個人のResearch / Design Prototype。中心はRE:Path Finderで、興味や迷いを選択肢で伝え、AIの返答と追加質問で進路について考える機能です。AIが進学先や適性を判定する設計ではありません。実際の生徒による検証はまだ行っていません。
@@ -22,12 +34,12 @@ APIキー未設定でも資料閲覧やサンプル検索は動きます。AIへ
 
 ## 画面
 
-- `#/`：何ができるかと、データ・機能の制約
-- `#/finder`：AIに相談する。興味19項目、やってみたいこと9項目、仕事への関心9項目から複数選択。未定でも使用可能
-- `#/paths`：16分野の進路の一覧。学ぶ内容・進み方・仕事・次に調べることを確認し、3件まで比較
-- `#/cases`：16件の架空の卒業生の進路例。理由・入ってから分かったこと・難しかったこと
-- `#/dashboard`：3つの架空の学校を選び、活動・相談先・卒業生の例を切り替える
-- `#/research`：研究目的、AI相談とサンプル検索の違い、未検証の点、データの取り扱い
+- `/reschool.html#/`：何ができるかと、データ・機能の制約
+- `/reschool.html#/finder`：AIに相談する。興味19項目、やってみたいこと9項目、仕事への関心9項目から複数選択。未定でも使用可能
+- `/reschool.html#/paths`：16分野の進路の一覧。学ぶ内容・進み方・仕事・次に調べることを確認し、3件まで比較
+- `/reschool.html#/cases`：16件の架空の卒業生の進路例。理由・入ってから分かったこと・難しかったこと
+- `/reschool.html#/dashboard`：3つの架空の学校を選び、活動・相談先・卒業生の例を切り替える
+- `/reschool.html#/research`：研究目的、AI相談とサンプル検索の違い、未検証の点、データの取り扱い
 
 ## AIとの相談
 
