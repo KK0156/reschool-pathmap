@@ -4,6 +4,7 @@ const json=(data,status=200)=>new Response(JSON.stringify(data),{status,headers}
 const nodeProperties={id:{type:'string'},parent:{type:['string','null']},label:{type:'string'},type:{type:'string',enum:Object.keys(nodeTypes)},detail:{type:'string'},evidence:{type:'string'},risk:{type:'string'},next_action:{type:'string'}};
 const schema={type:'object',additionalProperties:false,properties:{core_question:{type:'string'},summary:{type:'string'},nodes:{type:'array',maxItems:40,items:{type:'object',additionalProperties:false,properties:nodeProperties,required:Object.keys(nodeProperties)}}},required:['core_question','summary','nodes']};
 const instructions=`あなたはRE:TreeのAIです。ユーザーの曖昧な相談・興味・経験・研究テーマをマインドツリーに整理します。答えを決めず、中心問い・複数の選択肢・経験・証拠・リスク・聞く相手・次の行動・成果物に分けてください。
+成績・得意科目・希望条件は任意の自己申告であり、未確認の相談背景として扱う。成績から能力を順位づけたり、合格可能性・適性・将来性を判定したりしない。未記入の成績や条件を推測せず、点数で選択肢を閉じない。
 ユーザーの進路や将来を断定しない。「これを選ぶべき」「向いている」「正しい答え」と決めつけない。必要な証拠と反証、まだ分からない点を示してください。
 個人情報を求めず、入力中の名前・連絡先・実際の学校名等は出力に引き継がない。未成年にも安全な表現で、先生・保護者・信頼できる大人に相談するための整理にする。秘密にしたり危険な行動をするよう促さない。
 メモにない経験・実績・資料・出典を作らない。資料名がメモにあっても内容を確認したとは言わない。不明・未検証の点は必ず「未確認」と書く。一般的な確認案と、ユーザーが実際に行ったことを区別する。最新情報を検索したと主張しない。

@@ -28,7 +28,7 @@ test('server key stays private and store:false is set; valid structured tree is 
  let posted;
  const handler=createTreeHandler({env:{OPENAI_API_KEY:'test-key'},fetchImpl:async(url,opts)=>{posted=JSON.parse(opts.body);assert.equal(opts.headers.Authorization,'Bearer test-key');return Response.json({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(sampleTree)}]}]});}});
  const response=await handler(req('RE:SchoolとROOTSをどうつなげるか整理したい。'));
- assert.equal(response.status,200);assert.ok(validateTree(await response.json()));assert.equal(posted.store,false);assert.equal(posted.text.format.type,'json_schema');assert.ok(!JSON.stringify(posted).includes('test-key'));
+ assert.equal(response.status,200);assert.ok(validateTree(await response.json()));assert.equal(posted.store,false);assert.equal(posted.text.format.type,'json_schema');assert.ok(!JSON.stringify(posted).includes('test-key'));assert.ok(posted.instructions.includes('成績から能力を順位づけたり'));assert.ok(posted.instructions.includes('未記入の成績や条件を推測せず'));
 });
 test('malformed or invalid upstream trees are rejected for client fallback',async()=>{
  const invalid=copy();invalid.nodes[1].parent='missing';
