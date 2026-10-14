@@ -8,12 +8,18 @@ with sync_playwright() as p:
  page.goto('http://localhost:8002/#/finder')
  page.locator('[data-consult-mode=tree]').click()
  assert '/retree-mindmap' not in page.url
- assert page.locator('[data-prompt]').count()==12
+ assert page.locator('[data-prompt]').count()==24
  requests=[]
  page.on('request',lambda r:requests.append(r.url) if '/.netlify/functions/generate-tree' in r.url else None)
  page.locator('[data-preview="4"]').click()
  assert '文系' in page.locator('#tree-overview').inner_text()
- assert page.locator('.tree-node').count()==8
+ assert page.locator('.tree-node').count()==12
+ assert not requests
+ for i in range(24):
+  page.locator('#tree-example').select_option(str(i))
+  page.locator('#preview-tree-example').click()
+  assert page.locator('.tree-node').count()>=10
+  assert page.locator('#tree-example').input_value()==str(i)
  assert not requests
  page.locator('[data-tree-go="memo"]').last.click()
  page.locator('[data-prompt="5"]').click()
@@ -35,9 +41,11 @@ with sync_playwright() as p:
  page.screenshot(path='/workspace/reschool-tree-integrated.png',full_page=True)
  for width in [320,390,768]:
   page.set_viewport_size({'width':width,'height':844})
+  page.locator('#tree-example').select_option('12')
+  page.locator('#preview-tree-example').click()
   assert page.evaluate('document.documentElement.scrollWidth<=innerWidth'),width
  page.locator('#clear-all').click();assert page.locator('#memo').input_value()==''
  assert page.evaluate('localStorage.length+sessionStorage.length')==0
  assert not errors,errors
- print('PASS: School root, embedded consultation tree, no navigation/iframe, retained memo/map across modes, fallback, 320/390/768px, clear and no storage')
+ print('PASS: School root, embedded consultation tree, no navigation/iframe, retained memo/map across modes, 24 offline tree examples, fallback, 320/390/768px, clear and no storage')
  b.close()

@@ -14,8 +14,14 @@ const state={tree:null,selected:null,source:null,pending:false,revision:0,sample
 let controller=null;
 const scrollTo=element=>element.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'});
 $('#sample-prompts').innerHTML=['進路','学校での活動','研究・制作'].map(category=>`<div class="sample-group"><h3>${escapeHtml(category)}</h3><div class="sample-options">${samplePrompts.map((p,i)=>p.category===category?`<article class="sample-option"><h4>${escapeHtml(p.label)}</h4><div><button type="button" class="sample-prompt" data-prompt="${i}">この例をメモに入れる</button><button type="button" class="text-button" data-preview="${i}">ツリーの例を見る</button></div></article>`:'').join('')}</div></div>`).join('');
+if($('#tree-example')){
+ $('#tree-example').innerHTML=['進路','学校での活動','研究・制作'].map(category=>`<optgroup label="${category}">${samplePrompts.map((p,i)=>p.category===category?`<option value="${i}">${escapeHtml(p.label)}</option>`:'').join('')}</optgroup>`).join('');
+ $('#tree-example').value=String(state.sampleIndex);
+ $('#preview-tree-example').addEventListener('click',()=>{state.sampleIndex=Number($('#tree-example').value);sample();});
+}
 $('#tree-legend').innerHTML=Object.entries(nodeTypes).map(([type,label])=>`<span class="type-${type}">${label}</span>`).join('');
 function display(tree,source,message){
+ if($('#tree-example')&&source==='sample')$('#tree-example').value=String(state.sampleIndex);
  state.tree=tree;state.source=source;state.selected=tree.nodes.find(n=>n.parent===null).id;
  $('#tree-empty').hidden=true;$('#map-workspace').hidden=false;
  $('#tree-status').textContent=message;

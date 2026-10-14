@@ -105,4 +105,4 @@ Netlifyの **Project configuration → Environment variables → Add a variable*
 - [OpenAI Responses API / Structured Outputs](https://developers.openai.com/api/docs/guides/structured-outputs)
 - [store:falseとResponses API](https://developers.openai.com/api/docs/guides/migrate-to-responses)
 
-相談メモには12の例があります（進路4件・学校での活動3件・研究や制作5件）。各例はメモとして編集でき、送信せずツリーの表示例も試せます。日常的な8例は内容別の架空ツリー、研究プロジェクトの4例は共通の研究サンプルツリーを表示します。
+相談メモには24種類の異なるツリー例があります（進路10件・学校での活動6件・研究や制作8件）。すべて送信せず閲覧でき、表示中のツリーの近くから別の例へ切り替えられます。各例は架空の資料で、実際の相談の分析結果ではありません。
