@@ -37,4 +37,4 @@ test('malformed or invalid upstream trees are rejected for client fallback',asyn
  }
 });
 
-test('all consultation samples have valid trees and distinct everyday examples',async()=>{const {samplePrompts}=await import('../retree-mindmap/src/sample-tree.js');assert.equal(samplePrompts.length,24);for(const p of samplePrompts){assert.ok(p.memo.length<=3000);assert.ok(validateTree(p.tree));}assert.equal(new Set(samplePrompts.map(p=>p.tree.core_question)).size,24);});
+test('all consultation samples have valid trees and distinct everyday examples',async()=>{const {samplePrompts}=await import('../retree-mindmap/src/sample-tree.js');assert.equal(samplePrompts.length,28);for(const p of samplePrompts){assert.ok(p.memo.length<=3000);assert.ok(validateTree(p.tree));}assert.equal(new Set(samplePrompts.map(p=>p.tree.core_question)).size,28);});

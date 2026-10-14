@@ -1,5 +1,5 @@
 import {layoutMindMap} from './mind-map-layout.js';
-export const nodeTypes = {core_question:'中心問い',project:'選択肢・プロジェクト',experience:'経験',evidence:'証拠・資料',risk:'リスク・反証',person:'聞く相手',action:'次の行動',output:'成果物'};
+export const nodeTypes = {core_question:'中心問い',project:'選択肢・プロジェクト',experience:'経験',evidence:'証拠・資料',risk:'リスク',counterargument:'反論',research_note:'研究メモ',person:'聞く相手',action:'次の行動',output:'成果物'};
 export const escapeHtml = value => String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function validateTree(tree,{maxNodes=200}={}) {
  const exact=(o,keys)=>o&&typeof o==='object'&&!Array.isArray(o)&&Object.keys(o).length===keys.length&&keys.every(k=>Object.hasOwn(o,k));

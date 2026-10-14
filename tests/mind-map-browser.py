@@ -3,7 +3,7 @@ with sync_playwright() as p:
  b=p.chromium.launch(executable_path='/usr/bin/chromium',args=['--no-sandbox'])
  page=b.new_page(viewport={'width':1440,'height':1100});errors=[]
  page.on('pageerror',lambda e:errors.append(str(e)))
- page.goto('http://localhost:8002/#/finder');page.locator('[data-consult-mode=tree]').click();page.locator('[data-preview="0"]').click()
+ page.goto('http://localhost:8002/reschool.html#/finder');page.locator('[data-consult-mode=tree]').click();page.locator('[data-preview="0"]').click()
  assert page.locator('.mind-map-lines path').count()==9
  assert page.locator('.mind-map-node').count()==10
  root=page.locator('[data-node=root]').bounding_box()

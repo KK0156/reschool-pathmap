@@ -5,7 +5,7 @@ with sync_playwright() as p:
  page.on('pageerror',lambda e:errors.append(str(e)))
  page.on('request',lambda r:requests.append(r.url) if '/.netlify/functions/generate-tree' in r.url else None)
  page.on('dialog',lambda d:d.accept())
- page.goto('http://localhost:8002/#/finder');page.locator('[data-consult-mode=tree]').click();page.locator('[data-preview="0"]').click()
+ page.goto('http://localhost:8002/reschool.html#/finder');page.locator('[data-consult-mode=tree]').click();page.locator('[data-preview="0"]').click()
  page.locator('[data-map-action=expand]').click()
  expect(page.locator('#tree-container')).to_have_class('canvas-expanded')
  v=page.locator('.mind-map-viewport');bounds=v.bounding_box();assert bounds['width']>1300

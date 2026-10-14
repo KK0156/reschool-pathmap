@@ -13,12 +13,12 @@ with sync_playwright() as p:
  errors=[]
  page.on('pageerror',lambda error:errors.append(str(error)))
  page.add_init_script('window.__nativeLocal = window.localStorage; window.__nativeSession = window.sessionStorage;')
- page.goto('http://localhost:8000/reschool.html')
+ page.goto('http://localhost:8002/reschool.html')
  page.screenshot(path='/tmp/pathmap-desktop.png',full_page=True)
  for route in ['finder','paths','cases','dashboard','research']:
-  page.goto('http://localhost:8000/reschool.html#/'+route)
+  page.goto('http://localhost:8002/reschool.html#/'+route)
   assert page.locator('h1').count()==1
- page.goto('http://localhost:8000/reschool.html#/finder')
+ page.goto('http://localhost:8002/reschool.html#/finder')
  page.locator('[data-next-question]').click()
  assert '一つ以上選んで' in page.locator('#form-error').inner_text()
  page.get_by_label('プログラミング・AI',exact=True).check()
@@ -41,7 +41,7 @@ with sync_playwright() as p:
  page.locator('[data-offline]').click()
  assert page.locator('#finder-results .path-card').count()==6
  assert 'まず確認できる' in page.locator('#finder-results h2').first.inner_text()
- page.goto('http://localhost:8000/reschool.html#/paths')
+ page.goto('http://localhost:8002/reschool.html#/paths')
  for id in ['care','environment','technology']:
   page.locator('[data-compare='+id+']').click()
  assert page.locator('.comparison thead th').count()==4
@@ -51,19 +51,19 @@ with sync_playwright() as p:
  assert page.locator('.path-card').count()==1
  page.locator('[data-clear-compare]').click()
  assert page.locator('.comparison').count()==0
- page.goto('http://localhost:8000/reschool.html#/paths/technology')
+ page.goto('http://localhost:8002/reschool.html#/paths/technology')
  page.locator('[data-consult]').click()
  assert page.locator('.consult').is_visible()
  page.reload()
  assert page.locator('.consult').count()==0
- page.goto('http://localhost:8000/reschool.html#/cases')
+ page.goto('http://localhost:8002/reschool.html#/cases')
  page.locator('[data-record=B]').first.click()
  assert '農学系' in page.locator('.case-card h2').inner_text()
  assert page.locator('[data-record=B]').first.get_attribute('aria-pressed')=='true'
  page.locator('#case-filter-select').select_option('語学・海外')
  assert page.locator('.case-card').count()==1
  assert page.locator('.record-options button').count()==2
- page.goto('http://localhost:8000/reschool.html#/dashboard')
+ page.goto('http://localhost:8002/reschool.html#/dashboard')
  assert page.locator('.school-profile').count()==0
  page.locator('#school-select').select_option('general')
  assert 'サンプル校A' in page.locator('.school-profile').inner_text()
@@ -77,17 +77,17 @@ with sync_playwright() as p:
  assert page.evaluate('localStorage.length + sessionStorage.length')==0
  mobile=browser.new_page(viewport={'width':390,'height':844},is_mobile=True)
  for route in ['','finder','paths','paths/technology','cases','dashboard','research']:
-  mobile.goto('http://localhost:8000/reschool.html#/'+route)
+  mobile.goto('http://localhost:8002/reschool.html#/'+route)
   assert mobile.evaluate('document.documentElement.scrollWidth <= innerWidth'),route
- mobile.goto('http://localhost:8000/reschool.html#/cases')
+ mobile.goto('http://localhost:8002/reschool.html#/cases')
  mobile.locator('.site-contents summary').click()
  assert mobile.locator('.site-nav a[aria-current]').is_visible()
  mobile.locator('.record-toc summary').click()
  mobile.locator('[data-record=B]').first.click()
  assert '農学系' in mobile.locator('.case-card h2').inner_text()
- mobile.goto('http://localhost:8000/reschool.html')
+ mobile.goto('http://localhost:8002/reschool.html')
  mobile.screenshot(path='/tmp/pathmap-mobile.png',full_page=True)
- page.goto('http://localhost:8000/original.html')
+ page.goto('http://localhost:8002/original.html')
  page.get_by_role('heading',name='卒業の、その続きを。').wait_for()
  assert page.locator('.back-to-pathmap').get_attribute('href')=='/'
  assert page.evaluate('window.__nativeLocal.length + window.__nativeSession.length')==0
@@ -97,12 +97,12 @@ with sync_playwright() as p:
  page.locator('.app').wait_for()
  assert page.locator('.app').count()==1
  assert page.evaluate('window.__nativeLocal.length + window.__nativeSession.length')==0
- page.goto('http://localhost:8000/original.html?view=%2Fgive%2Fdetails')
+ page.goto('http://localhost:8002/original.html?view=%2Fgive%2Fdetails')
  page.locator('textarea').wait_for(state='hidden')
  assert page.locator('textarea:enabled').count()==0
  page.locator('.back-to-pathmap').click()
- page.locator('.hero h1').wait_for()
- assert '勉強と仕事を調べる' in page.locator('.hero h1').inner_text()
+ page.locator('.desk-cover h1').wait_for()
+ assert '地図にする' in page.locator('.desk-cover h1').inner_text()
  page.keyboard.press('Tab')
  assert page.locator('.skip').evaluate('(el)=>el===document.activeElement')
  page.keyboard.press('Enter')

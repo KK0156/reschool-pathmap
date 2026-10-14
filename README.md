@@ -1,13 +1,26 @@
-# RE:School Path Map — 進路の相談 / 試作品3号
+# RE:Tree / RE:Path Finder — 研究机
 
-公開トップはRE:Schoolです。RE:Treeは独立したトップではなく、既存の「進路の相談」に追加したマインドツリー機能です。
+「迷いを、地図にする。」を中心に、既存の研究試作品を更新しています。
 
-- `/`：RE:School Path Map
-- `/#/finder`：「選択肢から相談する」「相談メモをツリーに整理する」を同じ画面で選択
-- `/original.html`：元のRE:School v1
-- `/reschool.html`：RE:Schoolの互換入口
+- `/`：Home。新しいプロダクトではなく、研究の変化を受け継ぐ入口
+- `/#/tree`：Mind Tree。自由なキャンバス、編集、任意の相談背景、今日の整理
+- `/#/cases`：Case Library。12の架空ケース／8カテゴリー、限界と開く問いを併記
+- `/#/choices`：Choice Cards。7つの検証方向、証拠・リスク・相談相手・残す選択肢
+- `/#/research`：Research Note。国際比較からRE:Treeへの10段階、弱まった6仮説、未確認事項
+- `/#/archive`：Archive。旧試作を問いの変化として残す
 
-RE:Treeの実装と仕様は `retree-mindmap/` にまとめていますが、画面内に直接組み込んでいます。iframeや別サイトへの移動は使いません。メモ・ツリーはブラウザのメモリだけに保持し、相談方法の切り替えでも残ります。消去ボタンや再読み込みで消えます。
+既存のRE:School v1は `/original.html`、Path Map試作品3号は `/reschool.html` に維持しています。Prototype 2本体とEvidence Packのファイルは未掲載で、Coming soonと表示します。試作品3号をv2と偽って掲載しません。
+
+国際比較の数値や原資料、学校・生徒への効果は確認していません。Research Noteは仮説と問いの変化の記録です。AIの出力は判断でも、証拠を検証した結果でもありません。
+
+`src/desk-app.js` が現在の6画面、`src/research-data.js` が研究内容とケース、`src/desk-styles.css` が研究机のデザインです。既存の `src/app.js` と `src/data.js` は保存版として残ります。共有の `retree-mindmap/src/` は新旧のキャンバスに使います。
+
+## 既存Path Mapの実装と運用
+
+
+旧Path Mapは `/reschool.html` に残っています。選択式の相談とツリー機能を切り替えられる「進路の相談」は `/reschool.html#/finder` です。元のv1は `/original.html` にあります。現在の公開トップは、上記のRE:Treeの研究机です。
+
+ツリーの共有実装は `retree-mindmap/` にまとめ、iframeを使わず新旧の画面へ直接組み込んでいます。メモ・ツリーはブラウザのメモリだけに保持します。現在の研究机では、研究ノートやケースを読みに移動しても残り、消去・再読み込みで消えます。
 
 Netlify Functionsは、選択式の相談用 `path-consult` と、相談メモのツリー化用 `generate-tree` を使用します。どちらもサーバー側の `OPENAI_API_KEY` を使います。API未設定でもツリー機能は、サンプルだと明示して操作できます。
 
@@ -105,7 +118,7 @@ Netlifyの **Project configuration → Environment variables → Add a variable*
 - [OpenAI Responses API / Structured Outputs](https://developers.openai.com/api/docs/guides/structured-outputs)
 - [store:falseとResponses API](https://developers.openai.com/api/docs/guides/migrate-to-responses)
 
-相談メモには24種類の異なるツリー例があります（進路10件・学校での活動6件・研究や制作8件）。すべて送信せず閲覧でき、表示中のツリーの近くから別の例へ切り替えられます。各例は架空の資料で、実際の相談の分析結果ではありません。
+相談メモには28種類の異なるツリー例があります（進路10件・学校での活動6件・研究や制作12件）。すべて送信せず閲覧でき、表示中のツリーの近くから別の例へ切り替えられます。各例は架空の資料で、実際の相談の分析結果ではありません。
 
 ツリーの詳細から見出し・種類・つなぐ先・内容・証拠・リスク・次の行動を書き直し、枝の追加・削除・直前の変更の取り消しができます。編集はメモリ内だけで、サンプルデータは変更しません。相談メモには成績の目安、得意・苦手科目、興味・経験、希望条件、気になることを任意で加えられます。未記入欄は送信せず、送信前にメモと任意欄の全文を確認できます。合計3000文字以内です。編集・任意欄とも保存はせず、再読み込みで消えます。成績は能力や合格可能性の判定には使いません。
 

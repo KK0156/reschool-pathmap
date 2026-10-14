@@ -6,7 +6,7 @@ with sync_playwright() as p:
  page=b.new_page(viewport={'width':1440,'height':1000});errors=[];requests=[]
  page.on('pageerror',lambda e:errors.append(str(e)))
  page.on('dialog',lambda d:d.accept())
- page.goto('http://localhost:8002/#/finder');page.locator('[data-consult-mode=tree]').click()
+ page.goto('http://localhost:8002/reschool.html#/finder');page.locator('[data-consult-mode=tree]').click()
  page.locator('[data-preview="0"]').click()
  page.locator('[data-node=reschool]').click();page.locator('[data-edit-start]').click()
  page.locator('#edit-label').fill('自分の研究 <img src=x>')

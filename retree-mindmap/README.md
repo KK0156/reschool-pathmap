@@ -2,7 +2,7 @@
 
 RE:Schoolを一つの枝として含む、研究テーマ・選択肢・資料・リスク・次の行動を整理するResearch Mapping Prototype。
 
-RE:Treeは、RE:Schoolの `/#/finder` にある「相談メモをツリーに整理する」機能として組み込まれています。公開トップはRE:Schoolです。`/retree-mindmap/` は開発用の単独プレビューで、通常の利用導線には置いていません。
+現在の公開入口はRE:Treeの研究机です。`/#/tree` に自由なキャンバスと相談メモを組み込んでいます。既存のRE:Schoolは `/reschool.html` に残し、同じ機能を `/reschool.html#/finder` でも使えます。`/retree-mindmap/` は開発用の単独プレビューです。
 
 ## 使い方
 

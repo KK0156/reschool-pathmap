@@ -10,13 +10,13 @@ export async function requestMindTree(memo,signal){
  return data;
 }
 
-export function mountTree(container){
+export function mountTree(container,{defaultSample=0}={}){
 const $=selector=>container.querySelector(selector);
 $('#privacy-note').insertAdjacentHTML('beforebegin',optionalContextView);
 const context=()=>Object.fromEntries(contextFields.map(([id])=>[id,$('#context-'+id).value]));
 const completeMemo=()=>composeMemo($('#memo').value,context());
 const mapView=createMindMapView($('#tree-container'));
-const state={tree:null,selected:null,source:null,pending:false,revision:0,sampleIndex:0,edited:false,editing:false,undo:null};
+const state={tree:null,selected:null,source:null,pending:false,revision:0,sampleIndex:defaultSample,edited:false,editing:false,undo:null};
 let controller=null;
 const scrollTo=element=>element.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'});
 $('#sample-prompts').innerHTML=['進路','学校での活動','研究・制作'].map(category=>`<div class="sample-group"><h3>${escapeHtml(category)}</h3><div class="sample-options">${samplePrompts.map((p,i)=>p.category===category?`<article class="sample-option"><h4>${escapeHtml(p.label)}</h4><div><button type="button" class="sample-prompt" data-prompt="${i}">この例をメモに入れる</button><button type="button" class="text-button" data-preview="${i}">ツリーの例を見る</button></div></article>`:'').join('')}</div></div>`).join('');
@@ -49,6 +49,14 @@ function renderSummaries(){
  const actions=[...new Set([...nodes('action').map(n=>n.detail),...t.nodes.map(n=>n.next_action)])].slice(0,12);
  const evidence=nodes('evidence').map(n=>`${n.label}：${n.evidence}（内容・出典は要確認）`);
  $('#summary-content').innerHTML=`<article><span>研究の問い</span><h3>${escapeHtml(t.core_question)}</h3><p>${escapeHtml(t.summary)}</p></article><article><span>プロジェクトの概要</span>${list(nodes('project').map(n=>`${n.label}：${n.detail}`))}</article><article><span>次に調べること・研究計画</span>${list(actions)}</article><article><span>CoD活動説明の草案</span><p>RE:Tree is an AI-assisted research mapping prototype. Instead of asking AI to decide an answer, it helps users turn uncertainty into a mind tree of questions, choices, evidence, risks, people to ask, and next actions.</p><p>今回整理するテーマ：${escapeHtml(t.core_question)}</p><p class="caption">活動の実績を証明する文章ではありません。実際に行ったことと、これから行うことを分けて書き直してください。</p></article><article><span>証拠の確認リスト</span>${list(evidence.length?evidence:t.nodes.filter(n=>n.evidence!=='未確認').map(n=>`${n.label}：${n.evidence}（要確認）`))}<p class="caption">資料の出典・日付・確認できた内容・反対の結果がないかを確認してください。サンプルの記載は資料の存在を保証しません。</p></article><article><span>作れそうな成果物</span>${list(nodes('output').map(n=>`${n.label}：${n.detail}`))}</article>`;
+ if($('#today-summary')){
+ const brief=(title,items)=>`<div><dt>${title}</dt><dd>${list(items)}</dd></div>`;
+ const rootNode=t.nodes.find(n=>n.parent===null);
+ const choices=nodes('project').map(n=>n.label),people=nodes('person').map(n=>n.label),missing=nodes('evidence').map(n=>`${n.label}（${n.evidence.includes('未確認')?'未確認':'出典・内容の確認が必要'}）`);
+ const todayActions=[...new Set([...nodes('action').filter(n=>n.parent===rootNode.id).map(n=>n.detail),rootNode.next_action])];
+ $('#today-summary').innerHTML=`<span class="clip" aria-hidden="true"></span><h2>今日の整理</h2><p class="caption">${state.source==='sample'?'架空のサンプルを整理したメモです。':'AIが作った地図を整理したメモです。'}判断や資料の検証を代わりに行うものではありません。</p><dl>${brief('今日の中心問い',[t.core_question])}${brief('残すべき選択肢',choices.slice(0,6))}${brief('足りない証拠',missing.slice(0,4))}${brief('相談すべき人',people.slice(0,4))}${brief('次の一歩',todayActions.slice(0,2))}</dl><p class="caption">重要な判断は、信頼できる大人と一緒に。名前や連絡先を交換する機能はありません。</p>`;
+ }
+
 }
 function cancel(){state.revision++;controller?.abort();state.pending=false;$('#generate').disabled=false;$('#generate').textContent='AIでツリーを作る';}
 function sample(message='サンプルツリーを表示しています。入力したメモをAIで分析した結果ではありません。'){
@@ -66,7 +74,7 @@ function updateCount(){ $('#memo-count').textContent=`${completeMemo().length} /
 $('#memo-form').addEventListener('input',e=>{if(!e.target.matches('#memo,[data-context]'))return;cancel();$('#send-consent').checked=false;updateCount();if(state.tree)$('#tree-status').textContent='メモが変更されています。表示中のツリーは前のメモのもの、またはサンプルです。';});
 $('#clear-all').addEventListener('click',()=>{
  cancel();$('#memo').value='';contextFields.forEach(([id])=>$('#context-'+id).value='');$('#send-consent').checked=false;updateCount();state.tree=null;state.source=null;state.selected=null;state.undo=null;state.edited=false;state.editing=false;
- $('#map-workspace').hidden=true;$('#tree-empty').hidden=false;$('#tree-container').replaceChildren();$('#node-detail').replaceChildren();$('#tree-overview').replaceChildren();$('#tree-status').textContent='入力とツリーを消しました。';$('#summary-content').innerHTML='<p>ツリーを作ると、まとめが表示されます。</p>';$('#memo').focus();
+ $('#map-workspace').hidden=true;$('#tree-empty').hidden=false;$('#tree-container').replaceChildren();$('#node-detail').replaceChildren();$('#tree-overview').replaceChildren();$('#tree-status').textContent='入力とツリーを消しました。';$('#summary-content').innerHTML='<p>ツリーを作ると、まとめが表示されます。</p>';if($('#today-summary'))$('#today-summary').innerHTML='<span class="clip" aria-hidden="true"></span><h2>今日の整理</h2><p>入力とツリーを消しました。</p>';$('#memo').focus();
 });
 $('#tree-container').addEventListener('click',e=>{
  const button=e.target.closest('[data-node]');if(!button||!state.tree)return;
