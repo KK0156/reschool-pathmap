@@ -20,25 +20,34 @@ with sync_playwright() as p:
   assert page.locator('h1').count()==1
  page.goto('http://localhost:8000/#/finder')
  page.locator('[data-next-question]').click()
- assert '印のない問い' in page.locator('#form-error').inner_text()
- page.get_by_label('技術・データ',exact=True).check()
+ assert '一つ以上選んで' in page.locator('#form-error').inner_text()
+ page.get_by_label('プログラミング・AI',exact=True).check()
  page.locator('[data-next-question]').click()
- page.get_by_label('つくって試す',exact=True).check()
+ page.get_by_label('プログラムや道具を作る',exact=True).check()
  page.locator('[data-next-question]').click()
- page.get_by_label('新しいものを生む',exact=True).check()
+ page.get_by_label('専門的な技術を身につけたい',exact=True).check()
  page.locator('[data-question="1"]').first.click()
- assert page.get_by_label('技術・データ',exact=True).is_checked()
+ assert page.get_by_label('プログラミング・AI',exact=True).is_checked()
  page.locator('[data-question="3"]').first.click()
  page.locator('button[type=submit]').click()
- assert page.locator('#finder-results .path-card').count()==3
- assert '技術で可能性' in page.locator('#finder-results .path-card').first.inner_text()
+ assert 1 <= page.locator('#finder-results .path-card').count() <= 6
+ assert '情報を学び' in page.locator('#finder-results .path-card').first.inner_text()
+ page.locator('[data-reset]').click()
+ page.get_by_label('まだ決まっていない',exact=True).check()
+ page.locator('[data-next-question]').click()
+ page.get_by_label('まだ分からない',exact=True).check()
+ page.locator('[data-next-question]').click()
+ page.get_by_label('今は特にない',exact=True).check()
+ page.locator('button[type=submit]').click()
+ assert page.locator('#finder-results .path-card').count()==6
+ assert 'まず確認できる' in page.locator('#finder-results h2').first.inner_text()
  page.goto('http://localhost:8000/#/paths')
  for id in ['care','environment','technology']:
   page.locator('[data-compare='+id+']').click()
  assert page.locator('.comparison thead th').count()==4
  page.locator('[data-compare=design]').click()
  assert '3件まで' in page.locator('.status').inner_text()
- page.locator('[data-filter="技術・データ"]').click()
+ page.locator('#filter-select').select_option('プログラミング・AI')
  assert page.locator('.path-card').count()==1
  page.locator('[data-clear-compare]').click()
  assert page.locator('.comparison').count()==0
@@ -49,10 +58,22 @@ with sync_playwright() as p:
  assert page.locator('.consult').count()==0
  page.goto('http://localhost:8000/#/cases')
  page.locator('[data-record=B]').first.click()
- assert '自然と未来' in page.locator('.case-card h2').inner_text()
+ assert '農学系' in page.locator('.case-card h2').inner_text()
  assert page.locator('[data-record=B]').first.get_attribute('aria-pressed')=='true'
- page.locator('[data-case-filter="世界・ことば"]').click()
+ page.locator('#case-filter-select').select_option('語学・海外')
  assert page.locator('.case-card').count()==1
+ assert page.locator('.record-options button').count()==2
+ page.goto('http://localhost:8000/#/dashboard')
+ assert page.locator('.school-profile').count()==0
+ page.locator('#school-select').select_option('general')
+ assert 'サンプル校A' in page.locator('.school-profile').inner_text()
+ assert '進路面談' in page.locator('.school-activities').inner_text()
+ page.locator('#school-select').select_option('technical')
+ assert '実習の振り返り' in page.locator('.school-activities').inner_text()
+ page.locator('.school-profile a.primary').click()
+ page.locator('.empty-results').wait_for()
+ page.locator('#case-filter-select').select_option('すべて')
+ assert page.locator('.record-options button').count()==5
  assert page.evaluate('localStorage.length + sessionStorage.length')==0
  mobile=browser.new_page(viewport={'width':390,'height':844},is_mobile=True)
  for route in ['','finder','paths','paths/technology','cases','dashboard','research']:
@@ -63,7 +84,7 @@ with sync_playwright() as p:
  assert mobile.locator('.site-nav a[aria-current]').is_visible()
  mobile.locator('.record-toc summary').click()
  mobile.locator('[data-record=B]').first.click()
- assert '自然と未来' in mobile.locator('.case-card h2').inner_text()
+ assert '農学系' in mobile.locator('.case-card h2').inner_text()
  mobile.goto('http://localhost:8000')
  mobile.screenshot(path='/tmp/pathmap-mobile.png',full_page=True)
  page.goto('http://localhost:8000/original.html')
@@ -81,7 +102,7 @@ with sync_playwright() as p:
  assert page.locator('textarea:enabled').count()==0
  page.locator('.back-to-pathmap').click()
  page.locator('.hero h1').wait_for()
- assert 'まだ知らない道が、' in page.locator('.hero h1').inner_text()
+ assert '勉強と仕事を調べる' in page.locator('.hero h1').inner_text()
  page.keyboard.press('Tab')
  assert page.locator('.skip').evaluate('(el)=>el===document.activeElement')
  page.keyboard.press('Enter')

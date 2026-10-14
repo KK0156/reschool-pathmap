@@ -277,3 +277,36 @@ footer p { font-size:13px; }
 .record-toc summary span { display:block; margin-top:6px; color:var(--muted); font-size:12px; font-weight:400; }
 @media(min-width:1000px) and (max-width:1250px) { .letter-directory { display:block; } .record-options { display:grid; grid-template-columns:1fr 1fr; } }
 @media(max-width:700px) { .record-toc { border-bottom:1px solid var(--line); } .record-toc summary { display:list-item; padding-left:14px; } }
+/* Plain labels and native controls for field/school selection. */
+select { font:inherit; color:var(--ink); background:var(--sheet); min-height:48px; max-width:100%; border:1px solid var(--ink); padding:10px 34px 10px 12px; }
+select:focus-visible { outline:3px solid var(--green); outline-offset:4px; }
+.filter-control { display:flex; align-items:center; flex-wrap:wrap; gap:12px 20px; margin:22px 0; font-size:14px; }
+.filter-control label { min-width:130px; }
+.filter-control select { min-width:240px; }
+.school-selector { padding:24px; background:var(--sheet); border:1px solid var(--line); margin-bottom:30px; }
+.school-selector label { display:block; font-size:18px; font-weight:600; margin-bottom:16px; }
+.school-selector select { width:100%; max-width:550px; }
+.school-profile h2 { margin:30px 0 15px; }
+.school-profile h2 small { display:block; margin-top:10px; font-family:sans-serif; font-weight:400; }
+.school-activities { border-top:1px solid var(--line); }
+.school-activities>div { display:grid; grid-template-columns:190px 1fr; gap:20px; padding:20px 0; border-bottom:1px solid var(--line); }
+.school-activities dt { font-weight:600; font-size:15px; line-height:1.9; }
+.school-activities dd { margin:0; color:var(--muted); line-height:2; font-size:15px; }
+.sample-stats { padding:22px 0; border-top:1px solid var(--line); }
+.sample-stats summary { cursor:pointer; line-height:1.9; font-size:14px; min-height:44px; }
+.empty-results { background:var(--margin); padding:24px; margin:25px 0; }
+.empty-results h2 { font-size:22px; }
+.job-preview b { font-weight:600; }
+.case-card h2 { margin-top:26px; font-size:25px; }
+.record-options { max-height:600px; overflow-y:auto; padding:3px; }
+.record-select { min-height:95px; }
+.choice { line-height:1.7; }
+@media(min-width:700px) { .choices { display:grid; grid-template-columns:1fr 1fr; align-items:stretch; } }
+@media(max-width:700px) {
+ .school-activities>div { grid-template-columns:1fr; gap:10px; }
+ .filter-control { align-items:start; flex-direction:column; gap:8px; }
+ .filter-control select { width:100%; min-width:0; }
+ .school-selector { padding:20px; }
+ .record-options { max-height:430px; }
+}
+@media print { .school-selector,.filter-control { display:none; } }
