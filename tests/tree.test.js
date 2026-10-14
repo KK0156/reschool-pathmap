@@ -36,3 +36,5 @@ test('malformed or invalid upstream trees are rejected for client fallback',asyn
   const response=await createTreeHandler({env:{OPENAI_API_KEY:'test-key'},fetchImpl:async()=>Response.json({output:[{content:[{type:'output_text',text}]}]})})(req('調べたことを整理したい。'));assert.equal(response.status,502);
  }
 });
+
+test('all consultation samples have valid trees and distinct everyday examples',async()=>{const {samplePrompts}=await import('../retree-mindmap/src/sample-tree.js');assert.equal(samplePrompts.length,12);for(const p of samplePrompts){assert.ok(p.memo.length<=3000);assert.ok(validateTree(p.tree));}assert.equal(new Set(samplePrompts.map(p=>p.tree.core_question)).size,9);});

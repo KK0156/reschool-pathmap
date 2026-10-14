@@ -8,6 +8,18 @@ with sync_playwright() as p:
  page.goto('http://localhost:8002/#/finder')
  page.locator('[data-consult-mode=tree]').click()
  assert '/retree-mindmap' not in page.url
+ assert page.locator('[data-prompt]').count()==12
+ requests=[]
+ page.on('request',lambda r:requests.append(r.url) if '/.netlify/functions/generate-tree' in r.url else None)
+ page.locator('[data-preview="4"]').click()
+ assert '文系' in page.locator('#tree-overview').inner_text()
+ assert page.locator('.tree-node').count()==8
+ assert not requests
+ page.locator('[data-tree-go="memo"]').last.click()
+ page.locator('[data-prompt="5"]').click()
+ assert '専門学校' in page.locator('#memo').input_value()
+ assert not page.locator('#send-consent').is_checked()
+ page.locator('[data-preview="0"]').click()
  page.locator('#memo').fill('研究テーマが複数あり、どこから調べるか迷っている。')
  page.locator('#sample-without-api').click()
  assert page.locator('.tree-node').count()==10

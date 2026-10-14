@@ -10,10 +10,10 @@ export async function requestMindTree(memo,signal){
 
 export function mountTree(container){
 const $=selector=>container.querySelector(selector);
-const state={tree:null,selected:null,source:null,pending:false,revision:0};
+const state={tree:null,selected:null,source:null,pending:false,revision:0,sampleIndex:0};
 let controller=null;
 const scrollTo=element=>element.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'});
-$('#sample-prompts').innerHTML=samplePrompts.map((p,i)=>`<button type="button" class="sample-prompt" data-prompt="${i}">${escapeHtml(p.label)}</button>`).join('');
+$('#sample-prompts').innerHTML=['進路','学校での活動','研究・制作'].map(category=>`<div class="sample-group"><h3>${escapeHtml(category)}</h3><div class="sample-options">${samplePrompts.map((p,i)=>p.category===category?`<article class="sample-option"><h4>${escapeHtml(p.label)}</h4><div><button type="button" class="sample-prompt" data-prompt="${i}">この例をメモに入れる</button><button type="button" class="text-button" data-preview="${i}">ツリーの例を見る</button></div></article>`:'').join('')}</div></div>`).join('');
 $('#tree-legend').innerHTML=Object.entries(nodeTypes).map(([type,label])=>`<span class="type-${type}">${label}</span>`).join('');
 function display(tree,source,message){
  state.tree=tree;state.source=source;state.selected=tree.nodes.find(n=>n.parent===null).id;
@@ -34,15 +34,16 @@ function renderSummaries(){
  const evidence=nodes('evidence').map(n=>`${n.label}：${n.evidence}（内容・出典は要確認）`);
  $('#summary-content').innerHTML=`<article><span>研究の問い</span><h3>${escapeHtml(t.core_question)}</h3><p>${escapeHtml(t.summary)}</p></article><article><span>プロジェクトの概要</span>${list(nodes('project').map(n=>`${n.label}：${n.detail}`))}</article><article><span>次に調べること・研究計画</span>${list(actions)}</article><article><span>CoD活動説明の草案</span><p>RE:Tree is an AI-assisted research mapping prototype. Instead of asking AI to decide an answer, it helps users turn uncertainty into a mind tree of questions, choices, evidence, risks, people to ask, and next actions.</p><p>今回整理するテーマ：${escapeHtml(t.core_question)}</p><p class="caption">活動の実績を証明する文章ではありません。実際に行ったことと、これから行うことを分けて書き直してください。</p></article><article><span>証拠の確認リスト</span>${list(evidence.length?evidence:t.nodes.filter(n=>n.evidence!=='未確認').map(n=>`${n.label}：${n.evidence}（要確認）`))}<p class="caption">資料の出典・日付・確認できた内容・反対の結果がないかを確認してください。サンプルの記載は資料の存在を保証しません。</p></article><article><span>作れそうな成果物</span>${list(nodes('output').map(n=>`${n.label}：${n.detail}`))}</article>`;
 }
-function cancel(){state.revision++;controller?.abort();state.pending=false;$('#generate').disabled=false;$('#generate').textContent='メモをツリーに整理する';}
+function cancel(){state.revision++;controller?.abort();state.pending=false;$('#generate').disabled=false;$('#generate').textContent='AIでツリーを作る';}
 function sample(message='サンプルツリーを表示しています。入力したメモをAIで分析した結果ではありません。'){
- cancel();display(sampleTree,'sample',message);
+ cancel();display(samplePrompts[state.sampleIndex].tree,'sample',message);
 }
 $('#show-sample')?.addEventListener('click',()=>sample());
 $('#sample-without-api').addEventListener('click',()=>sample());
 $('#sample-prompts').addEventListener('click',e=>{
- const button=e.target.closest('[data-prompt]');if(!button)return;
- cancel();$('#memo').value=samplePrompts[Number(button.dataset.prompt)].memo;$('#send-consent').checked=false;updateCount();$('#memo').focus();scrollTo($('#consultation'));
+ const preview=e.target.closest('[data-preview]');if(preview){state.sampleIndex=Number(preview.dataset.preview);sample();return;}
+ const button=e.target.closest('[data-prompt]');if(!button)return;state.sampleIndex=Number(button.dataset.prompt);
+ cancel();$('#memo').value=samplePrompts[Number(button.dataset.prompt)].memo;$('#send-consent').checked=false;updateCount();if($('#memo-help'))$('#memo-help').textContent='例文を入れました。必要なところを書き換え、送信内容を確認して「AIでツリーを作る」を押してください。';$('#memo').focus();scrollTo($('#memo'));
 });
 function updateCount(){ $('#memo-count').textContent=`${$('#memo').value.length} / 3000文字`;$('#memo-error').textContent='';$('#memo').removeAttribute('aria-invalid'); }
 $('#memo').addEventListener('input',()=>{cancel();$('#send-consent').checked=false;updateCount();if(state.tree)$('#tree-status').textContent='メモが変更されています。表示中のツリーは前のメモのもの、またはサンプルです。';});
@@ -65,9 +66,10 @@ $('#memo-form').addEventListener('submit',async e=>{
  state.pending=true;$('#generate').disabled=true;$('#generate').textContent='メモを整理しています…';$('#memo-error').textContent='';$('#tree-status').textContent='AIがメモを整理しています。';
  const timeout=setTimeout(()=>currentController.abort(),55000);
  try{const tree=await requestMindTree(memo,currentController.signal);if(state.revision===revision)display(tree,'generated','メモからツリーを生成しました。未確認の内容は、資料や相談で確かめてください。');}
- catch(error){if(state.revision===revision)display(sampleTree,'sample',`AI生成に失敗しました。代わりにサンプルツリーを表示しています。${error.name==='AbortError'?'回答に時間がかかっています。':error.message}`);}
- finally{clearTimeout(timeout);if(state.revision===revision){state.pending=false;$('#generate').disabled=false;$('#generate').textContent='メモをツリーに整理する';}}
+ catch(error){if(state.revision===revision)display(samplePrompts[state.sampleIndex].tree,'sample',`AI生成に失敗しました。代わりにサンプルツリーを表示しています。${error.name==='AbortError'?'回答に時間がかかっています。':error.message}`);}
+ finally{clearTimeout(timeout);if(state.revision===revision){state.pending=false;$('#generate').disabled=false;$('#generate').textContent='AIでツリーを作る';}}
 });
+container.addEventListener('click',e=>{const button=e.target.closest('[data-tree-go]');if(button){const target=$('#'+button.dataset.treeGo);target.focus({preventScroll:true});scrollTo(target);}});
 $('#send-consent').addEventListener('change',()=>{if(!$('#send-consent').checked)cancel();});
 
 return ()=>cancel();

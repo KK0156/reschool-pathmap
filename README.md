@@ -104,3 +104,5 @@ Netlifyの **Project configuration → Environment variables → Add a variable*
 - [Netlify Functions API / rateLimit](https://docs.netlify.com/build/functions/api/)
 - [OpenAI Responses API / Structured Outputs](https://developers.openai.com/api/docs/guides/structured-outputs)
 - [store:falseとResponses API](https://developers.openai.com/api/docs/guides/migrate-to-responses)
+
+相談メモには12の例があります（進路4件・学校での活動3件・研究や制作5件）。各例はメモとして編集でき、送信せずツリーの表示例も試せます。日常的な8例は内容別の架空ツリー、研究プロジェクトの4例は共通の研究サンプルツリーを表示します。
