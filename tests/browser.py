@@ -89,7 +89,7 @@ with sync_playwright() as p:
  mobile.screenshot(path='/tmp/pathmap-mobile.png',full_page=True)
  page.goto('http://localhost:8000/original.html')
  page.get_by_role('heading',name='卒業の、その続きを。').wait_for()
- assert page.locator('.back-to-pathmap').get_attribute('href')=='/reschool.html'
+ assert page.locator('.back-to-pathmap').get_attribute('href')=='/'
  assert page.evaluate('window.__nativeLocal.length + window.__nativeSession.length')==0
  page.get_by_role('button',name='母校に戻ってみる →').click()
  assert '/original.html?view=' in page.url

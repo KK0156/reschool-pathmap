@@ -2,7 +2,7 @@
 
 RE:Schoolを一つの枝として含む、研究テーマ・選択肢・資料・リスク・次の行動を整理するResearch Mapping Prototype。
 
-公開トップ `/` と `/retree-mindmap/` はRE:Treeを表示します。既存のRE:Schoolは `/reschool.html`、v1は `/original.html` に残しています。旧トップの `#/…` のリンクはRE:Schoolへ移動します。
+RE:Treeは、RE:Schoolの `/#/finder` にある「相談メモをツリーに整理する」機能として組み込まれています。公開トップはRE:Schoolです。`/retree-mindmap/` は開発用の単独プレビューで、通常の利用導線には置いていません。
 
 ## 使い方
 
@@ -43,7 +43,10 @@ AIには未知の事実を作らず「未確認」と書くよう指示してい
 - `index.html`：日本語の概要、相談メモ、ツリー、詳細、まとめ
 - `src/sample-tree.js`：指定サンプルと四つのメモ例
 - `src/tree-renderer.js`：JSON検証、階層ツリー、詳細表示、エスケープ
-- `src/app.js`：送信、フォールバック、ノード選択、要約、消去
+- `src/app.js`：画面内にマウントできる送信・フォールバック・ノード選択・要約・消去の処理
+- `src/feature-view.js`：RE:Schoolに組み込む画面
+- `src/standalone.js`：開発用の単独プレビュー入口
+- `../../src/tree-feature.css`：既存画面のデザインを壊さないスコープ付きCSS
 - `src/styles.css`：紙の資料と壁のマップを参考にした表示、モバイル、フォーカス
 - `../netlify/functions/generate-tree.js`：サーバー側AI接続
 - `../tests/tree.test.js` / `../tests/tree-browser.py`：構造・入力・API・操作の検証

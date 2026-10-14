@@ -1,14 +1,19 @@
-# RE:Tree / RE:School — Research Prototypes
+# RE:School Path Map — 進路の相談 / 試作品3号
 
-公開トップを **RE:Tree v0.1** に変更しました。相談メモを、中心問い・選択肢・経験・証拠・リスク・聞く相手・次の行動・成果物のツリーに整理する試作品です。APIが未設定でも、サンプル表示だと明示して操作できます。
+公開トップはRE:Schoolです。RE:Treeは独立したトップではなく、既存の「進路の相談」に追加したマインドツリー機能です。
 
-- `/` / `/retree-mindmap/`：RE:Tree
-- `/reschool.html`：既存のRE:School Path Map
-- `/original.html`：RE:School v1
-- RE:Treeの仕様・起動・検証は [retree-mindmap/README.md](retree-mindmap/README.md)
-- ビルド・Functions設定は共通。Netlifyで `OPENAI_API_KEY` を設定し、GitHubから再デプロイするとAI接続を試せます
+- `/`：RE:School Path Map
+- `/#/finder`：「選択肢から相談する」「相談メモをツリーに整理する」を同じ画面で選択
+- `/original.html`：元のRE:School v1
+- `/reschool.html`：RE:Schoolの互換入口
+
+RE:Treeの実装と仕様は `retree-mindmap/` にまとめていますが、画面内に直接組み込んでいます。iframeや別サイトへの移動は使いません。メモ・ツリーはブラウザのメモリだけに保持し、相談方法の切り替えでも残ります。消去ボタンや再読み込みで消えます。
+
+Netlify Functionsは、選択式の相談用 `path-consult` と、相談メモのツリー化用 `generate-tree` を使用します。どちらもサーバー側の `OPENAI_API_KEY` を使います。API未設定でもツリー機能は、サンプルだと明示して操作できます。
 
 ---
+
+
 
 # RE:School Path Map — AI相談 / 試作品3号
 

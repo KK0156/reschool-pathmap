@@ -328,3 +328,6 @@ select:focus-visible { outline:3px solid var(--green); outline-offset:4px; }
 .ai-loading { padding:25px; border:1px solid var(--line); }
 button:disabled { cursor:wait; opacity:.65; }
 @media print { .api-consent,.ai-followup,.ai-error { display:none; } .ai-reply { break-inside:avoid; } }
+.consult-modes{display:flex;gap:12px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:22px;margin-bottom:28px}
+.consult-modes button{padding:13px 18px;min-height:48px;border:1px solid var(--line);background:transparent;color:var(--ink);font-size:14px;line-height:1.7}
+.consult-modes button[aria-pressed=true]{border-color:var(--green);border-bottom:3px solid var(--green);background:var(--sheet);font-weight:600}
