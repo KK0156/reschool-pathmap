@@ -20,3 +20,9 @@ test('optional background is omitted when blank and included only for known none
  assert.equal(composeMemo('  相談  ',{grades:' ',subjects:''}),'相談');
  assert.equal(composeMemo('相談',{grades:'  評定3.5 ',subjects:'数学',school:'秘密',conditions:''}),'相談\n\n相談の背景（本人のメモ・未確認）：\n成績の目安：評定3.5\n得意・苦手な科目：数学');
 });
+
+test('unknown detail fields may stay blank while the label remains required',()=>{
+ const next=editNode(sampleTree,'reschool',{detail:' ',evidence:'',risk:'',next_action:''});
+ for(const key of ['detail','evidence','risk','next_action'])assert.equal(next.nodes.find(n=>n.id==='reschool')[key],'未確認');
+ assert.ok(validateTree(next));assert.throws(()=>editNode(next,'reschool',{label:''}));
+});

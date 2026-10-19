@@ -3,6 +3,7 @@ with sync_playwright() as p:
  b=p.chromium.launch(executable_path='/usr/bin/chromium',args=['--no-sandbox'])
  page=b.new_page(viewport={'width':1440,'height':1100});errors=[]
  page.on('pageerror',lambda e:errors.append(str(e)))
+ page.on('dialog',lambda d:d.accept())
  page.goto('http://localhost:8002/reschool.html')
  assert 'RE:School' in page.title()
  page.goto('http://localhost:8002/reschool.html#/finder')

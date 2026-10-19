@@ -11,6 +11,7 @@ with sync_playwright() as p:
  context.route('**/*',secure)
  page=context.new_page();errors=[];sent=[]
  page.on('pageerror',lambda e:errors.append(str(e)))
+ page.on('dialog',lambda d:d.accept())
  page.on('request',lambda r:sent.append(r) if '/generate-tree' in r.url else None)
  page.goto('http://localhost:8002/retree-mindmap/')
  page.locator('#generate').click();assert '書いてください' in page.locator('#memo-error').inner_text();assert not sent

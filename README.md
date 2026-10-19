@@ -133,3 +133,15 @@ Netlifyの **Project configuration → Environment variables → Add a variable*
 ## 今回のローカル検証
 
 有料APIを呼ばずに確認する場合は `PATH_MAP_OFFLINE=1 PATH_MAP_PORT=8002 npm start` を使用します。このモードではFunctionsへのローカルリクエストを503で止めます。変更内容と検証結果は [docs/LOCAL-REVIEW.md](docs/LOCAL-REVIEW.md) に記載しています。
+
+### Codespacesで画面を開く
+
+`npm start` のターミナルを開いたまま、下の **Ports → 8000 → ブラウザーで開く** を使います。iPadの `localhost` ではなく、Codespacesが発行するプレビューURLを開いてください。
+
+8000が使用中なら、既存のプレビューを開くか、別の番号を明示して起動できます。
+
+```sh
+PATH_MAP_OFFLINE=1 PATH_MAP_PORT=8003 npm start
+```
+
+この場合はPortsの8003を開きます。`PATH_MAP_OFFLINE=1` は有料AI APIへの接続を止めます。例の閲覧、自分で作る図、JSON保存・復元、相談メモのコピーは利用できます。

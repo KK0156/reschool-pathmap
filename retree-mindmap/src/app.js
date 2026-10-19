@@ -16,11 +16,14 @@ const $=selector=>container.querySelector(selector);
 $('#privacy-note').insertAdjacentHTML('beforebegin',optionalContextView);
 const context=()=>Object.fromEntries(contextFields.map(([id])=>[id,$('#context-'+id).value]));
 const completeMemo=()=>composeMemo($('#memo').value,context());
+$('#tree-container').tabIndex=-1;
 const mapView=createMindMapView($('#tree-container'));
 const fileTools=document.createElement('section');fileTools.className='tree-file-tools';fileTools.setAttribute('aria-label','ツリーを端末で保存・復元');
 fileTools.innerHTML=`<div class="file-actions"><button type="button" id="start-blank-tree">新しい図を自分で作る</button><button type="button" id="export-tree" disabled>図をファイルに保存（JSON）</button><label class="file-picker" for="import-tree">保存した図を開く<input id="import-tree" type="file" accept=".json,application/json"></label></div><p>保存・復元は自分の端末内だけで行います。相談メモと成績などの任意欄はファイルに含めません。ツリーに個人情報が含まれていないか、保存前に確認してください。自動保存・サーバーへのアップロードは行いません。</p><p id="file-status" role="status"></p>`;
 $('#mind-tree').insertBefore(fileTools,$('#tree-status'));
 
+const summaryTools=document.createElement('div');summaryTools.className='summary-tools';summaryTools.innerHTML='<button type="button" id="copy-summary" disabled>相談メモをコピー</button><p id="copy-status" role="status"></p><textarea id="copy-fallback" aria-label="コピーする相談メモ" rows="8" readonly hidden></textarea>';
+$('#summaries').append(summaryTools);
 const state={tree:null,selected:null,source:null,pending:false,revision:0,sampleIndex:defaultSample,edited:false,editing:false,undo:null};
 let controller=null;
 const scrollTo=element=>element.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'});
@@ -33,7 +36,7 @@ if($('#tree-example')){
 }
 $('#tree-legend').innerHTML=Object.entries(nodeTypes).map(([type,label])=>`<span class="type-${type}">${label}</span>`).join('');
 function display(tree,source,message){
- $('#export-tree').disabled=false;
+ $('#export-tree').disabled=false;$('#copy-summary').disabled=false;$('#copy-status').textContent='';$('#copy-fallback').hidden=true;
  if($('#tree-example')&&source==='sample')$('#tree-example').value=String(state.sampleIndex);
  mapView.reset();state.tree=structuredClone(tree);state.source=source;state.edited=false;state.editing=false;state.undo=null;state.selected=tree.nodes.find(n=>n.parent===null).id;
  $('#tree-empty').hidden=true;$('#map-workspace').hidden=false;
@@ -48,9 +51,10 @@ function renderOverview(){
 }
 function renderMap(){
  mapView.render(state.tree,state.selected);
- $('#node-detail').innerHTML=state.editing?editorView(state.tree,state.selected):renderDetail(state.tree.nodes.find(n=>n.id===state.selected),state.source)+`<div class="edit-actions"><button type="button" class="secondary" data-edit-start>この項目を書き直す</button><button type="button" class="secondary" data-edit-add>ここに枝を加える</button>${state.tree.nodes.find(n=>n.id===state.selected).parent!==null?'<button type="button" class="text-button" data-edit-delete>この枝を消す</button>':''}${state.undo?'<button type="button" class="text-button" data-edit-undo>直前の変更を戻す</button>':''}</div><p class="caption">手直しは自動保存・送信されません。残したいときはJSONで保存してください。再読み込みすると画面から消えます。</p>`;
+ $('#node-detail').innerHTML=state.editing?editorView(state.tree,state.selected):'<button type="button" class="secondary" data-tree-go="tree-container">← 図に戻る</button>'+renderDetail(state.tree.nodes.find(n=>n.id===state.selected),state.source)+`<div class="edit-actions"><button type="button" class="secondary" data-edit-start>この項目を書き直す</button><button type="button" class="secondary" data-edit-add>ここに枝を加える</button>${state.tree.nodes.find(n=>n.id===state.selected).parent!==null?'<button type="button" class="text-button" data-edit-delete>この枝を消す</button>':''}${state.undo?'<button type="button" class="text-button" data-edit-undo>直前の変更を戻す</button>':''}</div><p class="caption">手直しは自動保存・送信されません。残したいときはJSONで保存してください。再読み込みすると画面から消えます。</p>`;
 }
 function renderSummaries(){
+ $('#copy-status').textContent='';$('#copy-fallback').hidden=true;$('#copy-fallback').value='';
  const t=state.tree;const nodes=type=>t.nodes.filter(n=>n.type===type);
  const list=items=>items.length?`<ul>${items.map(item=>`<li>${escapeHtml(item)}</li>`).join('')}</ul>`:'<p>未確認。メモや資料で確認する必要があります。</p>';
  const actions=[...new Set([...nodes('action').map(n=>n.detail),...t.nodes.map(n=>n.next_action)])].slice(0,12);
@@ -65,7 +69,7 @@ function renderSummaries(){
  }
 
 }
-function cancel(){state.revision++;controller?.abort();state.pending=false;$('#generate').disabled=false;$('#generate').textContent='AIでツリーを作る';}
+function cancel(){state.revision++;controller?.abort();state.pending=false;$('#generate').disabled=false;$('#generate').textContent='AIで相談を図にする';}
 function sample(message='サンプルツリーを表示しています。入力したメモをAIで分析した結果ではありません。'){
  if((state.edited||state.editing)&&!confirm('別の例を表示すると、手直ししたツリーを置き換えます。続けますか？'))return;
  cancel();display(samplePrompts[state.sampleIndex].tree,'sample',message);
@@ -80,8 +84,9 @@ $('#sample-prompts').addEventListener('click',e=>{
 function updateCount(){ $('#memo-count').textContent=`${completeMemo().length} / 3000文字（任意欄を含む）`;$('#send-preview-text').textContent=completeMemo()||'まだ入力されていません。';$('#memo-error').textContent='';$('#memo').removeAttribute('aria-invalid'); }
 $('#memo-form').addEventListener('input',e=>{if(!e.target.matches('#memo,[data-context]'))return;cancel();$('#send-consent').checked=false;updateCount();if(state.tree)$('#tree-status').textContent='メモが変更されています。表示中のツリーは前のメモのもの、またはサンプルです。';});
 $('#clear-all').addEventListener('click',()=>{
+ if((state.tree||$('#memo').value.trim()||contextFields.some(([id])=>$('#context-'+id).value.trim()))&&!confirm('入力と図をすべて消しますか？残したい図は先にファイルに保存してください。'))return;
  cancel();$('#memo').value='';contextFields.forEach(([id])=>$('#context-'+id).value='');$('#send-consent').checked=false;updateCount();state.tree=null;state.source=null;state.selected=null;state.undo=null;state.edited=false;state.editing=false;
- $('#export-tree').disabled=true;$('#file-status').textContent='';$('#map-workspace').hidden=true;$('#tree-empty').hidden=false;$('#tree-container').replaceChildren();$('#node-detail').replaceChildren();$('#tree-overview').replaceChildren();$('#tree-status').textContent='入力とツリーを消しました。';$('#summary-content').innerHTML='<p>ツリーを作ると、まとめが表示されます。</p>';if($('#today-summary'))$('#today-summary').innerHTML='<span class="clip" aria-hidden="true"></span><h2>今日の整理</h2><p>入力とツリーを消しました。</p>';$('#memo').focus();
+ $('#export-tree').disabled=true;$('#copy-summary').disabled=true;$('#copy-status').textContent='';$('#copy-fallback').value='';$('#copy-fallback').hidden=true;$('#file-status').textContent='';$('#map-workspace').hidden=true;$('#tree-empty').hidden=false;$('#tree-container').replaceChildren();$('#node-detail').replaceChildren();$('#tree-overview').replaceChildren();$('#tree-status').textContent='入力とツリーを消しました。';$('#summary-content').innerHTML='<p>ツリーを作ると、まとめが表示されます。</p>';if($('#today-summary'))$('#today-summary').innerHTML='<span class="clip" aria-hidden="true"></span><h2>今日の整理</h2><p>入力とツリーを消しました。</p>';$('#memo').focus();
 });
 $('#tree-container').addEventListener('click',e=>{
  const button=e.target.closest('[data-node]');if(!button||!state.tree)return;
@@ -100,8 +105,8 @@ $('#memo-form').addEventListener('submit',async e=>{
  state.pending=true;$('#generate').disabled=true;$('#generate').textContent='メモを整理しています…';$('#memo-error').textContent='';$('#tree-status').textContent='AIがメモを整理しています。';
  const timeout=setTimeout(()=>currentController.abort(),55000);
  try{const tree=await requestMindTree(memo,currentController.signal);if(state.revision===revision)display(tree,'generated','メモからツリーを生成しました。未確認の内容は、資料や相談で確かめてください。');}
- catch(error){if(state.revision===revision)display(samplePrompts[state.sampleIndex].tree,'sample',`AI生成に失敗しました。代わりにサンプルツリーを表示しています。${error.name==='AbortError'?'回答に時間がかかっています。':error.message}`);}
- finally{clearTimeout(timeout);if(state.revision===revision){state.pending=false;$('#generate').disabled=false;$('#generate').textContent='AIでツリーを作る';}}
+ catch(error){if(state.revision===revision){const reason=error.name==='AbortError'?'回答に時間がかかっています。':error.message;if(state.tree){$('#tree-status').textContent=`AI生成に失敗しました。${state.source==='sample'?'代わりにサンプルの図をそのまま表示しています。':'今の図と手直しは残しています。'}相談メモも消えていません。${reason}`;}else display(samplePrompts[state.sampleIndex].tree,'sample',`AI生成に失敗しました。代わりにサンプルツリーを表示しています。${reason}`);}}
+ finally{clearTimeout(timeout);if(state.revision===revision){state.pending=false;$('#generate').disabled=false;$('#generate').textContent='AIで相談を図にする';}}
 });
 function applyChange(tree,selected=state.selected,focusDetail=true){
  cancel();
@@ -156,6 +161,12 @@ $('#import-tree').addEventListener('change',async e=>{
 });
 updateCount();
 container.addEventListener('click',e=>{const button=e.target.closest('[data-tree-go]');if(button){const target=$('#'+button.dataset.treeGo);target.focus({preventScroll:true});scrollTo(target);}});
+$('#copy-summary').addEventListener('click',async()=>{
+ if(!state.tree)return;
+ const text='RE:Tree 相談メモ（'+(state.source==='sample'?'架空の相談例':'内容・出典は未確認')+'）\n\n'+$('#summary-content').innerText+'\n\nこのメモは判断を代わりに行うものではありません。';
+ try{await navigator.clipboard.writeText(text);$('#copy-fallback').hidden=true;$('#copy-fallback').value='';$('#copy-status').textContent='相談メモをコピーしました。共有する前に内容と個人情報を確認してください。';}
+ catch{$('#copy-fallback').value=text;$('#copy-fallback').hidden=false;$('#copy-fallback').focus();$('#copy-fallback').select();$('#copy-status').textContent='自動コピーができないため、下の文章を選択してコピーしてください。';}
+});
 $('#send-consent').addEventListener('change',()=>{if(!$('#send-consent').checked)cancel();});
 
 return ()=>cancel();

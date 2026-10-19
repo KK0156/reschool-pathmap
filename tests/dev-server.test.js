@@ -1,0 +1,20 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {spawn} from 'node:child_process';
+import net from 'node:net';
+import {once} from 'node:events';
+const freePort=async()=>{const s=net.createServer();s.listen(0,'127.0.0.1');await once(s,'listening');const port=s.address().port;await new Promise(r=>s.close(r));return port;};
+const launch=port=>spawn(process.execPath,['scripts/dev-server.mjs'],{env:{...process.env,PATH_MAP_PORT:String(port),PATH_MAP_OFFLINE:'1'},stdio:['ignore','pipe','pipe']});
+test('local preview serves pages, blocks dotfiles/API, and explains occupied ports',{timeout:12000},async t=>{
+ const port=await freePort(),server=launch(port);t.after(()=>server.kill());
+ let output='';server.stdout.on('data',chunk=>output+=chunk);server.stderr.on('data',chunk=>output+=chunk);
+ await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(new Error('Preview did not start')),5000);server.stdout.on('data',()=>{if(output.includes('http://localhost:')){clearTimeout(timer);resolve();}});server.once('error',reject);});
+ assert.ok(output.includes('Ports'));
+ const base=`http://127.0.0.1:${port}`;
+ assert.equal((await fetch(base+'/')).status,200);
+ assert.equal((await fetch(base+'/src/desk-app.js')).status,200);
+ for(const path of ['/.env','/.git/config','/src/%2esecret'])assert.equal((await fetch(base+path)).status,403);
+ assert.equal((await fetch(base+'/.netlify/functions/generate-tree',{method:'POST',body:'{}'})).status,503);
+ const collision=launch(port);t.after(()=>collision.kill());let error='';collision.stderr.on('data',chunk=>error+=chunk);
+ const [code]=await once(collision,'exit');assert.equal(code,1);assert.ok(error.includes('既に使われています'));assert.ok(error.includes('PATH_MAP_PORT='));assert.ok(!error.includes('at Server'));
+});
