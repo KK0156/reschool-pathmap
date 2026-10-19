@@ -25,3 +25,8 @@ export function editorView(tree,id){
  const node=tree.nodes.find(n=>n.id===id);const forbidden=descendants(tree,id);const isRoot=node.parent===null;
  return `<form id="node-edit-form"><h3>この項目を書き直す</h3><p>変更は画面内だけに反映します。AIへの送信や保存は行いません。</p><label for="edit-label">見出し</label><input id="edit-label" name="label" maxlength="180" required value="${escapeHtml(node.label)}"><label for="edit-type">項目の種類</label><select id="edit-type" name="type">${Object.entries(nodeTypes).filter(([type])=>isRoot?type==='core_question':type!=='core_question').map(([type,label])=>`<option value="${type}" ${node.type===type?'selected':''}>${label}</option>`).join('')}</select>${isRoot?'':`<label for="edit-parent">つなぐ先</label><select id="edit-parent" name="parent">${tree.nodes.filter(n=>!forbidden.has(n.id)).map(n=>`<option value="${n.id}" ${node.parent===n.id?'selected':''}>${escapeHtml(n.label)}</option>`).join('')}</select>`}${[['内容','detail'],['証拠・資料','evidence'],['リスク・未確認の点','risk'],['次にできること','next_action']].map(([label,key])=>`<label for="edit-${key}">${label}</label><textarea id="edit-${key}" name="${key}" rows="3" maxlength="1800" required>${escapeHtml(node[key])}</textarea>`).join('')}<p id="edit-error" role="alert"></p><div class="actions"><button class="primary" type="submit">変更を反映する</button><button class="secondary" type="button" data-edit-cancel>書き直しをやめる</button></div></form>`;
 }
+
+export function createBlankTree(question='今、考えたいことは？'){
+ const label=question.trim().slice(0,180)||'今、考えたいことは？';
+ return {core_question:label,summary:'自分で書き始めた地図です。証拠・仮説・反論を分け、次に調べたいことを加えられます。',nodes:[{id:'root',parent:null,label,type:'core_question',detail:'ここから自分の言葉で考えを整理します。',evidence:'未確認',risk:'まだ調べていないことを、結論として扱わない。',next_action:'残したい選択肢を枝に加える。'}]};
+}

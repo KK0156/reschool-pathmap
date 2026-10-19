@@ -21,7 +21,7 @@ with sync_playwright() as p:
  page.locator('#ai-consent').check()
  page.locator('button[type=submit]').click()
  page.locator('.ai-error').wait_for()
- assert 'まだ設定されていません' in page.locator('.ai-error').inner_text()
+ assert any(message in page.locator('.ai-error').inner_text() for message in ['まだ設定されていません','ローカル検証中のためAIとの接続は未設定です'])
  assert page.locator('.ai-reply').count()==0
  assert set(json.loads(requests[0].post_data))=={'selection','turns'}
  page.screenshot(path='/workspace/pathmap-ai-unconfigured.png',full_page=True)

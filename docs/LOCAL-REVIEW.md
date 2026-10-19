@@ -1,0 +1,96 @@
+# RE:Tree / RE:Path Finder ローカル改善記録
+
+2026-10-19。公開、GitHub push、Netlifyデプロイ、有料AIリクエストは行っていません。
+
+## 研究内容の修正
+
+研究上の出発点を「日米の教育機会・資金・人的資源の比較」に戻しました。Home、Research Note、研究データとREADMEを整合させています。
+
+1. 日米の教育機会・資源の比較
+2. Money → Resource → Student Opportunity
+3. 卒業生・外部人材と初期RE:School
+4. 既存サービス比較、安全・責任・教員負担
+5. 日本社会の安全・秩序・信頼・開放性への比較の広がり
+6. RE:Path Finder / RE:Tree
+7. 教頭インタビュー後の仮説・未検証事項（原記録確認待ち）
+
+各段階に「状態」と「確認元・未確認の資料」を表示しています。試作の存在、依頼者による経緯の説明、研究モデル・解釈、効果が未検証の仮説を区別します。
+
+教頭インタビューの逐語録、日時、具体的な発言、公開同意は確認できませんでした。このため、発言を創作せず、新仮説の特定は保留しました。併記する検証候補は設計上の問いであり、インタビュー結果ではありません。「教員の事務負担が最大の原因」「AIが最適解」とは結論づけていません。統計原資料や実証資料の欠落も明示しています。
+
+## 操作と見た目
+
+- 掲示板・黒板・紙・鉛筆風の線は維持し、コルク枠、影、傾きなどを抑制。
+- Homeの主入口を「Mind Treeを作る」に統一。メモを書く→図を見る・手直し→次に調べること、の3段階を表示。
+- ツリー入力より前に大量の例が並ばないよう、例と詳しい操作説明を折りたたみへ移動。
+- 一般の相談例と開発者の研究デモを分離。合計32例。初期表示は一般向け。
+- AIへ送信せず自分で書き始める操作を追加。一般の相談にも使えるまとめ文へ修正。
+- 仮説を独立した項目種別として追加。色だけでなく文字でも種別を表示。
+- 「選んだ項目を読む」で100%表示。全体表示、一覧、画面拡大、枝の追加・編集・削除、ドラッグ、キーボード配置変更は維持。
+- 元の6画面、旧v1、Path Map試作品3号、両Netlify Functionsは維持。Prototype 2本体とEvidence Packは未掲載のまま。
+
+## JSON保存・復元
+
+利用者が明示操作で端末へ保存します。自動保存、DB、ストレージ、解析、外部サーバーへのアップロードは追加していません。
+
+形式は `format: "re-tree"`, `version: 1`。ツリー、各項目の座標、選択中ID、未検証の由来を保存。相談の原文、任意の成績・背景欄は含みません。ただし、利用者が項目本文へ書き込んだ内容はJSONに含まれます。保存前に本文を確認してください。
+
+読み込み時は拡張子、8MiB上限、JSON構文、正確なキー、項目種別・文字長、最大200項目、深さ12、根が1つであること、重複ID、親子関係、循環・孤立、有限で範囲内の座標、全項目の配置、選択ID、由来を検証します。危険なプロパティ名も拒否します。文字列はHTMLとして実行せずエスケープします。旧形式のツリー単体JSONは検証後に自動配置します。
+
+エラー時は現在のツリーを保持。置換前の確認をキャンセルできます。読み込んだ内容は確認済みの事実やAI生成結果として扱いません。
+
+## 実行した検証
+
+- `npm test`: 35件成功、失敗0。JSON往復、構造・サイズ・座標・危険キー・HTML、不正ツリー、研究経緯、全32例の配置、編集、APIのモック検証を含む。
+- `npm run build`: 成功。
+- Playwright / Chromium: `browser.py`, `ai-browser.py`, `tree-browser.py`, `tree-edit-browser.py`, `free-canvas-browser.py`, `mind-map-browser.py`, `tree-integration.py`, `research-desk-browser.py`。
+- 新規 `tree-files-browser.py`: 実際のダウンロードと復元、配置・選択保持、相談文・成績の除外、不正・巨大・危険キー・HTMLを含む入力、置換キャンセル、既存ツリー保持、API通信なしを確認。
+- 新規 `usability-browser.py`: 320 / 390 / 768 / 1024 / 1440px、6画面すべてを実際に描画。Homeの主入口が最初の画面内にあること、ナビの操作領域・非重複、横はみ出しなし、各幅で追加・編集・仮説・移動・削除・ズーム・画面拡大を確認。JavaScriptエラー・外部リクエスト・Web Storage使用は0。
+- スクリーンショット35枚は `/workspace/reschool-pathmap-review/`。Home、研究ノート、キャンバスの5幅の比較画像を目視確認。
+
+初回に、追加したファイル入力が旧画面の320pxで横にはみ出す問題を検出し、共有CSSを修正して再検証しました。変更前の例数・段階数を固定していた既存テストは、新しい32例・7段階へ更新しました。新規画面テストの一覧モード持ち越しによるテスト手順の失敗も修正しています。
+
+安全なローカル起動例:
+
+```sh
+PATH_MAP_OFFLINE=1 PATH_MAP_PORT=8002 npm start
+PATH_MAP_OFFLINE=1 PATH_MAP_PORT=8001 npm start
+```
+
+OFFLINEモードではローカルFunctionsへのリクエストを503で止め、環境変数にキーがあっても有料APIへ進みません。API正常時の検証はモックを使用しました。
+
+## 残る確認
+
+- 教頭インタビューの原記録を用いた仮説の対応づけは未完了。原記録が必要です。
+- 実際のAIの回答品質、実在の生徒・先生による有用性、iPad実機・Safari等の差異は未検証。今回のブラウザ検証はChromiumです。
+- 広いキャンバスは意図的にパン・ズームする設計です。多くの枝を全体表示すると文字が小さくなるため、100%表示・一覧・詳細欄を併用します。
+- 出典資料、Prototype 2本体、Evidence Packは追加していません。未掲載と明示しています。
+
+## 変更ファイル一覧
+
+| ファイル | 変更内容 |
+| --- | --- |
+| `src/research-data.js` | 正しい7段階、各段階の根拠・状態、インタビュー未確認事項 |
+| `src/desk-app.js` | Home、Research Note、一般向けの入口、相談フォームの順序 |
+| `src/desk-usability.css`（新規） | 掲示板を維持した可読性、入口、各幅の調整 |
+| `index.html` | 改善CSSの読み込み |
+| `src/app.js` | 保存版の相談例の件数を実データと整合 |
+| `src/tree-feature.css` | 埋め込みツリーのファイル操作と小画面幅の調整 |
+| `retree-mindmap/src/tree-file.js`（新規） | JSON保存形式、読み込みの厳格検証 |
+| `retree-mindmap/src/app.js` | 保存・復元、手動開始、由来表示、一般向けのまとめ、例のグループ分け |
+| `retree-mindmap/src/feature-view.js` | 一般向け入力例、送信しない開始ボタン |
+| `retree-mindmap/src/mind-map-view.js` | 選択項目の100%表示、復元時の全体表示 |
+| `retree-mindmap/src/tree-renderer.js` | 仮説種別、根の検証強化、手動・復元時の説明 |
+| `retree-mindmap/src/tree-edit.js` | 空の地図からの手動開始 |
+| `retree-mindmap/src/sample-tree.js` | 一般例の追加、一般／開発者の分類、仮説の明示 |
+| `retree-mindmap/src/styles.css` | 独立版のファイル操作と小画面幅の調整 |
+| `netlify/functions/generate-tree.js` | 仮説・証拠の区別と断定しない生成指示 |
+| `scripts/dev-server.mjs` | 有料通信を遮断できる明示的なローカルOFFLINEモード |
+| `tests/tree-file.test.js`（新規） | JSON形式、安全性、往復の単体テスト |
+| `tests/tree-files-browser.py`（新規） | 実ダウンロード・復元・拒否・キャンセルのブラウザテスト |
+| `tests/usability-browser.py`（新規） | 5幅・6画面と操作の検証・スクリーンショット |
+| `tests/research-desk.test.js` | 正しい経緯と資料状態を検証 |
+| `tests/research-desk-browser.py` | 7段階・一般／開発者の導線を検証 |
+| `tests/tree.test.js`, `tests/mind-map.test.js`, `tests/tree-integration.py` | 全32例と追加仮説を含む構造の検証 |
+| `tests/ai-browser.py` | 有料APIを使わないローカルエラー表示にも対応 |
+| `README.md`, `docs/LOCAL-REVIEW.md`（新規） | 起動、実装内容、確認結果、未解決事項 |

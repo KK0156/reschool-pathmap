@@ -1,0 +1,99 @@
+/* Keep the noticeboard, give the reading and working surfaces more room. */
+.desk-site .research-desk {padding-top:16px}
+.desk-site .desk-masthead {min-height:84px;border-width:4px;padding:17px 25px}
+.desk-site .desk-nav {margin-block:14px;gap:9px}
+.desk-site .desk-nav a {min-height:58px;padding:10px 14px;box-shadow:0 1px 0 #d9cfba}
+.desk-site .desk-main {border-width:6px;padding:28px;background-color:#e0cfb4;background-image:linear-gradient(#efe4d3b8,#efe4d3b8),url('/src/cork-texture.svg');box-shadow:inset 0 0 0 1px #80654555}
+.desk-site .desk-cover {min-height:0;padding-block:25px;box-shadow:0 2px 3px #60492f19}
+.desk-site .cover-paper h1 {font-size:clamp(40px,4.7vw,60px);margin-block:15px}
+.desk-site .cover-intro {font-size:17px;color:#465651;line-height:1.9;max-width:650px}
+.desk-site .cover-paper .desk-actions {margin:23px 0 18px;gap:14px 22px}
+.desk-site .cover-paper .desk-button {font-size:17px;padding:15px 26px;font-weight:600;min-height:52px}
+.desk-site .home-steps {list-style:none;counter-reset:steps;display:flex;gap:12px;flex-wrap:wrap;padding:0;margin:20px 0;color:#465651}
+.desk-site .home-steps li {counter-increment:steps;font-size:13px;line-height:1.8}
+.desk-site .home-steps li:before {content:counter(steps);display:inline-grid;place-items:center;width:23px;height:23px;margin-right:6px;border:1px solid #aebba0;border-radius:50%;background:#edf1e4;color:#344a40}
+.desk-site .cover-scraps {gap:16px;max-width:250px;justify-self:center}
+.desk-site .cover-scraps .sticky {transform:none;box-shadow:0 2px 3px #60492f19}
+.desk-site .paper-card,.desk-site .desk-page-head,.desk-site .note-prose,.desk-site .case-controls,.desk-site .section-label {box-shadow:0 2px 3px #60492f17}
+.desk-site .paper-card p,.desk-site .paper-card dd,.desk-site .note-prose p,.desk-site .note-prose li,.desk-site .desk-page-head p {font-size:16px;line-height:1.95}
+.desk-site .paper-card>.desk-kicker {font-size:12px}
+.desk-site .desk-page-head {padding:27px 30px;margin-bottom:27px}
+.desk-site .desk-page-head h1 {font-size:clamp(29px,3vw,40px);margin-block:12px}
+.desk-site .desk-page-head h1:after {display:none}
+.desk-site .research-timeline .paper-card {padding-top:28px}
+.desk-site .research-timeline .desk-small {font-size:13px;line-height:1.9}
+.desk-site .research-boundary {border-left:3px solid #9c8a60;background:#f6efdf;padding:15px 18px}
+.desk-site .interview-followup {max-width:1080px;margin-block:30px}
+.desk-site .interview-followup li {font-size:15px;line-height:1.9;color:#465651;margin:10px 0}
+.desk-site .tree-feature .tree-guide {box-shadow:none;margin-bottom:0;padding:15px 20px}
+.desk-site .tree-feature .consultation {padding:23px 26px;margin-top:22px}
+.desk-site .tree-feature .consultation>h2 {font-size:23px}
+.desk-site .tree-help,.desk-site .desk-sample-drawer {border:1px solid #d9ccb5;background:#f8f5ea;padding:0 16px;margin-top:20px}
+.desk-site .tree-feature .sample-audience {padding:10px 0 22px}
+.desk-site .tree-feature .sample-audience h3 {font-family:inherit;font-size:18px;border-bottom:1px solid #d9ccb5;padding-bottom:12px}
+.desk-site .tree-feature .sample-audience>p {font-size:14px}
+.desk-site .seed-notes {padding:18px 22px;margin-bottom:24px;box-shadow:none}
+.desk-site .seed-notes h2 {font-size:16px;margin-bottom:14px}
+.desk-site .seed-notes button {font-size:14px;min-height:46px}
+.desk-site .tree-feature .mind-tree {padding:24px 16px;box-shadow:0 2px 3px #60492f17}
+.desk-site .tree-feature .tree-board {padding:16px 10px;border:0;background:#faf8f2}
+.desk-site .tree-feature .mind-map-viewport {border-width:5px}
+.desk-site .tree-feature .mind-map-stage .mind-map-node.type-hypothesis {background:#eee4f1;border-color:#ac9ab0}
+.desk-site .tree-feature .mind-map-stage .mind-map-node.type-hypothesis .node-type {color:#54485b}
+.desk-site .tree-feature .type-hypothesis .node-type {border-bottom-color:#8f7a95}
+.desk-site .tree-feature .map-mode button,.desk-site .tree-feature .map-zoom button,.desk-site .tree-feature .canvas-tools button {font-size:13px;min-height:44px}
+.desk-site .tree-feature .canvas-expanded .map-instructions {max-height:65px;overflow:auto}
+.desk-site .tree-feature .node-detail {margin-top:10px}
+.desk-site .tree-feature .node-detail dd {font-size:15px}
+.desk-site .tree-feature .tree-file-tools {padding:18px;background:#f7f3e7;border:1px solid #d9ccb5;margin:20px 0}
+.desk-site .tree-feature .file-actions {display:flex;gap:10px;flex-wrap:wrap}
+.tree-feature .tree-file-tools .file-actions button,.tree-feature .file-picker {font:inherit;font-size:14px;line-height:1.8;min-height:46px;padding:10px 15px;border:1px solid #a7b699;color:#17283c;background:#f5f5e9;border-radius:0}
+.tree-feature .file-picker {position:relative;display:inline-flex;align-items:center;cursor:pointer}
+.tree-feature .file-picker input {position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
+.tree-feature .file-picker:focus-within {outline:3px solid #627a69;outline-offset:3px}
+.tree-feature .tree-file-tools>p {font-size:13px;line-height:1.85}
+.tree-feature #file-status:not(:empty) {border-left:3px solid #627a69;padding:12px;background:#eaf0e2;color:#344a40;overflow-wrap:anywhere}
+.tree-feature button:disabled {cursor:default}
+@media(max-width:1150px){
+ .desk-site .desk-main {padding:23px;border-width:5px}
+ .desk-site .desk-cover {grid-template-columns:16px minmax(0,1fr) 180px;gap:18px}
+ .desk-site .cover-paper h1 {font-size:49px}
+ .desk-site .cover-scraps {max-width:180px}
+ .desk-site .cover-scraps .sticky p {font-size:15px}
+}
+@media(max-width:760px){
+ .desk-site .desk-masthead {min-height:82px;padding:15px 14px;border-width:4px}
+ .desk-site .desk-main {margin-inline:10px;padding:20px 10px;border-width:4px}
+ .desk-site .desk-nav a {min-height:62px;padding:9px 10px}
+ .desk-site .desk-cover {grid-template-columns:minmax(0,1fr);padding:23px 20px;gap:12px}
+ .desk-site .notebook-spine {display:none}
+ .desk-site .cover-paper h1 {font-size:43px}
+ .desk-site .cover-intro {font-size:16px}
+ .desk-site .cover-paper .desk-actions {align-items:stretch;gap:12px}
+ .desk-site .cover-paper .desk-button {justify-content:center;font-size:16px;padding:14px 16px}
+ .desk-site .home-steps {display:block;margin:18px 0}
+ .desk-site .home-steps li {margin:9px 0}
+ .desk-site .cover-scraps {display:none}
+ .desk-site .paper-card p,.desk-site .paper-card dd,.desk-site .note-prose p,.desk-site .note-prose li,.desk-site .desk-page-head p {font-size:15px}
+ .desk-site .desk-page-head {padding:25px 20px;margin-bottom:23px}
+ .desk-site .desk-page-head h1 {font-size:28px}
+ .desk-site .tree-feature .consultation {padding:22px 17px}
+ .desk-site .seed-notes {padding:18px}
+ .desk-site .seed-notes>div {gap:8px}
+ .desk-site .seed-notes button {font-size:13px}
+ .desk-site .tree-feature .mind-tree {padding:22px 6px}
+ .desk-site .tree-feature .tree-board {padding:15px 0}
+ .desk-site .tree-feature .mind-map-viewport {border-width:4px;min-height:400px}
+ .desk-site .tree-feature .canvas-expanded {padding:8px;border-width:3px}
+ .desk-site .tree-feature .canvas-expanded .mind-map-viewport {min-height:100px;height:auto}
+ .desk-site .tree-feature .canvas-expanded .map-mode button,.desk-site .tree-feature .canvas-expanded .map-zoom button,.desk-site .tree-feature .canvas-expanded .canvas-tools button {font-size:11px;padding:8px}
+ .desk-site .tree-feature .canvas-expanded .canvas-tools {gap:5px}
+ .desk-site .tree-feature .canvas-expanded .map-instructions {max-height:45px;line-height:1.5;font-size:11px!important}
+ .desk-site .tree-feature .tree-file-tools {padding:16px}
+ .desk-site .tree-feature .file-actions {flex-direction:column}
+ .desk-site .tree-feature .file-actions button,.desk-site .tree-feature .file-picker {width:100%;justify-content:center}
+ .desk-site .research-summary dl {display:block}
+ .desk-site .tree-feature .sample-option {padding:17px 14px}
+ .desk-site .tree-feature .sample-option>div {display:flex;flex-direction:column;align-items:start}
+}
+@media(max-width:760px){.desk-site .cover-paper h1{font-size:clamp(32px,9.5vw,43px)}}

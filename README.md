@@ -6,7 +6,7 @@
 - `/#/tree`：Mind Tree。自由なキャンバス、編集、任意の相談背景、今日の整理
 - `/#/cases`：Case Library。12の架空ケース／8カテゴリー、限界と開く問いを併記
 - `/#/choices`：Choice Cards。7つの検証方向、証拠・リスク・相談相手・残す選択肢
-- `/#/research`：Research Note。国際比較からRE:Treeへの10段階、弱まった6仮説、未確認事項
+- `/#/research`：Research Note。日米の教育機会・教育資源の比較からRE:Treeへの7段階、弱まった6仮説、未確認事項
 - `/#/archive`：Archive。旧試作を問いの変化として残す
 
 既存のRE:School v1は `/original.html`、Path Map試作品3号は `/reschool.html` に維持しています。Prototype 2本体とEvidence Packのファイルは未掲載で、Coming soonと表示します。試作品3号をv2と偽って掲載しません。
@@ -20,7 +20,7 @@
 
 旧Path Mapは `/reschool.html` に残っています。選択式の相談とツリー機能を切り替えられる「進路の相談」は `/reschool.html#/finder` です。元のv1は `/original.html` にあります。現在の公開トップは、上記のRE:Treeの研究机です。
 
-ツリーの共有実装は `retree-mindmap/` にまとめ、iframeを使わず新旧の画面へ直接組み込んでいます。メモ・ツリーはブラウザのメモリだけに保持します。現在の研究机では、研究ノートやケースを読みに移動しても残り、消去・再読み込みで消えます。
+ツリーの共有実装は `retree-mindmap/` にまとめ、iframeを使わず新旧の画面へ直接組み込んでいます。メモ・ツリーは通常ブラウザのメモリだけに保持します。利用者の明示操作でツリー・配置をJSONとして端末へ保存・復元できます。相談文と任意の成績欄はJSONに含みません。現在の研究机では、研究ノートやケースを読みに移動しても残り、消去・再読み込みで消えます。
 
 Netlify Functionsは、選択式の相談用 `path-consult` と、相談メモのツリー化用 `generate-tree` を使用します。どちらもサーバー側の `OPENAI_API_KEY` を使います。API未設定でもツリー機能は、サンプルだと明示して操作できます。
 
@@ -118,7 +118,7 @@ Netlifyの **Project configuration → Environment variables → Add a variable*
 - [OpenAI Responses API / Structured Outputs](https://developers.openai.com/api/docs/guides/structured-outputs)
 - [store:falseとResponses API](https://developers.openai.com/api/docs/guides/migrate-to-responses)
 
-相談メモには28種類の異なるツリー例があります（進路10件・学校での活動6件・研究や制作12件）。すべて送信せず閲覧でき、表示中のツリーの近くから別の例へ切り替えられます。各例は架空の資料で、実際の相談の分析結果ではありません。
+相談メモには32種類の異なるツリー例があります。一般の生徒向けの相談例と、開発者の研究デモを分けています。すべて送信せず閲覧でき、表示中のツリーの近くから別の例へ切り替えられます。各例は架空の資料で、実際の相談の分析結果ではありません。
 
 ツリーの詳細から見出し・種類・つなぐ先・内容・証拠・リスク・次の行動を書き直し、枝の追加・削除・直前の変更の取り消しができます。編集はメモリ内だけで、サンプルデータは変更しません。相談メモには成績の目安、得意・苦手科目、興味・経験、希望条件、気になることを任意で加えられます。未記入欄は送信せず、送信前にメモと任意欄の全文を確認できます。合計3000文字以内です。編集・任意欄とも保存はせず、再読み込みで消えます。成績は能力や合格可能性の判定には使いません。
 
@@ -129,3 +129,7 @@ Netlifyの **Project configuration → Environment variables → Add a variable*
 学校の掲示板の雰囲気を `src/school-desk.css` で加えています。コルクはローカルの `src/cork-texture.svg`、木枠・画びょう・紙の折り返し・ノート罫線はCSS、鉛筆風の線はSVGで表現しています。本文の読みやすさとフォーカス、ドラッグ・ズームを維持し、参照写真や外部フォントの読み込みは追加していません。
 
 全ページの掲示板表現は `src/noticeboard.css` にまとめています。黒板風の共通ヘッダー、紙のナビゲーション、コルク面、白い掲示資料、研究ノートの縦の記録、アーカイブのファイルを同じルールで表示します。参考ページと取り入れた考え方は `DESIGN.md` を参照してください。
+
+## 今回のローカル検証
+
+有料APIを呼ばずに確認する場合は `PATH_MAP_OFFLINE=1 PATH_MAP_PORT=8002 npm start` を使用します。このモードではFunctionsへのローカルリクエストを503で止めます。変更内容と検証結果は [docs/LOCAL-REVIEW.md](docs/LOCAL-REVIEW.md) に記載しています。

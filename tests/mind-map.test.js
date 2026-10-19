@@ -12,7 +12,7 @@ function check(tree){
  for(const edge of map.edges){const n=map.nodes.find(n=>n.id===edge.child);assert.equal(n.parent,edge.parent);assert.ok(!/NaN|Infinity/.test(edge.path));}
  if(tree.nodes.filter(n=>n.parent===root.id).length>1){assert.ok(map.nodes.some(n=>n.side==='left'));assert.ok(map.nodes.some(n=>n.side==='right'));}
 }
-test('all 28 sample maps have two-sided branches, one connector per relationship, and no overlapping nodes',()=>samplePrompts.forEach(p=>check(p.tree)));
+test('all 32 sample maps have two-sided branches, one connector per relationship, and no overlapping nodes',()=>samplePrompts.forEach(p=>check(p.tree)));
 test('layout handles long labels, root-only trees, 40 siblings and deep branches',()=>{
  const t=structuredClone(sampleTree);t.nodes.forEach(n=>n.label='長い項目の見出し'.repeat(15));check(t);
  const root=sampleTree.nodes[0];check({...sampleTree,nodes:[root]});

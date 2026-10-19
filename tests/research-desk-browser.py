@@ -23,15 +23,15 @@ with sync_playwright() as p:
  go('archive')
  assert page.locator('.archive-item').count()==3 and page.locator('.archive-item button:disabled').count()==2
  assert page.locator('a[href="/original.html"]').count()==1 and page.locator('a[href="/reschool.html"]').count()==1
- go('research');assert page.locator('.research-timeline li').count()==10 and page.locator('.assumption-grid article').count()==6
- assert '証明したわけではありません' in page.locator('.research-honesty').inner_text()
+ go('research');assert page.locator('.research-timeline li').count()==7 and page.locator('.assumption-grid article').count()==6
+ assert '未検証' in page.locator('.research-honesty').inner_text()
  page.screenshot(path='/workspace/research-desk-note.png',full_page=True)
  go('cases');assert page.locator('.case-sheet').count()==12
  page.locator('#desk-case-category').select_option('Teacher Workload');assert page.locator('.case-sheet').count()==1
  go('choices');assert page.locator('.choice-sheet').count()==7
  page.locator('[data-choice-seed="japan-design"]').click();expect(page.locator('#memo')).to_have_value(__import__('re').compile('日本比較'))
- go('tree');page.locator('[data-seed="1"]').click();assert '日本比較' in page.locator('#memo').input_value();page.locator('#memo').fill('日本比較の問いを、高校で試す小さな研究に戻したい。')
- page.locator('#sample-without-api').click();assert page.locator('.tree-node').count()==17
+ go('tree');page.locator('[data-seed="1"]').click();assert '文系' in page.locator('#memo').input_value();page.locator('.desk-sample-drawer summary').click();page.locator('[data-prompt="24"]').click();page.locator('#memo').fill('日本比較の問いを、高校で試す小さな研究に戻したい。')
+ page.locator('#sample-without-api').click();assert page.locator('.tree-node').count()==18
  assert page.locator('.type-counterargument.tree-node').count()==1
  for title in ['今日の中心問い','残すべき選択肢','足りない証拠','相談すべき人','次の一歩']:assert title in page.locator('#today-summary').inner_text()
  assert not requests
@@ -57,5 +57,5 @@ with sync_playwright() as p:
  page.goto('http://localhost:8002/#/finder');assert page.locator('#memo').count()==1
  page.goto('http://localhost:8002/');page.locator('.skip').focus();page.keyboard.press('Enter');assert page.locator('#main').evaluate('(el)=>el===document.activeElement')
  assert not errors,errors
- print('PASS: 6 desk pages, honest archive, 10 research stages/6 assumptions, cases/choice links, sticky map/clipboard, retained edits, API fallback/mocked generation, mobile/fullscreen, CSP/keyboard, reset/no storage and route compatibility')
+ print('PASS: 6 desk pages, honest archive, 7 research stages/6 assumptions, cases/choice links, sticky map/clipboard, retained edits, API fallback/mocked generation, mobile/fullscreen, CSP/keyboard, reset/no storage and route compatibility')
  b.close()

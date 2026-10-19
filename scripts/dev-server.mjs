@@ -9,6 +9,7 @@ const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=
 http.createServer(async(req,res)=>{
  try{
   const url=new URL(req.url,'http://'+req.headers.host);
+  if(process.env.PATH_MAP_OFFLINE==='1'&&url.pathname.startsWith('/.netlify/functions/')){res.writeHead(503,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify({error:'ローカル検証中のためAIとの接続は未設定です。代わりにサンプルで確認できます。'}));return;}
   if(['/.netlify/functions/path-consult','/.netlify/functions/generate-tree'].includes(url.pathname)){
    const request=new Request(url,{method:req.method,headers:req.headers,...(req.method==='POST'?{body:Readable.toWeb(req),duplex:'half'}:{})});
    const response=await (url.pathname.endsWith('/generate-tree')?treeHandler:handler)(request);res.writeHead(response.status,Object.fromEntries(response.headers));res.end(Buffer.from(await response.arrayBuffer()));return;
