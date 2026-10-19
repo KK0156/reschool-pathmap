@@ -18,7 +18,7 @@ const context=()=>Object.fromEntries(contextFields.map(([id])=>[id,$('#context-'
 const completeMemo=()=>composeMemo($('#memo').value,context());
 const mapView=createMindMapView($('#tree-container'));
 const fileTools=document.createElement('section');fileTools.className='tree-file-tools';fileTools.setAttribute('aria-label','ツリーを端末で保存・復元');
-fileTools.innerHTML=`<div class="file-actions"><button type="button" id="start-blank-tree">自分でツリーを書き始める</button><button type="button" id="export-tree" disabled>JSONで端末に保存</button><label class="file-picker" for="import-tree">JSONから復元<input id="import-tree" type="file" accept=".json,application/json"></label></div><p>保存・復元は自分の端末内だけで行います。相談メモと成績などの任意欄はファイルに含めません。ツリーに個人情報が含まれていないか、保存前に確認してください。自動保存・サーバーへのアップロードは行いません。</p><p id="file-status" role="status"></p>`;
+fileTools.innerHTML=`<div class="file-actions"><button type="button" id="start-blank-tree">新しい図を自分で作る</button><button type="button" id="export-tree" disabled>図をファイルに保存（JSON）</button><label class="file-picker" for="import-tree">保存した図を開く<input id="import-tree" type="file" accept=".json,application/json"></label></div><p>保存・復元は自分の端末内だけで行います。相談メモと成績などの任意欄はファイルに含めません。ツリーに個人情報が含まれていないか、保存前に確認してください。自動保存・サーバーへのアップロードは行いません。</p><p id="file-status" role="status"></p>`;
 $('#mind-tree').insertBefore(fileTools,$('#tree-status'));
 
 const state={tree:null,selected:null,source:null,pending:false,revision:0,sampleIndex:defaultSample,edited:false,editing:false,undo:null};
