@@ -106,3 +106,4 @@
  .desk-site .desk-nav a {min-height:52px;font-size:15px}
  .desk-site .desk-nav small {display:none}
 }
+@media(max-width:760px){.desk-site .desk-nav{display:grid}.desk-site .desk-nav a{min-width:0}}
