@@ -6,7 +6,7 @@ import handler from '../netlify/functions/path-consult.js';
 import treeHandler from '../netlify/functions/generate-tree.js';
 import proposalHandler from '../netlify/functions/deepen-tree.js';
 const base=resolve('.');
-const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.svg':'image/svg+xml'};
+const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.svg':'image/svg+xml','.jpg':'image/jpeg','.png':'image/png','.webp':'image/webp'};
 const port=Number(process.env.PATH_MAP_PORT||process.env.PORT||8000);
 if(!Number.isInteger(port)||port<1||port>65535){console.error('ポート番号は1〜65535で指定してください。例: PATH_MAP_PORT=8003 npm start');process.exit(1);}
 const server=http.createServer(async(req,res)=>{

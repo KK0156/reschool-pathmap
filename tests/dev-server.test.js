@@ -13,6 +13,7 @@ test('local preview serves pages, blocks dotfiles/API, and explains occupied por
  const base=`http://127.0.0.1:${port}`;
  assert.equal((await fetch(base+'/')).status,200);
  assert.equal((await fetch(base+'/src/desk-app.js')).status,200);
+ const preview=await fetch(base+'/src/archive-previews/reschool-v1.jpg');assert.equal(preview.status,200);assert.equal(preview.headers.get('content-type'),'image/jpeg');
  for(const path of ['/.env','/.git/config','/src/%2esecret'])assert.equal((await fetch(base+path)).status,403);
  assert.equal((await fetch(base+'/.netlify/functions/generate-tree',{method:'POST',body:'{}'})).status,503);
  const collision=launch(port);t.after(()=>collision.kill());let error='';collision.stderr.on('data',chunk=>error+=chunk);

@@ -98,7 +98,7 @@ with sync_playwright() as p:
  assert page.locator('.app').count()==1
  assert page.evaluate('window.__nativeLocal.length + window.__nativeSession.length')==0
  page.goto('http://localhost:8002/original.html?view=%2Fgive%2Fdetails')
- page.locator('textarea').wait_for(state='hidden')
+ page.locator('textarea').wait_for(state='visible');assert page.locator('textarea').is_disabled()
  assert page.locator('textarea:enabled').count()==0
  page.locator('.back-to-pathmap').click()
  page.locator('.desk-cover h1').wait_for()

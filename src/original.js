@@ -16,16 +16,14 @@ for (const name of ['localStorage', 'sessionStorage']) {
 }
 const archiveRoot = document.querySelector('#root');
 const observer = new MutationObserver(() => {
-  // No personal/free-text entry in the archived experience either.
+  // Keep the original field layout visible, but do not accept personal/free-text entry.
   for (const field of archiveRoot.querySelectorAll('textarea, input:not([type=checkbox]):not([type=radio])')) {
     if (field.dataset.archived) continue;
     field.dataset.archived = 'true';
     field.disabled = true;
-    field.hidden = true;
-    const note = document.createElement('p');
-    note.className = 'archive-field-note';
-    note.textContent = '旧画面の記録として読むため、自由記述は入力せずにご覧ください。';
-    field.after(note);
+    field.readOnly = true;
+    field.hidden = false;
+    field.setAttribute('aria-description', '当時の画面を残すための表示専用の入力欄です。入力・保存・送信はできません。');
   }
 });
 observer.observe(archiveRoot, { childList: true, subtree: true });

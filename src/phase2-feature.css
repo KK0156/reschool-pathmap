@@ -88,3 +88,15 @@
 /* Source lists are not timeline stages: avoid inherited two-column stage grids. */
 .desk-site .research-timeline .stage-sources li{display:block;position:static;padding:0;margin:9px 0;grid-template-columns:none}
 .desk-site .research-timeline .stage-sources li span{white-space:nowrap;line-height:1.8}
+
+/* Actual old screens lead each archive entry; their styles remain on their own pages. */
+.desk-site .archive-original-preview{display:block;max-width:100%;margin:24px 0;text-decoration:none;border:1px solid #b7ad98;background:#faf8f2}
+.desk-site .archive-original-preview img{display:block;width:100%;height:auto;aspect-ratio:1280/900;object-fit:cover;border-bottom:1px solid #d9d3c5}
+.desk-site .archive-preview-label{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;padding:16px 20px;line-height:1.8;color:#17283c}
+.desk-site .archive-preview-label b{font-size:15px}
+.desk-site .archive-preview-label>span{font-size:14px;text-decoration:underline;text-underline-offset:4px}
+.desk-site .archive-original-preview:hover .archive-preview-label{background:#e8eedf}
+.desk-site .archive-research-notes{margin:20px 0;border-top:1px solid #d9d3c5;padding-top:8px}
+.desk-site .archive-research-notes summary{min-height:44px;align-content:center;font-size:14px}
+.desk-site .archive-related{margin-top:24px;border-top:1px solid #d9d3c5;padding-top:15px}
+@media(max-width:760px){.desk-site .archive-preview-label{padding:13px 15px}}
