@@ -102,7 +102,9 @@ with sync_playwright() as p:
  assert page.locator('textarea:enabled').count()==0
  page.locator('.back-to-pathmap').click()
  page.locator('.student-home-intro h1').wait_for()
- assert '進路' in page.locator('.student-home-intro h1').inner_text()
+ assert 'まだ知らない道' in page.locator('.student-home-intro h1').inner_text()
+ assert page.locator('.home-finder-start').is_visible() and page.locator('.home-finder-start').get_attribute('href')=='#/finder'
+ assert page.locator('.tree-entry-link').is_visible() and page.locator('.tree-entry-link').get_attribute('href')=='#/tree'
  page.keyboard.press('Tab')
  assert page.locator('.skip').evaluate('(el)=>el===document.activeElement')
  page.keyboard.press('Enter')

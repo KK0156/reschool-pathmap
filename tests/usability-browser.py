@@ -2,8 +2,8 @@ from browser_support import reveal, memo_entry, close_student_detail
 from pathlib import Path
 import json
 from playwright.sync_api import sync_playwright,expect
-out=Path('/workspace/reschool-phase3-review/regressions');out.mkdir(exist_ok=True)
-widths=[320,390,768,1024,1440];routes=['','tree','cases','research','archive'];report=[]
+out=Path('/workspace/reschool-phase4-review/regressions');out.mkdir(parents=True,exist_ok=True)
+widths=[320,390,768,1024,1440];routes=['','finder','tree','cases','research','archive'];report=[]
 with sync_playwright() as p:
  b=p.chromium.launch(executable_path='/usr/bin/chromium',args=['--no-sandbox'])
  page=b.new_page(viewport={'width':1440,'height':1000});errors=[];external=[]
@@ -13,17 +13,20 @@ with sync_playwright() as p:
   page.set_viewport_size({'width':width,'height':1000})
   for route in routes:
    page.goto('http://localhost:8002/#/'+route)
-   expect(page.locator('.desk-nav a[aria-current=page]')).to_have_attribute('href','#/'+route)
+   if route=='tree':
+    expect(page.locator('.tree-entry-link[aria-current=page]')).to_have_attribute('href','#/tree');assert page.locator('.desk-nav a[aria-current=page]').count()==0
+   else:expect(page.locator('.desk-nav a[aria-current=page]')).to_have_attribute('href','#/'+route)
    assert page.locator('h1').count()==1
    assert page.evaluate('document.documentElement.scrollWidth<=innerWidth'),(width,route,'page overflow')
-   nav=page.locator('.desk-nav a').all()
-   for n in nav:assert n.bounding_box()['height']>=44
+   nav=page.locator('.desk-nav a').all();assert len(nav)==5
+   assert page.locator('.desk-nav a[href="#/tree"]').count()==0
+   for n in nav+[page.locator('.tree-entry-link')]:assert n.bounding_box()['height']>=44
    # Navigation items may wrap to rows, but must not cover each other.
    boxes=[n.bounding_box() for n in nav]
    for i,a in enumerate(boxes):
     for z in boxes[i+1:]:assert a['x']+a['width']<=z['x']+1 or z['x']+z['width']<=a['x']+1 or a['y']+a['height']<=z['y']+1 or z['y']+z['height']<=a['y']+1,(width,route,'overlapping nav')
    if route=='':
-    action=page.locator('a[href*="#/tree?sample="]').first;r=action.bounding_box();assert r['y']+r['height']<=1000,(width,'primary action below first screen',r)
+    action=page.locator('.home-finder-start');expect(action).to_have_attribute('href','#/finder');r=action.bounding_box();assert r['y']+r['height']<=1000,(width,'primary action below first screen',r)
    if route=='research':
     assert '日本とアメリカ' in page.locator('.desk-page-head').inner_text()
     assert page.locator('.research-timeline > ol > li').count()==7
@@ -54,5 +57,5 @@ with sync_playwright() as p:
  assert not errors and not external,(errors,external)
  assert page.evaluate('localStorage.length+sessionStorage.length')==0
  (out/'layout-results.json').write_text(json.dumps({'screens':report,'widths':widths,'jsErrors':errors,'externalRequests':external},ensure_ascii=False,indent=2))
- print('PASS: all 5 pages at 320/390/768/1024/1440px, first-screen primary action, nonoverlapping usable nav, honest chronology, add/edit/hypothesis/move/delete/zoom/fullscreen at each width, no overflow/JS errors/external requests/storage; 30 screenshots')
+ print('PASS: all 6 pages at 320/390/768/1024/1440px, first-screen primary action, nonoverlapping usable nav, honest chronology, add/edit/hypothesis/move/delete/zoom/fullscreen at each width, no overflow/JS errors/external requests/storage; 35 screenshots')
  b.close()

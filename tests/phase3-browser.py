@@ -23,7 +23,7 @@ TOPICS = [
     '部活動と勉強を両立したい', '学校外の活動に挑戦したい',
     '自分に向いているか分からない分野がある', '二つの進路で迷っている',
 ]
-NAV = ['ホーム', '進路を考える', '事例を見る', '研究について', '開発の歴史']
+NAV = ['ホーム', '道を探す', '事例を見る', '研究について', '開発の歴史']
 DIALOG = {'accept': True}
 
 
@@ -44,11 +44,10 @@ def native_storage(page):
 
 def open_topic(page, title=TOPICS[0]):
     page.goto(BASE + '/')
-    topic = page.locator('.home-topic').filter(has_text=title).first
+    page.locator('.tree-entry-link').click()
+    topic = page.locator('.student-sample-card').filter(has_text=title).first
     expect(topic).to_be_visible()
-    if title == TOPICS[0]:
-        expect(topic).to_be_in_viewport(ratio=0.1)
-    topic.click()  # One action from Home, with no AI or intermediate memo step.
+    topic.click()  # Optional RE:Tree retains its editable examples without AI.
     expect(page.locator('.tree-node')).not_to_have_count(0)
     assert page.locator('.tree-node').count() >= 8
     expect(page.locator('#generate')).to_be_disabled()
@@ -135,11 +134,13 @@ def journey(page, engine):
     # Reading the project background must not wipe a student's accepted edits.
     page.locator('.desk-nav a[href="#/research"]').click()
     expect(page.locator('[data-research-chapter]')).to_have_count(13)
-    page.locator('.desk-nav a[href="#/tree"]').click()
+    page.locator('.tree-entry-link').click()
     expect(page.locator('[data-node=root]')).to_contain_text('授業で何を学ぶか')
     DIALOG['accept'] = False
     page.locator('.desk-nav a[href="#/"]').click()
-    page.locator('.home-topic').filter(has_text=TOPICS[1]).first.click()
+    page.locator('.tree-entry-link').click()
+    page.locator('[data-start=sample]').click()
+    page.locator('.student-sample-card').filter(has_text=TOPICS[1]).first.click()
     expect(page.locator('[data-node=root]')).to_contain_text('授業で何を学ぶか')
     expect(page.locator('.tree-node')).to_have_count(len(saved['tree']['nodes']))
     DIALOG['accept'] = True
@@ -159,11 +160,14 @@ def pages_and_examples(page, engine):
         expect(page.locator('.desk-nav a')).to_have_count(5)
         labels = [link.inner_text().strip().split('\n')[0] for link in page.locator('.desk-nav a').all()]
         assert labels == NAV, labels
-        expect(page.locator('.home-topic')).to_have_count(8)
+        expect(page.locator('.home-topic')).to_have_count(6)
+        expect(page.locator('.home-route-demo')).to_have_count(4)
+        expect(page.locator('.home-finder-start')).to_be_in_viewport(ratio=0.1)
         assert 'ROOTS' not in page.locator('main').inner_text()
         overflow(page, (engine, width, 'home'))
         page.screenshot(path=str(OUTPUT / f'{engine}-{width}-home.png'))
-        page.locator('.home-topic').filter(has_text=TOPICS[0]).first.click()
+        page.locator('.tree-entry-link').click()
+        page.locator('.student-sample-card').filter(has_text=TOPICS[0]).first.click()
         expect(page.locator('.tree-node')).not_to_have_count(0)
         overflow(page, (engine, width, 'tree'))
         viewport = page.locator('.mind-map-viewport')
@@ -238,7 +242,7 @@ def pages_and_examples(page, engine):
 
 
 def aliases_and_archives(page, engine):
-    for old, current in [('finder', 'tree'), ('paths', 'tree'), ('choices', 'research'), ('dashboard', 'archive')]:
+    for old, current in [('finder', 'finder'), ('paths', 'finder'), ('choices', 'research'), ('dashboard', 'archive')]:
         page.goto(BASE + '/#/' + old)
         expect(page.locator('.desk-nav a[aria-current=page]')).to_have_attribute('href', '#/' + current)
         assert page.locator('h1:visible').count() == 1
@@ -262,10 +266,15 @@ def keyboard_review(page):
     found = False
     for _ in range(20):
         page.keyboard.press('Tab')
-        if page.evaluate('document.activeElement.matches(".home-topic")'):
+        if page.evaluate('document.activeElement.matches(".home-finder-start")'):
             found = True
             break
-    assert found, 'A consultation example must be keyboard reachable after the skip link.'
+    assert found, 'Route discovery must be keyboard reachable after the skip link.'
+    page.keyboard.press('Enter')
+    expect(page.locator('[data-rd-step="1"]')).to_be_visible()
+    page.locator('.tree-entry-link').focus()
+    page.keyboard.press('Enter')
+    page.locator('.student-sample-card').first.focus()
     page.keyboard.press('Enter')
     expect(page.locator('.tree-node')).not_to_have_count(0)
     page.locator('[data-node=root]').focus()
@@ -364,4 +373,4 @@ with sync_playwright() as playwright:
         (OUTPUT / f'{engine}-phase3-audit.json').write_text(json.dumps(review, ensure_ascii=False, indent=2))
         context.close()
         browser.close()
-        print(f'PASS {engine}: one-click general sample → edit/add/delete/undo → next action → JSON/reload/restore, 8 entrances, cases→tree, 13 research chapters, visible archive notes, five widths, retained pages, no AI POST/storage/errors.')
+        print(f'PASS {engine}: optional RE:Tree → general sample → edit/add/delete/undo → next action → JSON/reload/restore, 8 retained examples, cases→tree, 13 research chapters, visible archive notes, five widths, discovery keyboard entry, retained pages, no AI POST/storage/errors.')

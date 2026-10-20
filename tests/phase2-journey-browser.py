@@ -2,7 +2,7 @@ from browser_support import reveal, memo_entry, close_student_detail
 from pathlib import Path
 import json,subprocess,re
 from playwright.sync_api import sync_playwright,expect
-out=Path('/workspace/reschool-phase3-review/regressions');out.mkdir(parents=True,exist_ok=True)
+out=Path('/workspace/reschool-phase4-review/regressions');out.mkdir(parents=True,exist_ok=True)
 featured=json.loads(subprocess.check_output(['node','--input-type=module','-e',"import {studentSamples,featuredSampleIds} from './src/student-data.js';console.log(JSON.stringify(studentSamples.find(s=>s.id===featuredSampleIds[0])))"],text=True))
 with sync_playwright() as p:
  for engine in ['chromium','webkit']:
@@ -11,7 +11,7 @@ with sync_playwright() as p:
   b=p.chromium.launch(executable_path='/usr/bin/chromium',args=['--no-sandbox']) if engine=='chromium' else p.webkit.launch(executable_path='/workspace/webkit-runtime/run-webkit.sh')
   ctx=b.new_context(viewport={'width':1024,'height':1000},accept_downloads=True,reduced_motion='reduce');page=ctx.new_page();errors=[];sent=[];decision={'accept':True};page.on('pageerror',lambda e:errors.append(str(e)));page.on('dialog',lambda d:d.accept() if decision['accept'] else d.dismiss())
   page.on('request',lambda r:sent.append(r.url) if r.method=='POST' else None)
-  page.goto('http://localhost:8002/');page.locator(f'a[href="#/tree?sample={featured["id"]}"]').first.click()
+  page.goto('http://localhost:8002/');page.locator('.tree-entry-link').click();expect(page.locator('.tree-entry-link')).to_have_attribute('aria-current','page');page.locator(f'[data-student-sample="{featured["id"]}"]').click()
   expect(page.locator('.tree-node')).to_have_count(len(featured['tree']['nodes']))
   expect(page.locator('#generate')).to_be_disabled();expect(page.locator('#ai-availability')).to_contain_text(re.compile('未設定|未接続'))
   page.locator('[data-node=root]').focus();page.keyboard.press('Enter');page.locator('[data-edit-start]').click();page.locator('#edit-label').fill('文理を決める前に、授業を比べたい');page.locator('#node-edit-form button[type=submit]').click()
@@ -53,5 +53,5 @@ with sync_playwright() as p:
   assert page.locator('#memo').input_value()=='ここに書いた相談は残す' and page.locator('.tree-node').count()==1
   assert not sent and not errors,(sent,errors)
   assert page.evaluate('localStorage.length+sessionStorage.length')==0
-  print('PASS '+engine+': Home→sample→edit→branch→reflection→concrete next step→JSON→reload→restore exact origins/positions→edit→print/PDF, unavailable AI disabled, zero POST/storage')
+  print('PASS '+engine+': Home→optional Tree→sample→edit→branch→reflection→concrete next step→JSON→reload→restore exact origins/positions→edit→print/PDF, unavailable AI disabled, zero POST/storage')
   b.close()

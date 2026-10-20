@@ -1,0 +1,37 @@
+/* Discovery leads; the notebook remains an optional place to arrange ideas. */
+.phase4-site .desk-secondary-nav{display:flex;justify-content:flex-end;align-items:center;gap:12px;margin:0 40px 18px;font-size:14px;flex-wrap:wrap}
+.phase4-site .desk-secondary-nav p{margin:0;font-size:13px}
+.phase4-site .tree-entry-link{padding:8px 0;min-height:44px;display:inline-flex;align-items:center}
+.phase4-site .tree-entry-link[aria-current=page]{font-weight:700;text-decoration-thickness:2px}
+.phase4-site .finder-home-intro{padding:30px 35px}
+.phase4-site .finder-home-intro h1{font-size:clamp(30px,4vw,46px);margin:14px 0 18px;line-height:1.6}
+.phase4-site .finder-home-actions{display:flex;gap:18px 24px;align-items:center;flex-wrap:wrap;margin:24px 0 16px}
+.phase4-site .finder-home-actions a{min-height:44px;display:inline-flex;align-items:center}
+.phase4-site .home-finder-start{padding:14px 24px;background:#344d42;color:#fffdf7;text-decoration:none;border:1px solid #344d42;font-weight:600}
+.phase4-site .finder-topic-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+.phase4-site .home-discovery-topic{min-height:142px}
+.phase4-site .home-route-demos{margin:32px 0}
+.phase4-site .home-demo-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
+.phase4-site .home-route-demo{display:flex;flex-direction:column;gap:8px;text-decoration:none;padding:23px}
+.phase4-site .home-route-demo h3{margin:4px 0;font-size:21px}
+.phase4-site .home-route-demo p{margin:0 0 12px;font-size:15px;flex:1}
+.phase4-site .home-route-demo:hover{border-color:#627a69;background:#f5f6ed}
+.phase4-site .home-tree-option{display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center;margin:30px 0}
+.phase4-site .home-tree-option h2{font-size:25px;margin:8px 0}
+.phase4-site .home-tree-option p{margin:10px 0}
+.phase4-site .tree-finder-return{margin:0 0 22px;font-size:15px}
+@media(max-width:760px){
+ .phase4-site .desk-secondary-nav{margin:0 16px 14px;gap:0 12px;justify-content:flex-start}
+ .phase4-site .desk-secondary-nav p{font-size:12px}
+ .phase4-site .finder-home-intro{padding:22px}
+ .phase4-site .finder-home-intro h1{font-size:clamp(26px,7.2vw,32px);letter-spacing:.02em}
+ .phase4-site .finder-home-intro .desk-kicker{font-size:11px}
+ .phase4-site .finder-home-intro .home-introduction{font-size:16px}
+ .phase4-site .finder-home-actions{gap:15px;margin-top:20px}
+ .phase4-site .finder-home-actions .home-finder-start{width:100%;justify-content:center}
+ .phase4-site .finder-topic-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .phase4-site .home-discovery-topic{padding:15px;min-height:150px}
+ .phase4-site .home-discovery-topic h3{font-size:16px}
+ .phase4-site .home-demo-grid{grid-template-columns:1fr}
+ .phase4-site .home-tree-option{grid-template-columns:1fr;gap:10px;padding:22px}
+}

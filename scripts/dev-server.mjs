@@ -5,6 +5,7 @@ import {resolve,extname} from 'node:path';
 import handler from '../netlify/functions/path-consult.js';
 import treeHandler from '../netlify/functions/generate-tree.js';
 import proposalHandler from '../netlify/functions/deepen-tree.js';
+import discoveryHandler from '../netlify/functions/discover-routes.js';
 const base=resolve('.');
 const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.svg':'image/svg+xml','.jpg':'image/jpeg','.png':'image/png','.webp':'image/webp'};
 const port=Number(process.env.PATH_MAP_PORT||process.env.PORT||8000);
@@ -13,9 +14,9 @@ const server=http.createServer(async(req,res)=>{
  try{
   const url=new URL(req.url,'http://'+req.headers.host);
   if(process.env.PATH_MAP_OFFLINE==='1'&&url.pathname.startsWith('/.netlify/functions/')){res.writeHead(req.method==='GET'?200:503,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify(req.method==='GET'?{configured:false}:{error:'ローカル検証中のためAIとの接続は未設定です。代わりにサンプルで確認できます。'}));return;}
-  if(['/.netlify/functions/path-consult','/.netlify/functions/generate-tree','/.netlify/functions/deepen-tree'].includes(url.pathname)){
+  if(['/.netlify/functions/path-consult','/.netlify/functions/generate-tree','/.netlify/functions/deepen-tree','/.netlify/functions/discover-routes'].includes(url.pathname)){
    const request=new Request(url,{method:req.method,headers:req.headers,...(req.method==='POST'?{body:Readable.toWeb(req),duplex:'half'}:{})});
-   const response=await (url.pathname.endsWith('/generate-tree')?treeHandler:url.pathname.endsWith('/deepen-tree')?proposalHandler:handler)(request);res.writeHead(response.status,Object.fromEntries(response.headers));res.end(Buffer.from(await response.arrayBuffer()));return;
+   const response=await (url.pathname.endsWith('/generate-tree')?treeHandler:url.pathname.endsWith('/deepen-tree')?proposalHandler:url.pathname.endsWith('/discover-routes')?discoveryHandler:handler)(request);res.writeHead(response.status,Object.fromEntries(response.headers));res.end(Buffer.from(await response.arrayBuffer()));return;
   }
   const decoded=decodeURIComponent(url.pathname);
   if(decoded.split('/').some(part=>part.startsWith('.'))){res.writeHead(403);res.end('Forbidden');return;}

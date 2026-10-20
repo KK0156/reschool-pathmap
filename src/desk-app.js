@@ -1,47 +1,56 @@
 import {samplePrompts} from '../retree-mindmap/src/sample-tree.js';
-import {mountTree} from '../retree-mindmap/src/app.js?v=phase3-01';
+import {mountTree} from '../retree-mindmap/src/app.js?v=phase4-01';
 import {studentTreeFeatureView} from '../retree-mindmap/src/feature-view.js?v=phase3-01';
 import {escapeHtml as esc} from '../retree-mindmap/src/tree-renderer.js';
 import {researchStages,researchEvidenceLabels,interviewFollowUp,assumptions} from './research-data.js';
-import {studentSamples,featuredSampleIds,studentCases,studentCaseCategories,legacySampleAudit} from './student-data.js';
+import {studentSamples,studentCases,studentCaseCategories,legacySampleAudit} from './student-data.js';
 import {researchChapters,reportSummary,schoolResearchDirections} from './research-report.js';
+import {discoveryTopics} from './route-model.js';
+import {routeDemos} from './route-demos.js';
+import {mountRouteDiscovery} from './route-discovery.js';
 
 const root = document.querySelector('#root');
 const nav = [
   ['/', 'ホーム', 'はじめに'],
-  ['/tree', '進路を考える', 'RE:Path Finder / Mind Tree'],
+  ['/finder', '道を探す', 'RE:Path Finder'],
   ['/cases', '事例を見る', '架空の高校生の相談例'],
   ['/research', '研究について', 'RE:School Research'],
   ['/archive', '開発の歴史', '以前の試作品と記録']
 ];
-const featured = featuredSampleIds.map(id => studentSamples.find(sample => sample.id === id)).filter(Boolean);
 const openChapters = new Set();
 const developerSampleIndices = new Set(legacySampleAudit.filter(item => item.placement === 'developer-archive').map(item => item.index));
 let treeElement = null;
+let finderElement = null;
+let finderAPI = null;
 let caseFilter = 'すべて';
 let developerTree = false;
 const field = (title, value) => '<div><dt>' + esc(title) + '</dt><dd>' + esc(value) + '</dd></div>';
 const list = items => '<ul>' + items.map(item => '<li>' + esc(item) + '</li>').join('') + '</ul>';
 const link = (path, label, className = 'desk-link') => '<a class="' + className + '" href="#' + esc(path) + '">' + esc(label) + '</a>';
 const head = (label, title, text) => '<header class="desk-page-head"><span class="desk-kicker">' + esc(label) + '</span><h1>' + esc(title) + '</h1><p>' + esc(text) + '</p></header>';
-const sampleLink = sample => '/tree?sample=' + encodeURIComponent(sample.id);
 
 function home() {
-  return '<section class="student-home-intro paper-card"><p class="desk-kicker">高校生向けの研究プロトタイプ</p>' +
-    '<h1>進路、どう考えよう。</h1>' +
-    '<p class="home-introduction">進路や学校外の活動を、例の図から考えられます。気になる枝を読んで、自分の言葉に書き換えてみてください。</p>' +
-    '</section>' +
-    '<section class="home-samples" aria-labelledby="home-samples-title"><div class="home-section-title"><h2 id="home-samples-title">いま、気になっていることは？</h2><p>押すと、編集できる例のツリーが開きます。入力・AIへの送信は不要です。</p></div>' +
-    '<div class="home-topic-grid">' + featured.map((sample, index) => '<a class="home-topic" data-student-sample="' + esc(sample.id) + '" href="#' + sampleLink(sample) + '"><span class="topic-number">' + String(index + 1).padStart(2, '0') + '</span><h3>' + esc(sample.label) + '</h3><span class="topic-open">例のツリーを開く →</span></a>').join('') + '</div>' +
-    '<div class="home-write-link">' + link('/tree?start=memo', '自分の相談から始める →') + '</div><ol class="home-steps"><li>気になる例を開く</li><li>枝を読んで、自分の言葉に直す</li><li>次に調べることを残す</li></ol><p class="home-sample-note">相談例と事例はすべて架空です。AIが未接続でも、読む・編集する・JSONファイルに保存する操作を使えます。</p></section>' +
-    '<section class="home-opportunities paper-card"><div><p class="desk-kicker">進路の名前だけでなく、学び方も</p><h2>興味はあるけど、<br>学校に活動がないときは。</h2></div><div><p>先生に相談する、大学や地域の公開プログラムを調べる、参加に必要な費用や時間を比べる。まだ知らない学び方も、選択肢に加えて考えられます。</p>' +
-    link(sampleLink(featured[5]), '学校外の活動の例を開く →') + '<p class="desk-small">ここでは実在の参加先を紹介・予約しません。実際の募集条件と安全性は、学校や保護者と公式資料で確認します。</p></div></section>' +
+  const explanations = {subjects:'文系・理系に分ける前に、学ぶ内容や文理をまたぐ道を見てみる。',university:'学部の名前から、授業・進み方・必要な条件へ進んでみる。',undecided:'仕事が決まっていないところから、小さく試せることを探す。',activities:'学校にない活動を、時間・費用・相談先から考えてみる。'};
+  return '<section class="student-home-intro finder-home-intro paper-card"><p class="desk-kicker">進路と、学校内外の学びを探す研究プロトタイプ</p>' +
+    '<h1>まだ知らない道を、<br>一緒に探そう。</h1><p class="home-introduction">気になっていることを少し話して、いくつかの道を見てみる。学ぶことや必要な条件を比べながら、次に確かめたいことを探せます。</p>' +
+    '<div class="finder-home-actions">' + link('/finder', 'AIと道を探す →', 'desk-button home-finder-start') + link('/finder?demo=subjects', '入力せず、探索デモを見る →') + '</div>' +
+    '<p class="desk-small">3つの画面で簡単に相談できます。成績や詳しいプロフィールは不要です。AIが未接続でも、架空の探索デモを使えます。</p></section>' +
+    '<section class="home-samples" aria-labelledby="home-samples-title"><div class="home-section-title"><h2 id="home-samples-title">何について考えたい？</h2><p>まだ決まっていなくても、ここから始められます。</p></div><div class="home-topic-grid finder-topic-grid">' +
+    discoveryTopics.map((topic, index) => '<a class="home-topic home-discovery-topic" data-home-topic="' + esc(topic.id) + '" href="#/finder?topic=' + esc(topic.id) + '"><span class="topic-number">' + String(index + 1).padStart(2, '0') + '</span><h3>' + esc(topic.label) + '</h3><span class="topic-open">このテーマで相談する →</span></a>').join('') + '</div></section>' +
+    '<section class="home-route-demos" aria-labelledby="home-demo-title"><div class="home-section-title"><h2 id="home-demo-title">AIなしで、道の広がりを試す</h2><p>用意された架空の相談です。あなたの入力を分析した結果ではありません。</p></div><div class="home-demo-grid">' +
+    routeDemos.map(demo => '<a class="paper-card home-route-demo" data-home-demo="' + esc(demo.id) + '" href="#/finder?demo=' + esc(demo.id) + '"><span class="desk-kicker">架空の探索デモ</span><h3>' + esc(demo.title) + '</h3><p>' + esc(explanations[demo.id] || demo.summary) + '</p><span class="topic-open">いくつかの道を見てみる →</span></a>').join('') + '</div></section>' +
+    '<section class="home-tree-option paper-card"><div><p class="desk-kicker">考えを図にまとめたいときに</p><h2>RE:Treeで整理する</h2><p>見つけた道や、すでに考えていることを図にできます。探索のあとに選んだ候補を引き継ぐことも、白紙から書くこともできます。</p></div><div>' + link('/tree', 'RE:Treeを開く（任意） →') + '</div></section>' +
     '<section class="student-research-boundary paper-card"><div><h2>このサイトを作っている理由</h2><p>RE:Path Finderは、RE:Schoolの研究から生まれた試作品です。日米の教育機会の比較、過去の試作、まだ確かめていないことは、研究報告に分けて掲載しています。</p></div><div class="desk-actions">' + link('/research', 'RE:Schoolの研究報告を読む →') + link('/archive', '以前の試作品を見る →') + '</div></section>';
+}
+
+function finder() {
+  return head('RE:Path Finder', '自分にまだある道を探す', '気になった道を開くと、学ぶことや必要な条件を詳しく見られます。いくつか比べながら考えてみてください。') + '<div id="route-discovery-host"></div>';
 }
 
 function tree(params) {
   const legacy = params.has('legacy') || developerTree;
-  return head('RE:Path Finder / Mind Tree', '進路を考える', '例の図を手直しする、自分の相談を書く、白紙から始める。選択肢を比べて、次に調べることを残せます。') +
+  return head('RE:Tree / 考えを整理する道具', 'RE:Treeで整理する', '見つけた候補や、自分の考えを図にまとめられます。道を発見する相談はRE:Path Finderで始められます。') +
+    '<p class="tree-finder-return">' + link('/finder', 'RE:Path Finderで道を探す →') + '</p>' +
     (legacy ? '<p class="route-notice developer-notice" role="status">開発者の研究デモを表示しています。一般向けの進路例は「例から試す」から開けます。これらのデモは研究成果や調査結果を示すものではありません。</p>' : '') +
     '<nav class="start-methods" aria-label="相談の始め方"><button type="button" data-start="sample">例から試す</button><button type="button" data-start="memo">自分の相談を書く</button><button type="button" data-start="blank">白紙から作る</button></nav><div id="desk-tree-host"></div>';
 }
@@ -187,6 +196,39 @@ function createTree() {
   return treeElement;
 }
 
+function transferDiscovery({tree, origin, nodeOrigins}) {
+  const element = treeElement || createTree();
+  if (!element.retreeStudy.loadDiscoveryTree(tree, {origin, nodeOrigins})) return false;
+  developerTree = false;
+  history.pushState(null, '', '#/tree');
+  render(true);
+  const workspace = element.querySelector('#map-workspace');
+  workspace.focus({preventScroll: true});
+  workspace.scrollIntoView({block: 'start'});
+  return true;
+}
+
+function routeFinder(params) {
+  if (!finderElement) {
+    finderElement = document.createElement('div');
+    finderAPI = mountRouteDiscovery(finderElement, {onTransfer: transferDiscovery});
+  }
+  document.getElementById('route-discovery-host').append(finderElement);
+  const topic = params.get('topic');
+  const demo = params.get('demo');
+  const validTopic = discoveryTopics.some(item => item.id === topic);
+  const validDemo = routeDemos.some(item => item.id === demo);
+  finderAPI.open(validDemo ? {demo} : validTopic ? {topic} : {});
+  if ((topic && !validTopic) || (demo && !validDemo)) {
+    const notice = document.createElement('p');
+    notice.className = 'route-notice';
+    notice.setAttribute('role', 'status');
+    notice.textContent = '指定された相談例は見つかりませんでした。相談テーマか探索デモから選べます。';
+    document.getElementById('route-discovery-host').prepend(notice);
+  }
+  if (topic || demo) history.replaceState(null, '', '#/finder');
+}
+
 function current() {
   // The skip link can be used before the application has finished loading.
   const raw = location.hash === '#main' ? '/' : location.hash.slice(1) || '/';
@@ -195,8 +237,7 @@ function current() {
   const params = new URLSearchParams(split < 0 ? '' : raw.slice(split + 1));
   let next = path;
   let notice = '';
-  if (path === '/finder') { next = '/tree'; notice = '以前の相談ページは「進路を考える」にまとめました。'; }
-  if (path === '/paths') { next = '/tree'; notice = '以前の一覧から、相談例を開いて比較する画面へ移動しました。保存版の進路一覧は開発の歴史から開けます。'; }
+  if (path === '/paths') { next = '/finder'; notice = '進路を探す画面へ移動しました。以前の進路一覧は、開発の歴史にあるPath Map保存版から開けます。'; }
   if (path === '/choices') { next = '/research'; params.set('section', 'directions'); notice = '以前の研究テーマ比較は、RE:Schoolの研究報告内へ移しました。一般向けの進路比較とは区別しています。'; }
   if (path === '/dashboard') { next = '/archive'; notice = '以前の学校ページは、Path Map試作品3号の保存版に残しています。'; }
   if (next !== path) history.replaceState(null, '', '#' + next + (params.size ? '?' + params.toString() : ''));
@@ -258,24 +299,27 @@ function syncDeveloperNotice() {
 
 function render(focus = false) {
   const {path, params, notice} = current();
-  const content = path === '/' ? home() : path === '/tree' ? tree(params) : path === '/cases' ? cases(params) :
+  if (finderElement?.isConnected) finderAPI.pause();
+  const content = path === '/' ? home() : path === '/finder' ? finder() : path === '/tree' ? tree(params) : path === '/cases' ? cases(params) :
     path === '/research' ? research(params) : path === '/archive' ? archive() :
     head('ページの確認', 'このページは見つかりません。', 'ホームから相談例、事例、研究報告へ進めます。');
-  root.innerHTML = '<div class="research-desk"><header class="desk-masthead"><a class="desk-brand" href="#/">RE:Path Finder<span>考えを整理する Mind Tree</span></a><p>高校生向けの試作品<span>Research Prototype</span></p></header>' +
-    '<nav class="desk-nav" aria-label="メインメニュー">' + nav.map(([url, label, note]) => '<a data-nav-kind="' + (url === '/' || url === '/tree' || url === '/cases' ? 'work' : 'reference') + '" href="#' + url + '"' +
+  root.innerHTML = '<div class="research-desk"><header class="desk-masthead"><a class="desk-brand" href="#/">RE:Path Finder<span>まだ知らない道を、一緒に探す</span></a><p>高校生向けの試作品<span>Research Prototype</span></p></header>' +
+    '<nav class="desk-nav" aria-label="メインメニュー">' + nav.map(([url, label, note]) => '<a data-nav-kind="' + (url === '/' || url === '/finder' || url === '/cases' ? 'work' : 'reference') + '" href="#' + url + '"' +
       (url === path ? ' aria-current="page"' : '') + '>' + label + '<small>' + note + '</small></a>').join('') + '</nav>' +
-    '<main id="main" class="desk-main' + (path === '/tree' ? ' working-page' : '') + '" tabindex="-1">' +
+    '<div class="desk-secondary-nav"><p>考えを図にまとめたいときは</p><a class="tree-entry-link" href="#/tree"' + (path === '/tree' ? ' aria-current="page"' : '') + '>RE:Treeで整理する（任意） →</a></div>' +
+    '<main id="main" class="desk-main' + (path === '/tree' || path === '/finder' ? ' working-page' : '') + '" tabindex="-1">' +
     (notice ? '<p class="route-notice" role="status">' + esc(notice) + '</p>' : '') + content + '</main>' +
     '<footer class="desk-footer"><div><b>RE:Path Finder</b><p>選択肢を知り、比べて、次の行動へ。</p></div><div><p>研究用の試作品です。進路や適性、合格可能性を判断するものではありません。大切な判断は先生・保護者など信頼できる大人と相談してください。</p>' +
     '<p class="desk-small">自動保存はしません。必要な図はJSONファイルとして端末へ保存し、後から復元できます。名前・学校名・連絡先は不要です。AIへ送る場合は内容を確認して同意します。外部の大人への直接連絡・マッチングは行いません。</p>' +
     link('/research', '背景にあるRE:School研究を読む →') + '</div></footer></div>';
   if (path === '/tree') document.querySelector('#desk-tree-host').append(treeElement || createTree());
-  document.title = (nav.find(([url]) => url === path)?.[1] || 'ページの確認') + ' | RE:Path Finder';
+  document.title = (path === '/tree' ? 'RE:Treeで整理する' : nav.find(([url]) => url === path)?.[1] || 'ページの確認') + ' | RE:Path Finder';
   if (focus) {
     document.querySelector('#main').focus({preventScroll: true});
     window.scrollTo(0, 0);
   }
   if (path === '/tree') routeTree(params);
+  if (path === '/finder') routeFinder(params);
   if (path === '/research' && params.has('chapter')) {
     const chapter = researchChapters.find(item => item.id === params.get('chapter'));
     if (chapter) {

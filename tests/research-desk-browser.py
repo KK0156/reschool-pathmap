@@ -16,14 +16,17 @@ with sync_playwright() as p:
  page.on('pageerror',lambda e:errors.append(str(e)));page.on('dialog',lambda d:d.accept())
  page.on('request',lambda r:requests.append(r.post_data_json) if '/.netlify/functions/generate-tree' in r.url and r.method=='POST' else None)
  def go(route):
-  page.locator(f'.desk-nav a[href="#/{route}"]').click()
-  expect(page.locator(f'.desk-nav a[href="#/{route}"]')).to_have_attribute('aria-current','page')
+  entry=page.locator('.tree-entry-link') if route=='tree' else page.locator(f'.desk-nav a[href="#/{route}"]')
+  entry.click()
+  expect(entry).to_have_attribute('aria-current','page')
  page.goto('http://localhost:8002/')
  assert 'RE:Path Finder' in page.title()
  expect(page.locator('.desk-nav')).to_be_visible()
  assert page.locator('.desk-nav a').count()==5
  assert page.locator('.desk-nav a[href="#/choices"]').count()==0
- for route in ['tree','cases','research','archive']:
+ expect(page.locator('.desk-nav a[href="#/finder"]')).to_contain_text('道を探す')
+ assert page.locator('.desk-nav a[href="#/tree"]').count()==0
+ for route in ['finder','tree','cases','research','archive']:
   go(route);assert page.locator('h1').count()==1
  go('archive')
  assert page.locator('.archive-item').count()==4 and page.locator('.archive-item button:disabled').count()==2
@@ -68,7 +71,7 @@ with sync_playwright() as p:
  assert 'AIが作った地図' in page.locator('#today-summary').inner_text()
  for width in [320,390,768]:
   page.set_viewport_size({'width':width,'height':844})
-  for route in ['','tree','cases','research','archive']:
+  for route in ['','finder','tree','cases','research','archive']:
    go(route);assert page.evaluate('document.documentElement.scrollWidth<=innerWidth'),(width,route)
   go('tree');reveal(page,'[data-map-action=expand]').click()
   assert page.evaluate('document.documentElement.scrollWidth<=innerWidth');page.keyboard.press('Escape')
@@ -77,12 +80,14 @@ with sync_playwright() as p:
  assert page.evaluate('localStorage.length+sessionStorage.length')==0
  page.reload();assert page.locator('#memo').input_value()==''
  # Old public URLs still lead somewhere explicit; saved prototypes retain their routes.
- for old,target in [('finder','tree'),('choices','research'),('paths','tree'),('dashboard','archive')]:
+ for old,target in [('finder','finder'),('choices','research'),('paths','finder'),('dashboard','archive')]:
   page.goto('http://localhost:8002/#/'+old)
   expect(page.locator('.desk-nav a[aria-current=page]')).to_have_attribute('href','#/'+target)
  page.goto('http://localhost:8002/')
+ expect(page.locator('.desk-nav')).to_be_visible()
  page.locator('.skip').focus();page.keyboard.press('Enter')
- assert page.locator('#main').evaluate('(el)=>el===document.activeElement')
+ expect(page.locator('#main')).to_be_focused()
  assert not errors,errors
- print('PASS: 5 student pages, 13 report chapters/7 stages, honest 4-entry archive, public case→editable tree, retained edits, failed AI preservation and approved mocked generation, mobile/fullscreen, CSP/keyboard, no storage and old URL destinations')
+ print('PASS: 5 primary pages and optional Tree, 13 report chapters/7 stages, honest 4-entry archive, public case→editable tree, retained edits, failed AI preservation and approved mocked generation, mobile/fullscreen, CSP/keyboard, no storage and old URL destinations')
+ context.unroute_all(behavior='wait')
  b.close()

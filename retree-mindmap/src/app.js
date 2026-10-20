@@ -37,7 +37,7 @@ $('#mind-tree').insertBefore(fileTools,$('#tree-status'));
 const summaryTools=document.createElement('div');summaryTools.className='summary-tools';summaryTools.innerHTML='<button type="button" id="copy-summary" disabled>相談メモをコピー</button><p id="copy-status" role="status"></p><textarea id="copy-fallback" aria-label="コピーする相談メモ" rows="8" readonly hidden></textarea>';
 if(studentMode){const saveAgain=document.createElement('button');saveAgain.type='button';saveAgain.id='export-tree-bottom';saveAgain.disabled=true;saveAgain.textContent='図を保存して、あとで続きを開く（JSON）';summaryTools.prepend(saveAgain);saveAgain.addEventListener('click',()=>{$('#export-tree').click();$('#copy-status').textContent=$('#file-status').textContent;});}
 $('#summaries').append(summaryTools);
-const state={tree:null,selected:null,source:null,pending:false,revision:0,sampleIndex:defaultSample,edited:false,editing:false,undo:null,nodeOrigins:{},configured:false,generation:null,studentSampleId:null,memoBaseline:''};
+const state={tree:null,selected:null,source:null,pending:false,revision:0,sampleIndex:defaultSample,edited:false,editing:false,undo:null,nodeOrigins:{},configured:false,generation:null,studentSampleId:null,memoBaseline:'',discoveryOrigin:null};
 let controller=null,capabilityController=null;
 const branchHost=document.createElement('section');branchHost.className='branch-tools';branchHost.hidden=studentMode;$('#node-detail').after(branchHost);
 const branch=mountBranchConsultation(branchHost,{hideUnavailable:studentMode,getState:()=>state,isConfigured:()=>state.configured,onUnavailable:()=>{state.configured=false;updateAvailability();},onAccept:(parent,proposal)=>{const next=applyProposal(state.tree,parent,proposal);applyChange(next.tree,next.addedIds[0],true,'ai_proposal');}});
@@ -79,7 +79,7 @@ $('#tree-legend').innerHTML=Object.entries(nodeTypes).map(([type,label])=>`<span
 function display(tree,source,message){
  $('#export-tree').disabled=false;if($('#export-tree-bottom'))$('#export-tree-bottom').disabled=false;$('#copy-summary').disabled=false;$('#print-summary').disabled=false;$('#copy-status').textContent='';$('#copy-fallback').hidden=true;
  if($('#tree-example')&&source==='sample')$('#tree-example').value=String(state.sampleIndex);
- mapView.reset();state.tree=structuredClone(tree);state.source=source;state.nodeOrigins=Object.fromEntries(tree.nodes.map(n=>[n.id,source]));state.edited=false;state.editing=false;state.undo=null;state.selected=tree.nodes.find(n=>n.parent===null).id;
+ mapView.reset();state.tree=structuredClone(tree);state.source=source;state.discoveryOrigin=null;state.nodeOrigins=Object.fromEntries(tree.nodes.map(n=>[n.id,source]));state.edited=false;state.editing=false;state.undo=null;state.selected=tree.nodes.find(n=>n.parent===null).id;
  $('#tree-empty').hidden=true;$('#map-workspace').hidden=false;
  $('#tree-status').textContent=message;
  renderOverview();
@@ -90,7 +90,7 @@ function display(tree,source,message){
 }
 function renderOverview(){
  const tree=state.tree,source=state.source;
- if(studentMode){const root=tree.nodes.find(n=>n.parent===null);const choices=tree.nodes.filter(n=>n.parent===root.id&&n.type==='project');$('#tree-overview').innerHTML=`<span>${source==='sample'?'架空の相談例・自分の言葉に書き換えられます':source==='manual'?'自分で作成中':source==='imported'?'保存ファイルから復元':'AIの提案・内容は要確認'}${state.edited?' / 手直し済み':''}</span><div class="student-overview-center"><span>中心の問い</span><h3><button type="button" data-open-node="${root.id}">${escapeHtml(tree.core_question)}</button></h3></div>${choices.length?`<div class="student-main-branches" aria-label="主な選択肢。押すと内容が開きます">${choices.slice(0,6).map(n=>`<button type="button" data-open-node="${n.id}">${escapeHtml(n.label)}</button>`).join('')}</div>`:''}`;return;}
+ if(studentMode){const root=tree.nodes.find(n=>n.parent===null);const choices=tree.nodes.filter(n=>n.parent===root.id&&n.type==='project');$('#tree-overview').innerHTML=`<span>${state.discoveryOrigin==='mixed'?'固定デモとAI提案を選んで整理・内容は未確認':source==='sample'?'架空の相談例・自分の言葉に書き換えられます':source==='manual'?'自分で作成中':source==='imported'?'保存ファイルから復元':'AIの提案・内容は要確認'}${state.edited?' / 手直し済み':''}</span><div class="student-overview-center"><span>中心の問い</span><h3><button type="button" data-open-node="${root.id}">${escapeHtml(tree.core_question)}</button></h3></div>${choices.length?`<div class="student-main-branches" aria-label="主な選択肢。押すと内容が開きます">${choices.slice(0,6).map(n=>`<button type="button" data-open-node="${n.id}">${escapeHtml(n.label)}</button>`).join('')}</div>`:''}`;return;}
  $('#tree-overview').innerHTML=`<span>${state.edited?'自分で手直し済み / ':''}${source==='sample'?'サンプルツリー / 入力メモの分析結果ではありません':source==='imported'?'JSONから復元したツリー / 出典・内容は未確認':source==='manual'?'自分で書き始めたツリー / 内容は未確認':'メモをもとに生成したツリー / 内容は要確認'}</span><h3>${escapeHtml(tree.core_question)}</h3><p>${escapeHtml(tree.summary)}</p>${tree.nodes.some(n=>n.type==='project')?`<div class="option-entrances"><p>気になる選択肢を押すと、内容を読めます。</p>${tree.nodes.filter(n=>n.type==='project').slice(0,6).map(n=>`<button type="button" data-open-node="${n.id}">${escapeHtml(n.label)}</button>`).join('')}</div>`:''}`;
 }
 function renderMap(){
@@ -122,7 +122,7 @@ function renderSummaries(){
  const rootNode=t.nodes.find(n=>n.parent===null);
  const choices=nodes('project').map(n=>n.label),people=nodes('person').map(n=>n.label),missing=nodes('evidence').map(n=>`${n.label}（${n.evidence.includes('未確認')?'未確認':'出典・内容の確認が必要'}）`);
  const todayActions=[...new Set([...nodes('action').filter(n=>n.parent===rootNode.id).map(n=>n.detail),rootNode.next_action])];
- $('#today-summary').innerHTML=`<span class="clip" aria-hidden="true"></span><h2>今日の整理</h2><p class="caption">${state.source==='sample'?'架空のサンプルを整理したメモです。':state.source==='imported'?'端末から復元した地図の整理です。':state.source==='manual'?'自分で書いた地図の整理です。':'AIが作った地図を整理したメモです。'}判断や資料の検証を代わりに行うものではありません。</p><dl>${brief('今日の中心問い',[t.core_question])}${brief('残すべき選択肢',choices.slice(0,6))}${brief('足りない証拠',missing.slice(0,4))}${brief('相談すべき人',people.slice(0,4))}${brief('次の一歩',todayActions.slice(0,2))}</dl><p class="caption">重要な判断は、信頼できる大人と一緒に。名前や連絡先を交換する機能はありません。</p>`;
+ $('#today-summary').innerHTML=`<span class="clip" aria-hidden="true"></span><h2>今日の整理</h2><p class="caption">${state.discoveryOrigin==='mixed'?'架空デモとAI提案から、本人が候補を選んで整理したメモです。':state.source==='sample'?'架空のサンプルを整理したメモです。':state.source==='imported'?'端末から復元した地図の整理です。':state.source==='manual'?'自分で書いた地図の整理です。':'AIが作った地図を整理したメモです。'}判断や資料の検証を代わりに行うものではありません。</p><dl>${brief('今日の中心問い',[t.core_question])}${brief('残すべき選択肢',choices.slice(0,6))}${brief('足りない証拠',missing.slice(0,4))}${brief('相談すべき人',people.slice(0,4))}${brief('次の一歩',todayActions.slice(0,2))}</dl><p class="caption">重要な判断は、信頼できる大人と一緒に。名前や連絡先を交換する機能はありません。</p>`;
  }
 
 }
@@ -173,7 +173,7 @@ $('#memo-form').addEventListener('submit',async e=>{
 });
 function applyChange(tree,selected=state.selected,focusDetail=true,newOrigin='manual'){
  cancel();
- state.undo={tree:structuredClone(state.tree),selected:state.selected,edited:state.edited,positions:mapView.getPositions(),nodeOrigins:structuredClone(state.nodeOrigins),source:state.source};
+ state.undo={tree:structuredClone(state.tree),selected:state.selected,edited:state.edited,positions:mapView.getPositions(),nodeOrigins:structuredClone(state.nodeOrigins),source:state.source,discoveryOrigin:state.discoveryOrigin};
  for(const n of tree.nodes){const old=state.tree.nodes.find(p=>p.id===n.id);if(!old)state.nodeOrigins[n.id]=newOrigin;else if(JSON.stringify(old)!==JSON.stringify(n))state.nodeOrigins[n.id]='user_edited';}
  state.nodeOrigins=Object.fromEntries(tree.nodes.map(n=>[n.id,state.nodeOrigins[n.id]||newOrigin]));state.tree=tree;state.selected=selected;state.edited=true;state.editing=false;
  renderOverview();renderMap();renderSummaries();$('#tree-status').textContent='手直しを反映しました。保存やAIへの送信は行っていません。';if(focusDetail&&!mapView.isExpanded()){if(studentMode)openDetail();else $('#node-detail').focus({preventScroll:true});}
@@ -231,7 +231,7 @@ updateCount();
 container.addEventListener('click',e=>{const entrance=e.target.closest('[data-open-node]');if(entrance){container.querySelector(`#tree-container [data-node="${entrance.dataset.openNode}"]`)?.click();return;}if(e.target.closest('[data-show-student-examples]')){showSamples();return;}const button=e.target.closest('[data-tree-go]');if(button){const target=$('#'+button.dataset.treeGo);if(studentMode&&button.dataset.treeGo==='tree-container'){closeDetail();return;}if(studentMode&&button.dataset.treeGo==='memo')$('#consultation').open=true;target.tabIndex=target.tabIndex<0?-1:target.tabIndex;target.focus({preventScroll:true});scrollTo(target);}});
 discovery.addEventListener('click',e=>{const button=e.target.closest('[data-reflection]');if(!button)return;if(!state.tree){$('#tree-status').textContent='先に相談の図を作るか、例を開いてください。';scrollTo($('#mind-tree'));return;}if(state.editing){$('#tree-status').textContent='書き直しを反映してから追加してください。';return;}try{const next=addReflection(state.tree,state.selected,button.dataset.reflection);applyChange(next.tree,next.id,true,'reflection');}catch(error){$('#tree-status').textContent=error.message;}});
 stepForm.addEventListener('submit',e=>{e.preventDefault();try{if(!state.tree)throw new Error('先に図を作るか、例を開いてください。');if(state.editing)throw new Error('書き直しを反映してから追加してください。');const next=addNextStep(state.tree,state.tree.nodes.find(n=>n.parent===null).id,Object.fromEntries(new FormData(stepForm)));applyChange(next.tree,next.id);$('#step-error').textContent='次の一歩を図と相談メモに追加しました。';}catch(error){$('#step-error').textContent=error.message;}});
-generationReview.addEventListener('click',e=>{if(e.target.closest('[data-generation-discard]')){cancel();$('#tree-status').textContent='今の図を残しました。';}if(e.target.closest('[data-generation-accept]')&&state.generation){const tree=state.generation,previous={tree:structuredClone(state.tree),selected:state.selected,edited:state.edited,positions:mapView.getPositions(),nodeOrigins:structuredClone(state.nodeOrigins),source:state.source};cancel();display(tree,'generated','承認した新しい図に置き換えました。');state.undo=previous;renderMap();}});
+generationReview.addEventListener('click',e=>{if(e.target.closest('[data-generation-discard]')){cancel();$('#tree-status').textContent='今の図を残しました。';}if(e.target.closest('[data-generation-accept]')&&state.generation){const tree=state.generation,previous={tree:structuredClone(state.tree),selected:state.selected,edited:state.edited,positions:mapView.getPositions(),nodeOrigins:structuredClone(state.nodeOrigins),source:state.source,discoveryOrigin:state.discoveryOrigin};cancel();display(tree,'generated','承認した新しい図に置き換えました。');state.undo=previous;renderMap();}});
 function preparePrint(){printSheet.innerHTML=state.tree?printMemo(state.tree,state.source,state.nodeOrigins,$('#print-details').checked):'<h1>RE:Tree 相談メモ</h1><p>まだ図はありません。図を作ると相談メモを印刷できます。</p>';if(state.editing)printSheet.insertAdjacentHTML('afterbegin','<p>書き直し中の内容は未反映です。最後に反映した内容を印刷しています。</p>');}
 window.addEventListener('beforeprint',()=>{if(!container.isConnected)return;preparePrint();document.body.append(printSheet);document.body.classList.add('printing-tree');});
 window.addEventListener('afterprint',()=>{document.body.classList.remove('printing-tree');container.append(printSheet);});
@@ -262,10 +262,26 @@ function loadStudentSample(id){
  if((shouldConfirm()||memoNeedsConfirmation())&&!confirm('今の図と相談メモを例に置き換えますか？残す図は先にJSONで保存してください。'))return false;
  cancel();state.studentSampleId=id;state.memoBaseline=example.memo;$('#memo').value=example.memo;$('#send-consent').checked=false;updateCount();display(example.tree,'sample','架空の相談例を開きました。項目を押して、自分の言葉に変えられます。');return true;
 }
+function loadDiscoveryTree(tree,{origin,nodeOrigins}={}){
+ if(!validateTree(tree)||!['demo','ai','mixed'].includes(origin))return false;
+ if(nodeOrigins!==undefined&&(!nodeOrigins||typeof nodeOrigins!=='object'||Array.isArray(nodeOrigins)||Object.keys(nodeOrigins).length!==tree.nodes.length||tree.nodes.some(node=>!Object.hasOwn(nodeOrigins,node.id)||!['sample','generated','manual'].includes(nodeOrigins[node.id]))))return false;
+ if(origin==='mixed'&&!nodeOrigins)return false;
+ const unfinished=state.pending||state.generation||contextFields.some(([id])=>$('#context-'+id).value.trim())||[...stepForm.querySelectorAll('input')].some(input=>input.value.trim());
+ if((shouldConfirm()||memoNeedsConfirmation()||unfinished)&&!confirm('今の図と書きかけの相談メモを、探索で選んだ候補に置き換えますか？残す図は先にJSONで保存してください。'))return false;
+ cancel();state.studentSampleId=null;state.sampleIndex=defaultSample;state.memoBaseline='';$('#memo').value='';
+ for(const [id] of contextFields)$('#context-'+id).value='';
+ stepForm.reset();$('#step-error').textContent='';$('#send-consent').checked=false;updateCount();
+ display(tree,origin==='ai'?'generated':'sample','RE:Path Finderで選んだ候補と確認事項を引き継ぎました。本人の決定や確認済みの事実ではありません。');
+ state.discoveryOrigin=origin;
+ if(origin==='mixed')state.source='generated';
+ if(nodeOrigins)state.nodeOrigins=Object.fromEntries(tree.nodes.map(node=>[node.id,nodeOrigins[node.id]]));
+ renderOverview();renderMap();renderSummaries();
+ return true;
+}
 function memoNeedsConfirmation(){return $('#memo').value.trim()&&$('#memo').value!==state.memoBaseline;}
 function loadSeed(index,researchDemo=true){if(!Number.isInteger(index)||!samplePrompts[index])return false;const memo=samplePrompts[index].memo;if((shouldConfirm()||memoNeedsConfirmation())&&!confirm(researchDemo?'今の図と相談メモを、研究デモに置き換えますか？必要ならJSONで保存してください。':'今の図と相談メモを、別の相談例に置き換えますか？必要ならJSONで保存してください。'))return false;cancel();state.memoBaseline=memo;state.sampleIndex=index;state.studentSampleId=null;$('#memo').value=memo;$('#send-consent').checked=false;updateCount();display(samplePrompts[index].tree,'sample',researchDemo?'開発者の研究デモです。一般の生徒の相談例・研究の実証結果とは区別して読んでください。':'以前の試作品の一般向け相談例です。架空の例を自分の言葉に書き換えられます。');return true;}
-function undoChange(){if(!state.undo)return;cancel();const previous=state.undo;state.tree=previous.tree;state.selected=previous.selected;state.edited=previous.edited;state.nodeOrigins=previous.nodeOrigins;state.source=previous.source;state.undo=null;state.editing=false;mapView.restorePositions(previous.positions);renderOverview();renderMap();renderSummaries();$('#tree-status').textContent='直前の変更を戻しました。';notifyContentChange();}
+function undoChange(){if(!state.undo)return;cancel();const previous=state.undo;state.tree=previous.tree;state.selected=previous.selected;state.edited=previous.edited;state.nodeOrigins=previous.nodeOrigins;state.source=previous.source;state.discoveryOrigin=previous.discoveryOrigin;state.undo=null;state.editing=false;mapView.restorePositions(previous.positions);renderOverview();renderMap();renderSummaries();$('#tree-status').textContent='直前の変更を戻しました。';notifyContentChange();}
 if(studentMode){$('#workspace-undo').addEventListener('click',undoChange);container.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#node-detail').dataset.open==='true'&&!state.editing){e.preventDefault();closeDetail();}});}
-const api={loadStudentSample,loadSeed,showSamples,focusMemo,getSource:()=>({source:state.source,sampleIndex:state.sampleIndex,studentSampleId:state.studentSampleId}),startBlank:()=>startBlank(false)};container.retreeStudy=api;if(studentMode)window.retreeStudy=api;
+const api={loadStudentSample,loadSeed,loadDiscoveryTree,showSamples,focusMemo,getSource:()=>({source:state.source,sampleIndex:state.sampleIndex,studentSampleId:state.studentSampleId}),startBlank:()=>startBlank(false)};container.retreeStudy=api;if(studentMode)window.retreeStudy=api;
 return ()=>{cancel();capabilityController?.abort();branch.cancel();if(window.retreeStudy===api)delete window.retreeStudy;};
 }

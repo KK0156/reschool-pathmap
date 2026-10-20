@@ -130,7 +130,7 @@ def run_scenario(browser, engine, scenario):
             response = held_routes[0].fetch()
             held_routes[0].fulfill(response=response)
             expect(page.locator('.desk-nav')).to_be_visible()
-            expect(page.locator('.home-topic')).to_have_count(8)
+            expect(page.locator('.home-topic')).to_have_count(6)
             expect(page.locator('#app-startup')).to_have_count(0)
             assert page.evaluate('window.__rePathStartup.state') == 'ready'
         assert not page_errors, page_errors
@@ -150,7 +150,7 @@ def run_scenario(browser, engine, scenario):
         response = held_routes[0].fetch()
         held_routes[0].fulfill(response=response, headers={**response.headers, 'content-security-policy': CSP})
         expect(page.locator('.desk-nav')).to_be_visible()
-        expect(page.locator('.home-topic')).to_have_count(8)
+        expect(page.locator('.home-topic')).to_have_count(6)
         expect(page.locator('#app-startup')).to_have_count(0)
         expect(page.locator('#main')).to_be_focused()
         assert page.evaluate('window.__rePathStartup.state') == 'ready'
@@ -160,7 +160,20 @@ def run_scenario(browser, engine, scenario):
         expect(page.locator('.desk-nav')).to_be_visible()
         assert page.evaluate('window.__rePathStartup.state') == 'ready'
         expect(page.locator('#app-startup')).to_have_count(0)
-        page.locator('.home-topic').first.click()
+        expect(page.locator('.home-topic')).to_have_count(6)
+        expect(page.locator('[data-home-demo]')).to_have_count(4)
+        page.locator('.home-finder-start').click()
+        expect(page.locator('.desk-nav a[href="#/finder"]')).to_have_attribute('aria-current', 'page')
+        expect(page.locator('[data-rd-step="1"]')).to_be_visible()
+        expect(page.locator('[data-rd-action="topic"]')).to_have_count(6)
+        page.screenshot(path=str(OUTPUT / f'{engine}-normal-finder.png'))
+        # Tree editing remains available as an optional secondary tool rather
+        # than replacing the primary Path Finder consultation entrance.
+        page.locator('.tree-entry-link').click()
+        expect(page.locator('.tree-entry-link')).to_have_attribute('aria-current', 'page')
+        expect(page.locator('h1')).to_have_text('RE:Treeで整理する')
+        page.locator('[data-start="sample"]').click()
+        page.locator('[data-student-sample]').first.click()
         expect(page.locator('.tree-node')).to_have_count(15)
         expect(page.locator('#generate')).to_be_disabled()
         page.screenshot(path=str(OUTPUT / f'{engine}-normal-tree.png'))

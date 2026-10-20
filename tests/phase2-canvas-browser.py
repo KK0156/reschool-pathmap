@@ -2,7 +2,7 @@ from browser_support import reveal, memo_entry, close_student_detail
 from pathlib import Path
 import json,time
 from playwright.sync_api import sync_playwright,expect
-out=Path('/workspace/reschool-phase3-review/regressions');out.mkdir(parents=True,exist_ok=True)
+out=Path('/workspace/reschool-phase4-review/regressions');out.mkdir(parents=True,exist_ok=True)
 def node(i,parent,t='action'):
  return dict(id=i,parent=parent,label='比較して確かめる '+i,type=t,detail='架空の検証用データです。',evidence='未確認',risk='未確認',next_action='学校の先生に相談する。')
 nodes=[node('root',None,'core_question')]
@@ -71,7 +71,7 @@ with sync_playwright() as p:
  reveal(page,'[data-map-action=expand]').click();page.evaluate("location.hash='/research'")
  reveal(page,'.research-timeline');expect(page.locator('.research-timeline')).to_be_visible()
  assert not page.locator('.skip').evaluate('(el)=>el.inert')
- page.locator('.desk-nav a[href="#/tree"]').click()
+ page.locator('.tree-entry-link').click()
  assert page.locator('.canvas-expanded').count()==0 and page.locator('.tree-node').count()==1
  assert not errors and not calls,(errors,calls)
  (out/'canvas-performance.json').write_text(json.dumps({'nodes':200,'drag20stepsMs':duration,'sceneReplacements':0,'originalButtonRetained':True,'touchProtocol':'Chromium CDP, not an iPad hardware test'},indent=2))

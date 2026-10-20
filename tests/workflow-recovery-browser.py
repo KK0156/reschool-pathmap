@@ -7,7 +7,7 @@ with sync_playwright() as p:
  page.on('pageerror',lambda e:errors.append(str(e)))
  page.on('dialog',lambda d:d.accept() if decision['accept'] else d.dismiss())
  page.goto('http://localhost:8002/')
- page.locator('a[href*="#/tree?sample="]').first.click()
+ page.locator('.tree-entry-link').click();expect(page.locator('.tree-entry-link')).to_have_attribute('aria-current','page');page.locator('[data-student-sample]').first.click()
  expect(page.locator('.tree-node')).not_to_have_count(0)
  # Sample entry must reveal the map rather than scroll back to the top.
  expect(page.locator('.mind-map-viewport')).to_be_in_viewport(ratio=0.25)
