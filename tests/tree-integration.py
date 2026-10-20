@@ -1,7 +1,8 @@
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import sync_playwright,expect
+from browser_support import TreeApiMock
 with sync_playwright() as p:
  b=p.chromium.launch(executable_path='/usr/bin/chromium',args=['--no-sandbox'])
- page=b.new_page(viewport={'width':1440,'height':1100});errors=[]
+ page=b.new_page(viewport={'width':1440,'height':1100});errors=[];api=TreeApiMock(page)
  page.on('pageerror',lambda e:errors.append(str(e)))
  page.on('dialog',lambda d:d.accept())
  page.goto('http://localhost:8002/reschool.html')
@@ -11,7 +12,7 @@ with sync_playwright() as p:
  assert '/retree-mindmap' not in page.url
  assert page.locator('[data-prompt]').count()==32
  requests=[]
- page.on('request',lambda r:requests.append(r.url) if '/.netlify/functions/generate-tree' in r.url else None)
+ page.on('request',lambda r:requests.append(r.url) if '/.netlify/functions/generate-tree' in r.url and r.method=='POST' else None)
  page.locator('[data-preview="4"]').click()
  assert '文系' in page.locator('#tree-overview').inner_text()
  assert page.locator('.tree-node').count()==15
@@ -37,7 +38,7 @@ with sync_playwright() as p:
  page.locator('[data-consult-mode=tree]').click()
  assert '研究テーマ' in page.locator('#memo').input_value()
  assert page.locator('.tree-node').count()==10
- page.locator('#send-consent').check();page.locator('#generate').click()
+ expect(page.locator('#generate')).to_be_enabled();page.locator('#send-consent').check();page.locator('#generate').click()
  page.wait_for_function("() => document.querySelector('#tree-status').textContent.includes('代わりにサンプル')")
  page.screenshot(path='/workspace/reschool-tree-integrated.png',full_page=True)
  for width in [320,390,768]:

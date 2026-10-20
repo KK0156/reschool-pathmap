@@ -1,6 +1,7 @@
 from playwright.sync_api import sync_playwright, expect
 from pathlib import Path
 import json, subprocess, tomllib
+from browser_support import TreeApiMock
 sample=json.loads(subprocess.check_output(['node','--input-type=module','-e',"import {sampleTree} from './retree-mindmap/src/sample-tree.js';console.log(JSON.stringify(sampleTree))"],text=True))
 csp=tomllib.loads(Path('netlify.toml').read_text())['headers'][0]['values']['Content-Security-Policy']
 with sync_playwright() as p:
@@ -9,11 +10,12 @@ with sync_playwright() as p:
  def secure(route):
   response=route.fetch();route.fulfill(response=response,headers={**response.headers,'content-security-policy':csp})
  context.route('**/*',secure)
- page=context.new_page();errors=[];sent=[]
+ page=context.new_page();errors=[];sent=[];api=TreeApiMock(page)
  page.on('pageerror',lambda e:errors.append(str(e)))
  page.on('dialog',lambda d:d.accept())
- page.on('request',lambda r:sent.append(r) if '/generate-tree' in r.url else None)
+ page.on('request',lambda r:sent.append(r) if '/generate-tree' in r.url and r.method=='POST' else None)
  page.goto('http://localhost:8002/retree-mindmap/')
+ expect(page.locator('#generate')).to_be_enabled()
  page.locator('#generate').click();assert '書いてください' in page.locator('#memo-error').inner_text();assert not sent
  page.locator('[data-prompt="0"]').click();assert '教育に興味' in page.locator('#memo').input_value()
  page.locator('#generate').click();assert 'チェック' in page.locator('#memo-error').inner_text();assert not sent
@@ -30,9 +32,16 @@ with sync_playwright() as p:
  page.screenshot(path='/workspace/retree-desktop.png',full_page=True)
  # API rendering success is tested with a fixture, not a real paid model call.
  def generated(route):route.fulfill(status=200,content_type='application/json',body=json.dumps(sample,ensure_ascii=False))
- page.route('**/.netlify/functions/generate-tree',generated)
- page.locator('#generate').click()
- expect(page.locator('#tree-status')).to_contain_text('メモから')
+ api.post_handler=generated
+ # An existing edited map must stay unchanged until the new map is approved.
+ page.locator('[data-node=root]').click();page.locator('[data-edit-start]').click();page.locator('#edit-label').fill('手直しした中心問い');page.locator('#node-edit-form button[type=submit]').click()
+ page.locator('#generate').click();expect(page.locator('#generation-review')).to_be_visible()
+ assert '手直しした中心問い' in page.locator('[data-node=root]').inner_text()
+ page.locator('[data-generation-discard]').click();expect(page.locator('#generation-review')).to_be_hidden()
+ assert '手直しした中心問い' in page.locator('[data-node=root]').inner_text()
+ page.locator('#generate').click();expect(page.locator('#generation-review')).to_be_visible()
+ page.locator('[data-generation-accept]').click()
+ expect(page.locator('#tree-status')).to_contain_text('承認した新しい図')
  assert '生成したツリー' in page.locator('#tree-overview').inner_text()
  assert page.evaluate('localStorage.length+sessionStorage.length')==0
  page.locator('#clear-all').click();assert page.locator('#memo').input_value()=='';assert page.locator('#map-workspace').is_hidden()
@@ -46,5 +55,5 @@ with sync_playwright() as p:
   if width==390:page.screenshot(path='/workspace/retree-mobile.png',full_page=True)
  page.wait_for_load_state('networkidle');page.unroute_all(behavior='wait');context.unroute_all(behavior='wait')
  assert not errors,errors
- print('PASS: textarea, consent, real missing-key fallback, sample labels, nodes/details, summaries, mocked generation, keyboard, 320/390/768px, no storage, clear/reload, CSP')
+ print('PASS: textarea, consent, mocked capability with real offline failure, sample labels, nodes/details, summaries, mocked generation approval/rejection, keyboard, 320/390/768px, no storage, clear/reload, CSP')
  b.close()

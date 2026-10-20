@@ -1,7 +1,8 @@
 from playwright.sync_api import sync_playwright,expect
+from browser_support import TreeApiMock
 with sync_playwright() as p:
  b=p.chromium.launch(executable_path='/usr/bin/chromium',args=['--no-sandbox'])
- page=b.new_page(viewport={'width':390,'height':900});errors=[];decision={'accept':True};requests=[]
+ page=b.new_page(viewport={'width':390,'height':900});errors=[];decision={'accept':True};requests=[];api=TreeApiMock(page)
  page.on('pageerror',lambda e:errors.append(str(e)))
  page.on('dialog',lambda d:d.accept() if decision['accept'] else d.dismiss())
  page.goto('http://localhost:8002/')
@@ -16,7 +17,7 @@ with sync_playwright() as p:
  page.locator('#node-detail [data-tree-go=tree-container]').click()
  assert page.locator('[data-node=root]').get_attribute('aria-pressed')=='true'
  # Provider failure must not replace manually edited work.
- page.route('**/.netlify/functions/generate-tree',lambda r:r.fulfill(status=503,content_type='application/json',body='{"error":"接続のテスト"}'))
+ api.post_handler=lambda r:r.fulfill(status=503,content_type='application/json',body='{"error":"接続のテスト"}')
  page.locator('#send-consent').check();page.locator('#generate').click()
  expect(page.locator('#tree-status')).to_contain_text('今の図と手直しは残しています')
  assert '消したくない自分の問い' in page.locator('[data-node=root]').inner_text()

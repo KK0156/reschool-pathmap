@@ -1,5 +1,78 @@
 // Editorial research notes supplied for this prototype. No external claims are verified here.
 export const researchOrigin='日本とアメリカにおける教育機会・資金・人的資源の違い';
+export const researchEvidenceLabels={fact:'確認された事実',observation:'本人の研究・観察',hypothesis:'仮説',counterargument:'反論・別の説明',unresearched:'未調査・未確認',prototype:'試作したもの',tested:'実際に検証したこと'};
+const researchEvidence={
+ 'education-comparison':{
+  fact:'研究の出発点として、日米の教育機会・資源比較が記録されている。比較結果そのものは確認していない。',
+  observation:'本人による研究経緯の説明。使った資料、比較項目、観察の原記録は未掲載。',
+  hypothesis:'資金や人的資源へのアクセスの違いが、学習機会の違いに関係するのではないか。',
+  counterargument:'制度、地域、家庭、調査対象の違いでも説明できる可能性がある。',
+  unresearched:'比較の出典・対象・時期・定義。日米全体へ一般化できるか。',
+  prototype:'この段階の比較資料を閲覧する専用の試作品は未掲載。',
+  tested:'比較結果の再現確認や、生徒への効果を測った記録は未掲載。',
+  sources:[{label:'研究経緯の説明',path:'src/research-data.js',availability:'present'},{label:'日米比較の原資料',path:null,availability:'not_published'}]
+ },
+ 'resource-model':{
+  fact:'Money → Resource → Student Opportunityというモデルが、研究説明に記録されている。',
+  observation:'資金以外にも、人・時間・知識・経験・調整を含めるという本人の整理。',
+  hypothesis:'資源の存在だけでなく、実際に使える機会へ変わる条件が重要ではないか。',
+  counterargument:'費用や資源の不足が主な障壁で、整理や調整だけでは変わらない場合も考えられる。',
+  unresearched:'どの条件が、どの学校・生徒に影響するのか。条件同士の関係。',
+  prototype:'現在のResearch Noteでモデルと確認したい条件を図示・列挙している。',
+  tested:'モデルの説明を表示する実装はある。変換条件の因果効果は未検証。',
+  sources:[{label:'研究モデルの記述',path:'src/research-data.js',availability:'present'},{label:'モデルを裏付ける調査記録',path:null,availability:'not_published'}]
+ },
+ 'early-school':{
+  fact:'旧RE:School v1のHTMLと既存バンドルがリポジトリに残っている。',
+  observation:'卒業生や外部人材を、学校での学びに生かす初期構想として記録されている。',
+  hypothesis:'学校外の経験を読む・相談することが、新しい学習機会につながるのではないか。',
+  counterargument:'接続の数が増えても、本人の関心や参加条件が合わなければ機会にならない。',
+  unresearched:'実際の参加、安全確認、学校承認、公平な利用、調整負担。',
+  prototype:'RE:School v1。旧画面は閲覧用として保持し、回答の保存・送信は行わない。',
+  tested:'旧画面の表示・往復・保存しない動作にはブラウザテストがある。教育効果は未検証。',
+  sources:[{label:'RE:School v1の保存版',path:'/original.html',availability:'present'},{label:'旧画面のブラウザテスト',path:'tests/browser.py',availability:'present'},{label:'実際の利用・接続の記録',path:null,availability:'not_published'}]
+ },
+ 'constraints':{
+  fact:'安全・責任・同意・教員負担などが、研究上の確認項目として記録されている。',
+  observation:'既存サービスとの比較から課題を見直したという経緯の説明。比較表や観察記録は未掲載。',
+  hypothesis:'接続する仕組みだけでは、学校で使える機会への変換に足りない条件があるのではないか。',
+  counterargument:'既存の学校運用やサービスで十分に扱える学校もあり得る。負担の最大原因は未特定。',
+  unresearched:'学校ごとの手順・所要時間・既存手段との違い・負担が移る先。',
+  prototype:'安全説明、学校を通す相談手順、架空ケースを各試作品に表示。',
+  tested:'表示・操作の確認と、学校運用の有効性は別。実際の負担比較は未掲載。',
+  sources:[{label:'現時点の課題・仮説の記述',path:'src/research-data.js',availability:'present'},{label:'既存サービスの比較原表',path:null,availability:'not_published'},{label:'教員負担の観察・測定記録',path:null,availability:'not_published'}]
+ },
+ 'wider-comparison':{
+  fact:'教育研究の後に、社会全体へ比較の視野を広げた順番で経緯が記録されている。',
+  observation:'安全・秩序・信頼・開放性などを比べたという本人の研究経緯。原資料は未掲載。',
+  hypothesis:'安全や信頼を保ちながら外部と関わる条件を、学校の事例でも考えられるのではないか。',
+  counterargument:'国全体と学校では制度も対象も違う。相関を原因としたり、同じ構造と決めたりはできない。',
+  unresearched:'統計の定義・年次・出典、反対の結果、学校への適用範囲。',
+  prototype:'Research Noteに比較項目と因果関係を断定しない注意を記録。',
+  tested:'社会比較の因果推論や学校への一般化を検証した記録は未掲載。',
+  sources:[{label:'比較の広がりについての記述',path:'src/research-data.js',availability:'present'},{label:'統計・比較の原資料',path:null,availability:'not_published'}]
+ },
+ 'path-tree':{
+  fact:'Path Map試作品3号と、現在のツリー・編集・JSON保存の実装がある。',
+  observation:'接続する前に選択肢を整理する方向へ、試作を発展させた経緯。',
+  hypothesis:'選択肢・証拠・反論・次の行動を並べると、相談の準備がしやすくなるのではないか。',
+  counterargument:'紙や箇条書きで十分かもしれない。図の操作やAI出力の確認が負担になる可能性もある。',
+  unresearched:'初めて使う生徒の理解、対話の変化、先生の負担、AIを使わない方法との差。',
+  prototype:'Path Map試作品3号、RE:Tree。Prototype 2本体とEvidence Packは未掲載。',
+  tested:'入力・編集・エラー回復・保存復元の自動テストを用意。生徒・先生による効果測定とは区別する。',
+  sources:[{label:'Path Map試作品3号の保存版',path:'/reschool.html',availability:'present'},{label:'RE:Treeの実装',path:'retree-mindmap/src/',availability:'present'},{label:'自動テスト',path:'tests/',availability:'present'},{label:'Prototype 2本体・Evidence Pack',path:null,availability:'not_published'},{label:'生徒・先生による効果測定',path:null,availability:'not_verified'}]
+ },
+ 'interview-followup':{
+  fact:'研究経緯に教頭インタビューへの言及がある。実際の発言や日付は確認できない。',
+  observation:'原記録未掲載のため、本人の観察と聞き手の解釈をまだ照合できない。',
+  hypothesis:'具体的な新仮説は原記録と対応づけてから整理する。設計上の検証候補とは区別する。',
+  counterargument:'一人の見解が学校全体を代表するとは限らず、ほかの説明や立場の確認が必要。',
+  unresearched:'原記録・公開範囲・発言と仮説の対応。次の元教員インタビューが終わるまで、問題の最終特定は保留。',
+  prototype:'原記録の確認項目と、発言ではない検証候補を研究ノートに記録。',
+  tested:'インタビュー内容の照合、次の元教員インタビューの結果、仮説の検証は未確認。',
+  sources:[{label:'教頭インタビューへの言及',path:'src/research-data.js',availability:'present'},{label:'教頭インタビューの原記録',path:null,availability:'not_published'},{label:'次の元教員インタビューの結果',path:null,availability:'not_verified'}]
+ }
+};
 export const researchStages=[
  {id:'education-comparison',title:'日米の教育機会・資源の比較',question:'教育機会は、資金や人・経験へのアクセスによってどう変わるのか。',note:'RE:Schoolの研究上の出発点は、日米の教育機会・資金・人的資源の比較。日本社会全体の比較を最初の段階として扱わない。',status:'研究経緯の説明（原資料未掲載）',source:'研究経緯の説明。比較の原資料・数値・実施日は未掲載。'},
  {id:'resource-model',title:'Money → Resource → Student Opportunity',question:'お金や人的資源は、どの条件で生徒の学習機会になるのか。',note:'資金だけでなく、人・時間・知識・経験・調整を含む資源の変換を考えるモデル。資源があれば必ず機会が生まれると実証したものではない。',status:'研究モデル・解釈',source:'既存の研究説明と試作。変換条件の効果は未検証。'},
@@ -8,11 +81,13 @@ export const researchStages=[
  {id:'wider-comparison',title:'日本社会の安全・秩序・信頼・開放性へ',question:'安全や信頼を保ちながら、外部と関わる条件は何か。',note:'教育研究の後に、比較の視野を社会全体へ広げた段階として整理する。国の傾向を学校へそのまま当てはめたり、因果関係を断定したりしない。',status:'比較研究の広がり・仮説',source:'研究経緯の説明（原資料未掲載）。統計の定義・出典・比較結果は未確認。'},
  {id:'path-tree',title:'RE:Path Finder / RE:Treeへの発展',question:'見えていない選択肢を、証拠・仮説・反論・リスクと一緒に並べられるか。',note:'つながる前に考えられるよう、相談を地図にする試作へ。動く画面は確認できるが、対話が改善するかは別に検証する。',status:'実装確認・効果は未検証',source:'reschool.html、現在のキャンバスと変更履歴。Prototype 2本体は未掲載。'},
  {id:'interview-followup',title:'教頭インタビュー後の仮説・未検証事項',question:'インタビューで実際に聞けたことと、そこからの解釈をどう分けるか。',note:'研究経緯には教頭インタビューへの言及があるが、逐語録・日時・具体的な発言はリポジトリで確認できない。内容に基づく新仮説の特定は原記録の確認まで保留する。',status:'原記録未確認・整理待ち',source:'研究経緯の説明。以下の検証候補は設計上の問いであり、教頭の発言やインタビュー結果ではない。'}
-];
+].map(stage=>({...stage,evidence:researchEvidence[stage.id]}));
 export const interviewFollowUp={
  status:'教頭インタビューの原記録は未確認',
+ problemStatus:'次の元教員インタビューが終わるまで、問題の最終特定は保留します。',
+ nextInterview:'元教員への次のインタビューによる確認待ちです。日程・対象者・具体的な発言や結果は、この資料には掲載していません。',
  known:'研究経緯の説明には、教頭インタビューへの言及があります。日時、対象、具体的な発言、同意や公開範囲は、このリポジトリの資料では確認できません。',
- pending:['実際に述べられたことと、聞き手の解釈を分ける。','新しい仮説を原記録のどの箇所に対応させるかを確認する。','一校・一人の見解を、学校全体の原因に広げていないかを確認する。'],
+ pending:['次の元教員インタビュー後に、異なる立場の説明と照合して問題を見直す。','実際に述べられたことと、聞き手の解釈を分ける。','新しい仮説を原記録のどの箇所に対応させるかを確認する。','一校・一人の見解を、学校全体の原因に広げていないかを確認する。'],
  candidates:['資源が機会になるまでの、どの手順が難しいのか。','先生の事務負担、安全、責任、承認、機会の公平性をどう比較するか。','紙のメモや運用の変更でも改善できるか。AIを使わない方法と何が違うか。'],
  boundary:'「教員の事務負担が最大の原因」「AIが最適解」といった結論は、この資料からは導けません。検証候補をインタビューで得た事実として扱いません。'
 };

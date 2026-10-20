@@ -3,7 +3,7 @@ with sync_playwright() as p:
  b=p.chromium.launch(executable_path='/usr/bin/chromium',args=['--no-sandbox'])
  page=b.new_page(viewport={'width':1440,'height':1100});errors=[];requests=[]
  page.on('pageerror',lambda e:errors.append(str(e)))
- page.on('request',lambda r:requests.append(r.url) if '/.netlify/functions/generate-tree' in r.url else None)
+ page.on('request',lambda r:requests.append(r.url) if '/.netlify/functions/generate-tree' in r.url and r.method=='POST' else None)
  page.on('dialog',lambda d:d.accept())
  page.goto('http://localhost:8002/reschool.html#/finder');page.locator('[data-consult-mode=tree]').click();page.locator('[data-preview="0"]').click()
  page.locator('[data-map-action=expand]').click()

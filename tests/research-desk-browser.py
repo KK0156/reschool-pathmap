@@ -1,6 +1,7 @@
 from playwright.sync_api import sync_playwright,expect
 import tomllib,json,subprocess
 from pathlib import Path
+from browser_support import TreeApiMock
 csp=tomllib.loads(Path('netlify.toml').read_text())['headers'][0]['values']['Content-Security-Policy']
 sample=json.loads(subprocess.check_output(['node','--input-type=module','-e',"import {samplePrompts} from './retree-mindmap/src/sample-tree.js';console.log(JSON.stringify(samplePrompts[24].tree))"],text=True))
 with sync_playwright() as p:
@@ -8,9 +9,9 @@ with sync_playwright() as p:
  context=b.new_context(viewport={'width':1440,'height':1100})
  def with_csp(route):
   r=route.fetch();route.fulfill(response=r,headers={**r.headers,'content-security-policy':csp})
- context.route('**/*',with_csp);page=context.new_page();errors=[];requests=[]
+ context.route('**/*',with_csp);page=context.new_page();errors=[];requests=[];api=TreeApiMock(page)
  page.on('pageerror',lambda e:errors.append(str(e)));page.on('dialog',lambda d:d.accept())
- page.on('request',lambda r:requests.append(r.post_data_json) if '/.netlify/functions/generate-tree' in r.url else None)
+ page.on('request',lambda r:requests.append(r.post_data_json) if '/.netlify/functions/generate-tree' in r.url and r.method=='POST' else None)
  def go(route):
   page.locator(f'.desk-nav a[href="#/{route}"]').click();expect(page.locator(f'.desk-nav a[href="#/{route}"]')).to_have_attribute('aria-current','page')
  page.goto('http://localhost:8002/')
@@ -23,14 +24,14 @@ with sync_playwright() as p:
  go('archive')
  assert page.locator('.archive-item').count()==3 and page.locator('.archive-item button:disabled').count()==2
  assert page.locator('a[href="/original.html"]').count()==1 and page.locator('a[href="/reschool.html"]').count()==1
- go('research');assert page.locator('.research-timeline li').count()==7 and page.locator('.assumption-grid article').count()==6
+ go('research');assert page.locator('.research-timeline > ol > li').count()==7 and page.locator('.assumption-grid article').count()==6
  assert '未検証' in page.locator('.research-honesty').inner_text()
  page.screenshot(path='/workspace/research-desk-note.png',full_page=True)
  go('cases');assert page.locator('.case-sheet').count()==12
  page.locator('#desk-case-category').select_option('Teacher Workload');assert page.locator('.case-sheet').count()==1
  go('choices');assert page.locator('.choice-sheet').count()==7
  page.locator('[data-choice-seed="japan-design"]').click();expect(page.locator('#memo')).to_have_value(__import__('re').compile('日本比較'))
- go('tree');page.locator('[data-seed="1"]').click();assert '文系' in page.locator('#memo').input_value();page.locator('.desk-sample-drawer summary').click();page.locator('[data-prompt="24"]').click();page.locator('#memo').fill('日本比較の問いを、高校で試す小さな研究に戻したい。')
+ go('tree');page.locator('.seed-notes summary').click();page.locator('[data-seed="1"]').click();assert '文系' in page.locator('#memo').input_value();page.locator('.desk-sample-drawer summary').click();page.locator('[data-prompt="24"]').click();page.locator('#memo').fill('日本比較の問いを、高校で試す小さな研究に戻したい。')
  page.locator('#sample-without-api').click();assert page.locator('.tree-node').count()==18
  assert page.locator('.type-counterargument.tree-node').count()==1
  for title in ['今日の中心問い','残すべき選択肢','足りない証拠','相談すべき人','次の一歩']:assert title in page.locator('#today-summary').inner_text()
@@ -43,7 +44,7 @@ with sync_playwright() as p:
  assert requests and set(requests[-1])=={'memo'}
  # Mocked real-generation path includes the extended node enum and clipboard.
  def generated(route):route.fulfill(status=200,content_type='application/json',body=json.dumps(sample,ensure_ascii=False))
- page.route('**/.netlify/functions/generate-tree',generated);page.locator('#generate').click();expect(page.locator('#tree-status')).to_contain_text('生成しました');assert 'AIが作った地図' in page.locator('#today-summary').inner_text()
+ api.post_handler=generated;page.locator('#generate').click();expect(page.locator('#generation-review')).to_be_visible();assert '自分が残したい研究の問い' in page.locator('[data-node=root]').inner_text();page.locator('[data-generation-accept]').click();expect(page.locator('#tree-status')).to_contain_text('承認した新しい図');assert 'AIが作った地図' in page.locator('#today-summary').inner_text()
  page.locator('#map-workspace').screenshot(path='/workspace/research-desk-map.png')
  for width in [320,390,768]:
   page.set_viewport_size({'width':width,'height':844})

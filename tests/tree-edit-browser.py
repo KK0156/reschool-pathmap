@@ -1,4 +1,5 @@
 import json,subprocess
+from browser_support import TreeApiMock
 from playwright.sync_api import sync_playwright,expect
 sample=json.loads(subprocess.check_output(['node','--input-type=module','-e',"import {sampleTree} from './retree-mindmap/src/sample-tree.js';console.log(JSON.stringify(sampleTree))"],text=True))
 with sync_playwright() as p:
@@ -6,6 +7,7 @@ with sync_playwright() as p:
  page=b.new_page(viewport={'width':1440,'height':1000});errors=[];requests=[]
  page.on('pageerror',lambda e:errors.append(str(e)))
  page.on('dialog',lambda d:d.accept())
+ api=TreeApiMock(page)
  page.goto('http://localhost:8002/reschool.html#/finder');page.locator('[data-consult-mode=tree]').click()
  page.locator('[data-preview="0"]').click()
  page.locator('[data-node=reschool]').click();page.locator('[data-edit-start]').click()
@@ -30,14 +32,14 @@ with sync_playwright() as p:
  def respond(route):
   requests.append(route.request.post_data_json)
   route.fulfill(status=200,content_type='application/json',body=json.dumps(sample,ensure_ascii=False))
- page.route('**/.netlify/functions/generate-tree',respond)
+ api.post_handler=respond
  page.locator('#send-consent').check();page.locator('#context-grades').fill('評定3.6');assert not page.locator('#send-consent').is_checked()
  original=page.locator('#memo').input_value()
  page.locator('#memo').fill('あ'*2990);page.locator('#send-consent').check();page.locator('#generate').click()
  expect(page.locator('#memo-error')).to_contain_text('3000文字')
  assert not requests
  page.locator('#memo').fill(original);page.locator('#send-consent').check();page.locator('#generate').click()
- expect(page.locator('#tree-status')).to_contain_text('生成しました')
+ expect(page.locator('#generation-review')).to_be_visible();page.locator('[data-generation-accept]').click();expect(page.locator('#tree-status')).to_contain_text('置き換えました')
  assert len(requests)==1 and list(requests[0])==['memo']
  assert '成績の目安：評定3.6' in requests[0]['memo']
  assert requests[0]['memo']==page.locator('#send-preview-text').inner_text()

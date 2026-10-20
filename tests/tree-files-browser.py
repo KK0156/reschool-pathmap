@@ -6,7 +6,7 @@ with sync_playwright() as p:
  page=b.new_page(viewport={'width':1440,'height':1100},accept_downloads=True);errors=[];sent=[]
  decision={'accept':True}
  page.on('pageerror',lambda e:errors.append(str(e)));page.on('dialog',lambda d:d.accept() if decision['accept'] else d.dismiss())
- page.on('request',lambda r:sent.append(r.url) if '/.netlify/functions/' in r.url else None)
+ page.on('request',lambda r:sent.append(r.url) if '/.netlify/functions/' in r.url and r.method=='POST' else None)
  page.goto('http://localhost:8002/#/tree')
  assert page.locator('#export-tree').is_disabled()
  page.locator('#memo').fill('二つの選択肢を、自分の言葉で比べたい')

@@ -22,7 +22,7 @@ test('invalid memo or unconfigured API does not call OpenAI',async()=>{
  const handler=createTreeHandler({env:{},fetchImpl:()=>assert.fail('no provider call')});
  assert.equal((await handler(req(''))).status,400);assert.equal((await handler(req('x'.repeat(3001)))).status,400);
  assert.equal((await handler(req('研究テーマを整理したい。'))).status,503);
- assert.equal((await handler(new Request('https://example.netlify.app/.netlify/functions/generate-tree'))).status,405);
+ assert.deepEqual(await (await handler(new Request('https://example.netlify.app/.netlify/functions/generate-tree'))).json(),{configured:false});
 });
 test('server key stays private and store:false is set; valid structured tree is returned',async()=>{
  let posted;

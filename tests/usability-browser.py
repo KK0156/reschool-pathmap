@@ -1,7 +1,7 @@
 from pathlib import Path
 import json
 from playwright.sync_api import sync_playwright,expect
-out=Path('/workspace/reschool-pathmap-review');out.mkdir(exist_ok=True)
+out=Path('/workspace/reschool-phase2-review/after');out.mkdir(exist_ok=True)
 widths=[320,390,768,1024,1440];routes=['','tree','cases','choices','research','archive'];report=[]
 with sync_playwright() as p:
  b=p.chromium.launch(executable_path='/usr/bin/chromium',args=['--no-sandbox'])
@@ -25,10 +25,14 @@ with sync_playwright() as p:
     action=page.locator('.cover-paper a.desk-button');r=action.bounding_box();assert r['y']+r['height']<=1000,(width,'primary action below first screen',r)
    if route=='research':
     assert '日本とアメリカ' in page.locator('.research-summary').inner_text()
-    assert page.locator('.research-timeline li').count()==7
+    assert page.locator('.research-timeline > ol > li').count()==7
     assert '原記録' in page.locator('#stage-interview-followup').inner_text()
+    for badge in page.locator('.stage-sources li span').all():
+     box=badge.bounding_box();assert box['width']>=55 and box['height']<=40,(width,'source badge wraps vertically',box)
    page.screenshot(path=str(out/f'{width}-{route or "home"}.png'))
-   report.append({'width':width,'page':route or 'home','horizontalOverflow':False,'navigationUsable':True})
+   row={'width':width,'page':route or 'home','horizontalOverflow':False,'navigationUsable':True}
+   if route=='tree':row.update(memoTop=round(page.locator('#memo').bounding_box()['y']),manualTop=round(page.locator('#manual-from-memo').bounding_box()['y']),generateTop=round(page.locator('#generate').bounding_box()['y']))
+   report.append(row)
   page.goto('http://localhost:8002/#/tree')
   expect(page.locator('#memo')).to_be_visible();page.locator('#memo').fill('文系と理系、まだどちらも考えていたい。')
   page.locator('#manual-from-memo').click();expect(page.locator('.tree-node')).to_have_count(1)

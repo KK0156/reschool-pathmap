@@ -13,8 +13,9 @@ const instructions=`あなたはRE:TreeのAIです。ユーザーの曖昧な相
 文章は簡潔な日本語。labelは短く、detail/evidence/risk/next_actionはそれぞれ30〜90文字を目安にする。すべての項目を埋め、不明なら「未確認」。各選択肢の強みや関係はdetail、弱み・反証はrisk、確認する行動はnext_actionに書く。`;
 export function createTreeHandler({env=process.env,fetchImpl=fetch}={}){
  return async request=>{
-  if(request.method!=='POST')return json({error:'POSTで相談メモを送ってください。'},405);
   const origin=request.headers.get('origin');if(origin&&origin!==new URL(request.url).origin)return json({error:'このサイトから送信してください。'},403);
+  if(request.method==='GET')return json({configured:!!env.OPENAI_API_KEY?.trim()});
+  if(request.method!=='POST')return json({error:'POSTで相談メモを送ってください。'},405);
   if(!request.headers.get('content-type')?.startsWith('application/json'))return json({error:'相談メモの形式を確認してください。'},415);
   let body;try{
    if(!request.body)return json({error:'相談メモが空です。'},400);
