@@ -2,7 +2,7 @@ from browser_support import reveal, memo_entry, close_student_detail
 from pathlib import Path
 import json,subprocess,re
 from playwright.sync_api import sync_playwright,expect
-out=Path('/workspace/reschool-phase4-review/regressions');out.mkdir(parents=True,exist_ok=True)
+out=Path('/workspace/reschool-atlas-review/regressions');out.mkdir(parents=True,exist_ok=True)
 featured=json.loads(subprocess.check_output(['node','--input-type=module','-e',"import {studentSamples,featuredSampleIds} from './src/student-data.js';console.log(JSON.stringify(studentSamples.find(s=>s.id===featuredSampleIds[0])))"],text=True))
 with sync_playwright() as p:
  for engine in ['chromium','webkit']:

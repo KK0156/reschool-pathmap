@@ -162,7 +162,8 @@ def pages_and_examples(page, engine):
         assert labels == NAV, labels
         expect(page.locator('.home-topic')).to_have_count(6)
         expect(page.locator('.home-route-demo')).to_have_count(4)
-        expect(page.locator('.home-finder-start')).to_be_in_viewport(ratio=0.1)
+        expect(page.locator('.home-map-start')).to_be_in_viewport(ratio=0.1)
+        expect(page.locator('.home-map-route')).to_have_count(7)
         assert 'ROOTS' not in page.locator('main').inner_text()
         overflow(page, (engine, width, 'home'))
         page.screenshot(path=str(OUTPUT / f'{engine}-{width}-home.png'))
@@ -266,10 +267,13 @@ def keyboard_review(page):
     found = False
     for _ in range(20):
         page.keyboard.press('Tab')
-        if page.evaluate('document.activeElement.matches(".home-finder-start")'):
+        if page.evaluate('document.activeElement.matches(".home-map-start")'):
             found = True
             break
-    assert found, 'Route discovery must be keyboard reachable after the skip link.'
+    assert found, 'The whole route map must be keyboard reachable after the skip link.'
+    page.keyboard.press('Enter')
+    expect(page.locator('.atlas-card-grid').first.locator('.atlas-card')).to_have_count(7)
+    page.locator('[data-finder-mode="ai"]').focus()
     page.keyboard.press('Enter')
     expect(page.locator('[data-rd-step="1"]')).to_be_visible()
     page.locator('.tree-entry-link').focus()

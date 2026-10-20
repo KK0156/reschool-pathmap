@@ -38,6 +38,8 @@ const summaryTools=document.createElement('div');summaryTools.className='summary
 if(studentMode){const saveAgain=document.createElement('button');saveAgain.type='button';saveAgain.id='export-tree-bottom';saveAgain.disabled=true;saveAgain.textContent='図を保存して、あとで続きを開く（JSON）';summaryTools.prepend(saveAgain);saveAgain.addEventListener('click',()=>{$('#export-tree').click();$('#copy-status').textContent=$('#file-status').textContent;});}
 $('#summaries').append(summaryTools);
 const state={tree:null,selected:null,source:null,pending:false,revision:0,sampleIndex:defaultSample,edited:false,editing:false,undo:null,nodeOrigins:{},configured:false,generation:null,studentSampleId:null,memoBaseline:'',discoveryOrigin:null};
+const hasPersonalNotes=()=>Object.values(state.nodeOrigins).some(origin=>origin==='manual'||origin==='user_edited');
+const referenceLabel=()=>hasPersonalNotes()?'全体マップの一般資料と本人のメモ（内容は未確認）':nodeOriginLabels.reference;
 let controller=null,capabilityController=null;
 const branchHost=document.createElement('section');branchHost.className='branch-tools';branchHost.hidden=studentMode;$('#node-detail').after(branchHost);
 const branch=mountBranchConsultation(branchHost,{hideUnavailable:studentMode,getState:()=>state,isConfigured:()=>state.configured,onUnavailable:()=>{state.configured=false;updateAvailability();},onAccept:(parent,proposal)=>{const next=applyProposal(state.tree,parent,proposal);applyChange(next.tree,next.addedIds[0],true,'ai_proposal');}});
@@ -90,8 +92,8 @@ function display(tree,source,message){
 }
 function renderOverview(){
  const tree=state.tree,source=state.source;
- if(studentMode){const root=tree.nodes.find(n=>n.parent===null);const choices=tree.nodes.filter(n=>n.parent===root.id&&n.type==='project');$('#tree-overview').innerHTML=`<span>${state.discoveryOrigin==='mixed'?'固定デモとAI提案を選んで整理・内容は未確認':source==='sample'?'架空の相談例・自分の言葉に書き換えられます':source==='manual'?'自分で作成中':source==='imported'?'保存ファイルから復元':'AIの提案・内容は要確認'}${state.edited?' / 手直し済み':''}</span><div class="student-overview-center"><span>中心の問い</span><h3><button type="button" data-open-node="${root.id}">${escapeHtml(tree.core_question)}</button></h3></div>${choices.length?`<div class="student-main-branches" aria-label="主な選択肢。押すと内容が開きます">${choices.slice(0,6).map(n=>`<button type="button" data-open-node="${n.id}">${escapeHtml(n.label)}</button>`).join('')}</div>`:''}`;return;}
- $('#tree-overview').innerHTML=`<span>${state.edited?'自分で手直し済み / ':''}${source==='sample'?'サンプルツリー / 入力メモの分析結果ではありません':source==='imported'?'JSONから復元したツリー / 出典・内容は未確認':source==='manual'?'自分で書き始めたツリー / 内容は未確認':'メモをもとに生成したツリー / 内容は要確認'}</span><h3>${escapeHtml(tree.core_question)}</h3><p>${escapeHtml(tree.summary)}</p>${tree.nodes.some(n=>n.type==='project')?`<div class="option-entrances"><p>気になる選択肢を押すと、内容を読めます。</p>${tree.nodes.filter(n=>n.type==='project').slice(0,6).map(n=>`<button type="button" data-open-node="${n.id}">${escapeHtml(n.label)}</button>`).join('')}</div>`:''}`;
+ if(studentMode){const root=tree.nodes.find(n=>n.parent===null);const choices=tree.nodes.filter(n=>n.parent===root.id&&n.type==='project');$('#tree-overview').innerHTML=`<span>${state.discoveryOrigin==='mixed'?'固定デモとAI提案を選んで整理・内容は未確認':source==='reference'?referenceLabel():source==='sample'?'架空の相談例・自分の言葉に書き換えられます':source==='manual'?'自分で作成中':source==='imported'?'保存ファイルから復元':'AIの提案・内容は要確認'}${state.edited?' / 手直し済み':''}</span><div class="student-overview-center"><span>中心の問い</span><h3><button type="button" data-open-node="${root.id}">${escapeHtml(tree.core_question)}</button></h3></div>${choices.length?`<div class="student-main-branches" aria-label="主な選択肢。押すと内容が開きます">${choices.slice(0,6).map(n=>`<button type="button" data-open-node="${n.id}">${escapeHtml(n.label)}</button>`).join('')}</div>`:''}`;return;}
+ $('#tree-overview').innerHTML=`<span>${state.edited?'自分で手直し済み / ':''}${source==='reference'?referenceLabel():source==='sample'?'サンプルツリー / 入力メモの分析結果ではありません':source==='imported'?'JSONから復元したツリー / 出典・内容は未確認':source==='manual'?'自分で書き始めたツリー / 内容は未確認':'メモをもとに生成したツリー / 内容は要確認'}</span><h3>${escapeHtml(tree.core_question)}</h3><p>${escapeHtml(tree.summary)}</p>${tree.nodes.some(n=>n.type==='project')?`<div class="option-entrances"><p>気になる選択肢を押すと、内容を読めます。</p>${tree.nodes.filter(n=>n.type==='project').slice(0,6).map(n=>`<button type="button" data-open-node="${n.id}">${escapeHtml(n.label)}</button>`).join('')}</div>`:''}`;
 }
 function renderMap(){
  mapView.render(state.tree,state.selected);
@@ -116,13 +118,13 @@ function renderSummaries(){
  const list=items=>items.length?`<ul>${items.map(item=>`<li>${escapeHtml(item)}</li>`).join('')}</ul>`:'<p>未確認。メモや資料で確認する必要があります。</p>';
  const actions=[...new Set([...nodes('action').map(n=>n.detail),...t.nodes.map(n=>n.next_action)])].slice(0,12);
  const evidence=nodes('evidence').map(n=>`${n.label}：${n.evidence}（内容・出典は要確認）`);
- $('#summary-content').innerHTML=`<article><span>いま考えている問い</span><h3>${escapeHtml(t.core_question)}</h3><p>${escapeHtml(t.summary)}</p></article><article><span>残している選択肢</span>${list(nodes('project').map(n=>`${n.label}：${n.detail}`))}</article><article><span>次に調べること・試すこと</span>${list(actions)}</article><article><span>相談で伝えるためのメモ</span><p>いま考えていること：${escapeHtml(t.core_question)}</p><p>${escapeHtml(t.summary)}</p>${list(nodes('person').map(n=>`${n.label}に聞きたいこと：${n.next_action}`))}<p class="caption">まだ考え途中のメモです。分かっていることと、これから確かめることを分けて相談できます。${studentMode?'':'研究デモでは、CoD活動説明の下書きにも使えます。'}</p></article><article><span>証拠の確認リスト</span>${list(evidence.length?evidence:t.nodes.filter(n=>n.evidence!=='未確認').map(n=>`${n.label}：${n.evidence}（要確認）`))}<p class="caption">資料の出典・日付・確認できた内容・反対の結果がないかを確認してください。サンプルの記載は資料の存在を保証しません。</p></article><article><span>作れそうな成果物</span>${list(nodes('output').map(n=>`${n.label}：${n.detail}`))}</article>`;
+ $('#summary-content').innerHTML=`<article><span>いま考えている問い</span><h3>${escapeHtml(t.core_question)}</h3><p>${escapeHtml(t.summary)}</p></article><article><span>残している選択肢</span>${list(nodes('project').map(n=>`${n.label}：${n.detail}`))}</article><article><span>次に調べること・試すこと</span>${list(actions)}</article><article><span>相談で伝えるためのメモ</span><p>いま考えていること：${escapeHtml(t.core_question)}</p><p>${escapeHtml(t.summary)}</p>${list(nodes('person').map(n=>`${n.label}に聞きたいこと：${n.next_action}`))}<p class="caption">まだ考え途中のメモです。分かっていることと、これから確かめることを分けて相談できます。${studentMode?'':'研究デモでは、CoD活動説明の下書きにも使えます。'}</p></article><article><span>証拠の確認リスト</span>${list(evidence.length?evidence:t.nodes.filter(n=>n.evidence!=='未確認').map(n=>`${n.label}：${n.evidence}（要確認）`))}<p class="caption">資料の出典・日付・確認できた内容・反対の結果がないかを確認してください。${state.source==='reference'?'一般資料の記載は、本人の条件への当てはまりや制度の最新状況を保証しません。':'サンプルの記載は資料の存在を保証しません。'}</p></article><article><span>作れそうな成果物</span>${list(nodes('output').map(n=>`${n.label}：${n.detail}`))}</article>`;
  if($('#today-summary')){
  const brief=(title,items)=>`<div><dt>${title}</dt><dd>${list(items)}</dd></div>`;
  const rootNode=t.nodes.find(n=>n.parent===null);
  const choices=nodes('project').map(n=>n.label),people=nodes('person').map(n=>n.label),missing=nodes('evidence').map(n=>`${n.label}（${n.evidence.includes('未確認')?'未確認':'出典・内容の確認が必要'}）`);
  const todayActions=[...new Set([...nodes('action').filter(n=>n.parent===rootNode.id).map(n=>n.detail),rootNode.next_action])];
- $('#today-summary').innerHTML=`<span class="clip" aria-hidden="true"></span><h2>今日の整理</h2><p class="caption">${state.discoveryOrigin==='mixed'?'架空デモとAI提案から、本人が候補を選んで整理したメモです。':state.source==='sample'?'架空のサンプルを整理したメモです。':state.source==='imported'?'端末から復元した地図の整理です。':state.source==='manual'?'自分で書いた地図の整理です。':'AIが作った地図を整理したメモです。'}判断や資料の検証を代わりに行うものではありません。</p><dl>${brief('今日の中心問い',[t.core_question])}${brief('残すべき選択肢',choices.slice(0,6))}${brief('足りない証拠',missing.slice(0,4))}${brief('相談すべき人',people.slice(0,4))}${brief('次の一歩',todayActions.slice(0,2))}</dl><p class="caption">重要な判断は、信頼できる大人と一緒に。名前や連絡先を交換する機能はありません。</p>`;
+ $('#today-summary').innerHTML=`<span class="clip" aria-hidden="true"></span><h2>今日の整理</h2><p class="caption">${state.discoveryOrigin==='mixed'?'架空デモとAI提案から、本人が候補を選んで整理したメモです。':state.source==='reference'?(hasPersonalNotes()?'全体マップの一般資料と本人のメモを整理しています。内容や、本人の条件への当てはまりは未確認です。':'全体マップの一般資料を整理したメモです。本人の条件への当てはまりは未確認です。'):state.source==='sample'?'架空のサンプルを整理したメモです。':state.source==='imported'?'端末から復元した地図の整理です。':state.source==='manual'?'自分で書いた地図の整理です。':'AIが作った地図を整理したメモです。'}判断や資料の検証を代わりに行うものではありません。</p><dl>${brief('今日の中心問い',[t.core_question])}${brief('残すべき選択肢',choices.slice(0,6))}${brief('足りない証拠',missing.slice(0,4))}${brief('相談すべき人',people.slice(0,4))}${brief('次の一歩',todayActions.slice(0,2))}</dl><p class="caption">重要な判断は、信頼できる大人と一緒に。名前や連絡先を交換する機能はありません。</p>`;
  }
 
 }
@@ -143,7 +145,7 @@ $('#sample-prompts').addEventListener('click',e=>{
 });
 container.addEventListener('tree-sample-open',e=>{const index=e.detail?.index;if(!Number.isInteger(index)||!samplePrompts[index])return;const memo=samplePrompts[index].memo;if((shouldConfirm()||($('#memo').value.trim()&&$('#memo').value!==memo))&&!confirm('今の相談メモと図を、相談例に置き換えますか？残す場合は先にファイルへ保存してください。'))return;cancel();state.sampleIndex=index;$('#memo').value=memo;$('#send-consent').checked=false;updateCount();display(samplePrompts[index].tree,'sample','架空の相談例です。自分の言葉で書き直したり、項目を加えたりして試せます。');});
 function updateCount(){ $('#memo-count').textContent=`${completeMemo().length} / 3000文字（任意欄を含む）`;$('#send-preview-text').textContent=completeMemo()||'まだ入力されていません。';$('#memo-error').textContent='';$('#memo').removeAttribute('aria-invalid'); }
-$('#memo-form').addEventListener('input',e=>{if(!e.target.matches('#memo,[data-context]'))return;cancel();$('#send-consent').checked=false;updateCount();if(state.tree)$('#tree-status').textContent='メモが変更されています。表示中のツリーは前のメモのもの、またはサンプルです。';});
+$('#memo-form').addEventListener('input',e=>{if(!e.target.matches('#memo,[data-context]'))return;cancel();$('#send-consent').checked=false;updateCount();if(state.tree)$('#tree-status').textContent=state.source==='reference'?(hasPersonalNotes()?'メモが変更されています。表示中の図は全体マップの一般資料と本人のメモです。変更した相談メモをもとに更新した図ではありません。':'メモが変更されています。表示中の図は全体マップの一般資料です。変更したメモをもとに更新した図ではありません。'):'メモが変更されています。表示中のツリーは前のメモのもの、またはサンプルです。';});
 $('#clear-all').addEventListener('click',()=>{
  if((state.tree||$('#memo').value.trim()||contextFields.some(([id])=>$('#context-'+id).value.trim()))&&!confirm('入力と図をすべて消しますか？残したい図は先にファイルに保存してください。'))return;
  cancel();state.memoBaseline='';$('#memo').value='';contextFields.forEach(([id])=>$('#context-'+id).value='');$('#send-consent').checked=false;updateCount();state.tree=null;state.nodeOrigins={};state.source=null;state.selected=null;state.undo=null;state.edited=false;state.editing=false;
@@ -239,7 +241,7 @@ $('#print-summary').addEventListener('click',()=>{if(!state.tree)return;if(state
 $('#copy-summary').addEventListener('click',async()=>{
  if(!state.tree)return;if(state.editing){$('#copy-status').textContent='書き直しを反映してからコピーしてください。';return;}
  const revision=state.revision;
- const text='RE:Tree 相談メモ（'+(state.source==='sample'?'架空の相談例':'内容・出典は未確認')+'）\n\n'+$('#summary-content').innerText+'\n\nこのメモは判断を代わりに行うものではありません。';
+ const text='RE:Tree 相談メモ（'+(state.source==='reference'?referenceLabel():state.source==='sample'?'架空の相談例':'内容・出典は未確認')+'）\n\n'+$('#summary-content').innerText+'\n\nこのメモは判断を代わりに行うものではありません。';
  try{await navigator.clipboard.writeText(text);if(state.revision!==revision||!state.tree)return;$('#copy-fallback').hidden=true;$('#copy-fallback').value='';$('#copy-status').textContent='相談メモをコピーしました。共有する前に内容と個人情報を確認してください。';}
  catch{if(state.revision!==revision||!state.tree)return;$('#copy-fallback').value=text;$('#copy-fallback').hidden=false;$('#copy-fallback').focus();$('#copy-fallback').select();$('#copy-status').textContent='自動コピーができないため、下の文章を選択してコピーしてください。';}
 });
@@ -263,18 +265,20 @@ function loadStudentSample(id){
  cancel();state.studentSampleId=id;state.memoBaseline=example.memo;$('#memo').value=example.memo;$('#send-consent').checked=false;updateCount();display(example.tree,'sample','架空の相談例を開きました。項目を押して、自分の言葉に変えられます。');return true;
 }
 function loadDiscoveryTree(tree,{origin,nodeOrigins}={}){
- if(!validateTree(tree)||!['demo','ai','mixed'].includes(origin))return false;
- if(nodeOrigins!==undefined&&(!nodeOrigins||typeof nodeOrigins!=='object'||Array.isArray(nodeOrigins)||Object.keys(nodeOrigins).length!==tree.nodes.length||tree.nodes.some(node=>!Object.hasOwn(nodeOrigins,node.id)||!['sample','generated','manual'].includes(nodeOrigins[node.id]))))return false;
+ if(!validateTree(tree)||!['demo','ai','mixed','reference'].includes(origin))return false;
+ const allowedOrigins=origin==='reference'?['reference','manual']:['sample','generated','manual'];
+ if(nodeOrigins!==undefined&&(!nodeOrigins||typeof nodeOrigins!=='object'||Array.isArray(nodeOrigins)||Object.keys(nodeOrigins).length!==tree.nodes.length||tree.nodes.some(node=>!Object.hasOwn(nodeOrigins,node.id)||!allowedOrigins.includes(nodeOrigins[node.id]))))return false;
  if(origin==='mixed'&&!nodeOrigins)return false;
  const unfinished=state.pending||state.generation||contextFields.some(([id])=>$('#context-'+id).value.trim())||[...stepForm.querySelectorAll('input')].some(input=>input.value.trim());
  if((shouldConfirm()||memoNeedsConfirmation()||unfinished)&&!confirm('今の図と書きかけの相談メモを、探索で選んだ候補に置き換えますか？残す図は先にJSONで保存してください。'))return false;
  cancel();state.studentSampleId=null;state.sampleIndex=defaultSample;state.memoBaseline='';$('#memo').value='';
  for(const [id] of contextFields)$('#context-'+id).value='';
  stepForm.reset();$('#step-error').textContent='';$('#send-consent').checked=false;updateCount();
- display(tree,origin==='ai'?'generated':'sample','RE:Path Finderで選んだ候補と確認事項を引き継ぎました。本人の決定や確認済みの事実ではありません。');
+ display(tree,origin==='reference'?'reference':origin==='ai'?'generated':'sample',origin==='reference'?'全体マップの一般資料を引き継ぎました。本人の条件への当てはまり・資料の内容は未確認です。':'RE:Path Finderで選んだ候補と確認事項を引き継ぎました。本人の決定や確認済みの事実ではありません。');
  state.discoveryOrigin=origin;
  if(origin==='mixed')state.source='generated';
  if(nodeOrigins)state.nodeOrigins=Object.fromEntries(tree.nodes.map(node=>[node.id,nodeOrigins[node.id]]));
+ if(origin==='reference'&&hasPersonalNotes())$('#tree-status').textContent='全体マップの一般資料と本人のメモを引き継ぎました。内容や、本人の条件への当てはまりは未確認です。';
  renderOverview();renderMap();renderSummaries();
  return true;
 }

@@ -2,8 +2,8 @@ import {validateTree} from './tree-renderer.js';
 import {layoutMindMap} from './mind-map-layout.js';
 
 export const MAX_TREE_FILE_BYTES=8*1024*1024;
-export const nodeOriginLabels={sample:'架空の相談例',generated:'AIで整理した内容',manual:'自分で追加',user_edited:'自分で書き直し',ai_proposal:'AI提案を本人が追加承認',reflection:'一般的な問いかけから追加',imported:'読み込んだ内容（由来は未確認）'};
-const origins=new Set(['sample','generated','manual','imported']);
+export const nodeOriginLabels={sample:'架空の相談例',generated:'AIで整理した内容',manual:'自分で追加',user_edited:'自分で書き直し',ai_proposal:'AI提案を本人が追加承認',reflection:'一般的な問いかけから追加',reference:'全体マップの一般資料（本人の条件は未確認）',imported:'読み込んだ内容（由来は未確認）'};
+const origins=new Set(['sample','generated','manual','reference','imported']);
 const exact=(value,keys)=>value&&typeof value==='object'&&!Array.isArray(value)&&Object.keys(value).length===keys.length&&keys.every(k=>Object.hasOwn(value,k));
 const fail=()=>{throw new Error('ツリーJSONの形式・項目・枝のつながりを確認してください。最大200項目、深さ12段まで読み込めます。');};
 function validateDocument(doc){

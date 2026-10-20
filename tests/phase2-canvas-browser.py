@@ -2,7 +2,7 @@ from browser_support import reveal, memo_entry, close_student_detail
 from pathlib import Path
 import json,time
 from playwright.sync_api import sync_playwright,expect
-out=Path('/workspace/reschool-phase4-review/regressions');out.mkdir(parents=True,exist_ok=True)
+out=Path('/workspace/reschool-atlas-review/regressions');out.mkdir(parents=True,exist_ok=True)
 def node(i,parent,t='action'):
  return dict(id=i,parent=parent,label='比較して確かめる '+i,type=t,detail='架空の検証用データです。',evidence='未確認',risk='未確認',next_action='学校の先生に相談する。')
 nodes=[node('root',None,'core_question')]

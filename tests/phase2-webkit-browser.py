@@ -3,7 +3,7 @@ from browser_support import reveal, memo_entry, close_student_detail
 from pathlib import Path
 import os,json
 from playwright.sync_api import sync_playwright,expect
-out=Path('/workspace/reschool-phase4-review/regressions');out.mkdir(parents=True,exist_ok=True)
+out=Path('/workspace/reschool-atlas-review/regressions');out.mkdir(parents=True,exist_ok=True)
 with sync_playwright() as p:
  custom=os.environ.get('WEBKIT_EXECUTABLE')
  if not custom and Path('/workspace/webkit-runtime/run-webkit.sh').exists():custom='/workspace/webkit-runtime/run-webkit.sh'

@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="RE:Path Finderは、AIとの簡単な相談から、まだ知らない進路や学習機会を探す研究プロトタイプです。道を詳しく見て比較し、希望したときにRE:Treeへ引き継げます。">
+<meta name="description" content="進学するかまだ分からなくても、学び方・働き方の全体を見渡すRE:Path Finder。仕事、専門教育、大学、海外、働きながら学ぶ道などを比べられます。AI相談とRE:Treeは任意です。">
 <meta name="theme-color" content="#faf8f2"><link rel="icon" href="/favicon.svg">
 <title>RE:Path Finder — 進路を比べながら考える。</title>
 <link rel="stylesheet" href="/src/tree-feature.css?v=phase2-01">
@@ -15,12 +15,14 @@ html{background:#faf8f2;color:#17283c}
 .app-startup{box-sizing:border-box;max-width:720px;margin:48px auto;padding:28px;background:#fffdf7;color:#17283c;border:1px solid #c9c5bb;font:16px/1.9 sans-serif}
 .app-startup h1{font:600 30px/1.5 serif;margin:0 0 16px}.app-startup p{margin:12px 0}.app-startup a{color:#294e3c;text-underline-offset:4px}.app-startup nav{display:flex;gap:12px 24px;flex-wrap:wrap}.app-startup a,.app-startup button{min-height:44px;align-content:center}.app-startup button{font:inherit;padding:10px 18px;background:#344d42;color:#fff;border:1px solid #344d42}.app-startup button[hidden]{display:none}.app-startup details{margin-top:22px;font-size:13px}.app-startup :focus-visible{outline:3px solid #627a69;outline-offset:3px}@media(max-width:760px){.app-startup{margin:20px 12px;padding:22px}}
 </style>
-<script type="module" src="/src/bootstrap.js?v=phase4-01"></script>
+<script type="module" src="/src/bootstrap.js?v=atlas-01"></script>
 <link rel="stylesheet" href="/src/phase2-feature.css?v=archive-preview-01">
 <link rel="stylesheet" href="/src/phase3-site.css?v=phase3-01">
 <link rel="stylesheet" href="/src/phase3-tree.css?v=phase3-01">
 <link rel="stylesheet" href="/src/route-discovery.css?v=phase4-01">
 <link rel="stylesheet" href="/src/phase4-site.css?v=phase4-01">
+<link rel="stylesheet" href="/src/route-atlas.css?v=atlas-01">
+<link rel="stylesheet" href="/src/path-finder.css?v=atlas-01">
 </head>
 <body class="desk-site phase3-site phase4-site">
 <a class="skip" href="#main">本文へ移動</a>
@@ -29,7 +31,7 @@ html{background:#faf8f2;color:#17283c}
     <section class="app-startup" id="app-startup" aria-labelledby="app-startup-title">
       <h1 id="app-startup-title">RE:Path Finder</h1>
       <p>進路や学校内外の学びについて、まだ知らない道を探して比べる試作品です。</p>
-      <p id="app-startup-status" role="status">相談例とツリーの画面を読み込んでいます。表示されない場合は、通信やログインの状態をご確認ください。</p>
+      <p id="app-startup-status" role="status">学び方・働き方のマップを読み込んでいます。表示されない場合は、通信やログインの状態をご確認ください。</p>
       <button type="button" id="app-startup-retry" hidden>読み込みをもう一度試す</button>
       <p>保存版の画面はこちらから開けます。</p>
       <nav aria-label="保存版を開く"><a href="/original.html">RE:School v1を見る</a><a href="/reschool.html">Path Mapの保存版を見る</a></nav>

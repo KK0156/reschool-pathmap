@@ -9,7 +9,7 @@ const fields = [['何をする・学ぶ方向か','description'],['この方向�
 const fieldList = (route,items=fields) => '<dl>' + items.map(([title,key]) => '<div><dt>' + title + '</dt><dd>' + (Array.isArray(route[key]) ? list(route[key]) : escape(route[key])) + '</dd></div>').join('') + '</dl>';
 
 /** A retained, memory-only consultation. The parent owns routing and tree replacement. */
-export function mountRouteDiscovery(container,{onTransfer=()=>false}={}) {
+export function mountRouteDiscovery(container,{onTransfer=()=>false,onResults=()=>{},onShowAtlas=()=>{}}={}) {
   container.classList.add('route-discovery');
   const state = {
     draft:{topic:'',wish:'',situation:'',conditions:[],conditionText:''}, step:1, view:'wizard',
@@ -22,6 +22,7 @@ export function mountRouteDiscovery(container,{onTransfer=()=>false}={}) {
   const routes = keys => keys.map(key => state.graph.get(key)).filter(Boolean);
   const originLabel = entry => entry?.origin === 'demo' ? '固定デモ・架空の表示例' : 'AIからの提案・未確認';
   const canUseAI = () => state.capability === 'ready';
+  const notifyResults = () => {const found=[...state.graph.values()].filter(entry=>entry.origin==='ai').map(entry=>structuredClone(entry.route));onResults({source:found.length?'ai':'demo',routes:found});};
   function action(name,label,extra='',disabled=false) {return '<button type="button" data-rd-action="' + name + '"' + (disabled?' disabled':'') + ' ' + extra + '>' + label + '</button>';}
   function focus(selector) {const target=$(selector);if(target){target.focus({preventScroll:true});const top=selector==='#rd-view-title'&&state.view==='detail'?$('.rd-breadcrumbs'):null;(top||target).scrollIntoView({block:selector==='#rd-view-title'?'start':'nearest',behavior:'instant'});}}
   function tell(message,error=false) {state[error?'error':'notice']=message;const target=$(error?'#rd-error':'#rd-status');if(target){target.textContent=message;if(error)target.focus({preventScroll:true});}}
@@ -54,6 +55,7 @@ export function mountRouteDiscovery(container,{onTransfer=()=>false}={}) {
     state.graph=new Map();state.roots=[];state.compare=[];state.keep=[];state.path=[];state.selected=null;state.back=[];
     state.summary=result.summary;state.answer=result.answer||'';state.consultation=structuredClone(context);state.source=origin;state.demoId=demoId;
     state.roots=appendEntries(result.routes,origin);state.view='results';state.panel=null;state.consent=false;
+    notifyResults();
   }
   function loadDemo(id) {
     const demo=getRouteDemo(id);if(!demo){tell('このデモは見つかりませんでした。',true);return;}
@@ -67,6 +69,7 @@ export function mountRouteDiscovery(container,{onTransfer=()=>false}={}) {
       for(const child of entry.children)if(state.graph.has(child)&&!state.graph.get(child).parent)state.graph.get(child).parent=entry.key;
     }
     state.roots=demo.rootIds.map(id=>byId.get(id)).filter(Boolean);state.summary=demo.summary;state.answer='';state.consultation=structuredClone(demo.consultation);state.source='demo';state.demoId=id;state.view='results';state.notice='固定のデモを開きました。入力した相談を分析した結果ではありません。相談の入力はそのまま残っています。';
+    notifyResults();
     render();focus('#rd-view-title');
   }
   function availability() {
@@ -98,7 +101,7 @@ export function mountRouteDiscovery(container,{onTransfer=()=>false}={}) {
     return '<section class="rd-selection-bar" aria-label="選んだ候補"><p>比較：'+state.compare.length+' / 2　残した候補：'+state.keep.length+' / 6</p><div>'+action('show-compare','2つの候補を比べる','',state.compare.length!==2)+action('show-kept','残した候補を見る','',!state.keep.length)+action('edit-consultation','相談の入力に戻る')+'</div><details><summary>図で整理したいとき（任意）</summary><p>残した候補をRE:Treeの図に渡せます。候補を残していなければ、いま詳細を見ている候補を使います。相談に書いた文章を、そのまま図の見出しに入れることはありません。</p>'+action('transfer','RE:Treeで整理する（任意）','',!state.keep.length&&!state.selected)+'</details></section>';
   }
   function resultMarkup() {
-    return '<section class="rd-result-head rd-paper"><h2 id="rd-view-title" tabindex="-1">気になる道を開く</h2><p>内容や必要な条件を見てみましょう。「比べる」は2つまで選べます。</p><details class="rd-result-summary"><summary>候補のまとめを見る</summary><p>'+escape(state.summary)+'</p></details></section>'+sourceNote()+'<div class="rd-route-grid">'+routes(state.roots).map(routeCard).join('')+'</div>'+toolbar();
+    return '<section class="rd-result-head rd-paper"><h2 id="rd-view-title" tabindex="-1">'+(state.source==='ai'?'今回AIが注目した候補':'このデモで取り上げる道')+'</h2><p>ここにない道もあります。内容を読んで比べたり、全体マップで別の方向を見たりできます。</p>'+action('atlas','全体マップで、ほかの道も見る →')+'<details class="rd-result-summary"><summary>候補のまとめを見る</summary><p>'+escape(state.summary)+'</p></details></section>'+sourceNote()+'<div class="rd-route-grid">'+routes(state.roots).map(routeCard).join('')+'</div>'+toolbar();
   }
   function breadcrumbs() {
     return '<nav class="rd-breadcrumbs" aria-label="今見ている候補の位置">'+action('results','最初の候補')+(state.path.length?'<span aria-hidden="true">›</span>':'')+state.path.map((key,i)=>action('breadcrumb',escape(state.graph.get(key)?.route.title||'候補'),'data-rd-route="'+key+'" data-rd-depth="'+i+'" '+(i===state.path.length-1?'aria-current="page"':''))).join('<span aria-hidden="true">›</span>')+'</nav>';
@@ -165,6 +168,7 @@ export function mountRouteDiscovery(container,{onTransfer=()=>false}={}) {
         const entry=state.graph.get(parent);if(!entry)throw new Error('追加先の候補を確認できませんでした。');
         if(state.graph.size+result.routes.length>80)throw new Error('候補の上限に達したため、追加しませんでした。今の候補は残っています。');
         const keys=appendEntries(result.routes,'ai',parent);entry.children.push(...keys);entry.revealed=true;entry.answer=result.answer||result.summary;state.panel=null;state.view='detail';state.selected=parent;
+        notifyResults();
       }
       state.notice='AIからの提案を表示しました。未確認の内容は、公式資料や学校で確かめてください。';
     }catch(error){if(revision===state.sequence)state.error=error.name==='AbortError'?'返答に時間がかかっています。入力と今の候補は残っています。もう一度試すか、固定デモを使えます。':error.message;}
@@ -195,6 +199,7 @@ export function mountRouteDiscovery(container,{onTransfer=()=>false}={}) {
     }
     else if(name==='back-step'){cancelJob();state.step=Math.max(1,state.step-1);state.consent=false;render();focus('#rd-view-title');}
     else if(name==='demo')loadDemo(button.dataset.rdDemo);
+    else if(name==='atlas'){cancelJob();onShowAtlas();}
     else if(name==='discover')sendRequest({intent:'discover',consultation:consultation()},'discover');
     else if(name==='retry-capability')checkCapability();
     else if(name==='cancel-ai'){cancelJob();render();}

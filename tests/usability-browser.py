@@ -2,7 +2,7 @@ from browser_support import reveal, memo_entry, close_student_detail
 from pathlib import Path
 import json
 from playwright.sync_api import sync_playwright,expect
-out=Path('/workspace/reschool-phase4-review/regressions');out.mkdir(parents=True,exist_ok=True)
+out=Path('/workspace/reschool-atlas-review/regressions');out.mkdir(parents=True,exist_ok=True)
 widths=[320,390,768,1024,1440];routes=['','finder','tree','cases','research','archive'];report=[]
 with sync_playwright() as p:
  b=p.chromium.launch(executable_path='/usr/bin/chromium',args=['--no-sandbox'])
@@ -26,7 +26,8 @@ with sync_playwright() as p:
    for i,a in enumerate(boxes):
     for z in boxes[i+1:]:assert a['x']+a['width']<=z['x']+1 or z['x']+z['width']<=a['x']+1 or a['y']+a['height']<=z['y']+1 or z['y']+z['height']<=a['y']+1,(width,route,'overlapping nav')
    if route=='':
-    action=page.locator('.home-finder-start');expect(action).to_have_attribute('href','#/finder');r=action.bounding_box();assert r['y']+r['height']<=1000,(width,'primary action below first screen',r)
+    action=page.locator('.home-map-start');expect(action).to_have_attribute('href','#/finder?mode=all');r=action.bounding_box();assert r['y']+r['height']<=1000,(width,'primary action below first screen',r)
+    expect(page.locator('.home-finder-start')).to_have_attribute('href','#/finder?mode=ai')
    if route=='research':
     assert '日本とアメリカ' in page.locator('.desk-page-head').inner_text()
     assert page.locator('.research-timeline > ol > li').count()==7

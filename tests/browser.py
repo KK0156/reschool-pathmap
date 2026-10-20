@@ -103,7 +103,8 @@ with sync_playwright() as p:
  page.locator('.back-to-pathmap').click()
  page.locator('.student-home-intro h1').wait_for()
  assert 'まだ知らない道' in page.locator('.student-home-intro h1').inner_text()
- assert page.locator('.home-finder-start').is_visible() and page.locator('.home-finder-start').get_attribute('href')=='#/finder'
+ assert page.locator('.home-map-start').is_visible() and page.locator('.home-map-start').get_attribute('href')=='#/finder?mode=all'
+ assert page.locator('.home-finder-start').is_visible() and page.locator('.home-finder-start').get_attribute('href')=='#/finder?mode=ai'
  assert page.locator('.tree-entry-link').is_visible() and page.locator('.tree-entry-link').get_attribute('href')=='#/tree'
  page.keyboard.press('Tab')
  assert page.locator('.skip').evaluate('(el)=>el===document.activeElement')

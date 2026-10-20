@@ -1,5 +1,5 @@
 import {samplePrompts} from '../retree-mindmap/src/sample-tree.js';
-import {mountTree} from '../retree-mindmap/src/app.js?v=phase4-01';
+import {mountTree} from '../retree-mindmap/src/app.js?v=atlas-01';
 import {studentTreeFeatureView} from '../retree-mindmap/src/feature-view.js?v=phase3-01';
 import {escapeHtml as esc} from '../retree-mindmap/src/tree-renderer.js';
 import {researchStages,researchEvidenceLabels,interviewFollowUp,assumptions} from './research-data.js';
@@ -7,7 +7,8 @@ import {studentSamples,studentCases,studentCaseCategories,legacySampleAudit} fro
 import {researchChapters,reportSummary,schoolResearchDirections} from './research-report.js';
 import {discoveryTopics} from './route-model.js';
 import {routeDemos} from './route-demos.js';
-import {mountRouteDiscovery} from './route-discovery.js';
+import {mountPathFinder} from './path-finder.js';
+import {routeAtlas} from './route-atlas-data.js';
 
 const root = document.querySelector('#root');
 const nav = [
@@ -31,11 +32,15 @@ const head = (label, title, text) => '<header class="desk-page-head"><span class
 
 function home() {
   const explanations = {subjects:'文系・理系に分ける前に、学ぶ内容や文理をまたぐ道を見てみる。',university:'学部の名前から、授業・進み方・必要な条件へ進んでみる。',undecided:'仕事が決まっていないところから、小さく試せることを探す。',activities:'学校にない活動を、時間・費用・相談先から考えてみる。'};
+  const firstRoutes=routeAtlas.lenses.find(lens=>lens.id==='after-school').rootIds.map(id=>routeAtlas.nodes.find(node=>node.id===id));
   return '<section class="student-home-intro finder-home-intro paper-card"><p class="desk-kicker">進路と、学校内外の学びを探す研究プロトタイプ</p>' +
-    '<h1>まだ知らない道を、<br>一緒に探そう。</h1><p class="home-introduction">気になっていることを少し話して、いくつかの道を見てみる。学ぶことや必要な条件を比べながら、次に確かめたいことを探せます。</p>' +
-    '<div class="finder-home-actions">' + link('/finder', 'AIと道を探す →', 'desk-button home-finder-start') + link('/finder?demo=subjects', '入力せず、探索デモを見る →') + '</div>' +
-    '<p class="desk-small">3つの画面で簡単に相談できます。成績や詳しいプロフィールは不要です。AIが未接続でも、架空の探索デモを使えます。</p></section>' +
-    '<section class="home-samples" aria-labelledby="home-samples-title"><div class="home-section-title"><h2 id="home-samples-title">何について考えたい？</h2><p>まだ決まっていなくても、ここから始められます。</p></div><div class="home-topic-grid finder-topic-grid">' +
+    '<h1>まだ知らない道を、<br>一緒に探そう。</h1><p class="home-introduction">進学するかまだ分からなくても、学び方・働き方を比べられます。気になる道の生活や費用、あとから変える方法まで見てみてください。</p>' +
+    '<div class="finder-home-actions">' + link('/finder?mode=all', '全体マップを見る →', 'desk-button home-map-start') + link('/finder?mode=ai', 'AIと考える（任意） →', 'home-finder-start') + '</div>' +
+    '<p class="desk-small">質問への回答や成績の入力は不要です。まずは全体を見て、知りたい道から開けます。</p></section>' +
+    '<section class="home-map-options" aria-labelledby="home-map-title"><div class="home-section-title"><h2 id="home-map-title">高校の、その先。どんな過ごし方がある？</h2><p>どれか一つに決めず、組み合わせたり、あとから変えたりする方法も見られます。</p></div><div class="home-map-grid">'+
+    firstRoutes.map(node=>'<a class="home-map-route paper-card" data-home-map-node="'+esc(node.id)+'" href="#/finder?mode=all&lens=after-school&node='+esc(node.id)+'"><h3>'+esc(node.title)+'</h3><p>'+esc(node.summary)+'</p><span class="topic-open">内容と条件を見る →</span></a>').join('')+'</div></section>'+
+    '<section class="home-atlas-demos" aria-labelledby="home-atlas-demos-title"><div class="home-section-title"><h2 id="home-atlas-demos-title">地図の使い方を試す</h2><p>あらかじめ用意した探索の順路です。あなたの入力を分析するものではありません。</p></div><div class="home-atlas-demo-grid">'+routeAtlas.demos.map(demo=>'<a class="home-atlas-demo paper-card" data-home-map-demo="'+esc(demo.id)+'" href="#/finder?mapDemo='+esc(demo.id)+'"><h3>'+esc(demo.title)+'</h3><p>'+esc(demo.description)+'</p><span class="topic-open">この順路から見る →</span></a>').join('')+'</div></section>'+
+    '<section class="home-samples" aria-labelledby="home-samples-title"><div class="home-section-title"><h2 id="home-samples-title">AIと一緒に考えるなら</h2><p>こちらは任意の相談です。AIが取り上げた道以外も、全体マップに残ります。</p></div><div class="home-topic-grid finder-topic-grid">' +
     discoveryTopics.map((topic, index) => '<a class="home-topic home-discovery-topic" data-home-topic="' + esc(topic.id) + '" href="#/finder?topic=' + esc(topic.id) + '"><span class="topic-number">' + String(index + 1).padStart(2, '0') + '</span><h3>' + esc(topic.label) + '</h3><span class="topic-open">このテーマで相談する →</span></a>').join('') + '</div></section>' +
     '<section class="home-route-demos" aria-labelledby="home-demo-title"><div class="home-section-title"><h2 id="home-demo-title">AIなしで、道の広がりを試す</h2><p>用意された架空の相談です。あなたの入力を分析した結果ではありません。</p></div><div class="home-demo-grid">' +
     routeDemos.map(demo => '<a class="paper-card home-route-demo" data-home-demo="' + esc(demo.id) + '" href="#/finder?demo=' + esc(demo.id) + '"><span class="desk-kicker">架空の探索デモ</span><h3>' + esc(demo.title) + '</h3><p>' + esc(explanations[demo.id] || demo.summary) + '</p><span class="topic-open">いくつかの道を見てみる →</span></a>').join('') + '</div></section>' +
@@ -44,7 +49,7 @@ function home() {
 }
 
 function finder() {
-  return head('RE:Path Finder', '自分にまだある道を探す', '気になった道を開くと、学ぶことや必要な条件を詳しく見られます。いくつか比べながら考えてみてください。') + '<div id="route-discovery-host"></div>';
+  return head('RE:Path Finder', '学び方・働き方を見渡す', '大学、専門的な教育、仕事、海外、探索の期間。いま決めなくても、道のつながりや条件を比べられます。') + '<div id="route-discovery-host"></div>';
 }
 
 function tree(params) {
@@ -211,22 +216,24 @@ function transferDiscovery({tree, origin, nodeOrigins}) {
 function routeFinder(params) {
   if (!finderElement) {
     finderElement = document.createElement('div');
-    finderAPI = mountRouteDiscovery(finderElement, {onTransfer: transferDiscovery});
+    finderAPI = mountPathFinder(finderElement, {onTransfer: transferDiscovery});
   }
   document.getElementById('route-discovery-host').append(finderElement);
   const topic = params.get('topic');
   const demo = params.get('demo');
   const validTopic = discoveryTopics.some(item => item.id === topic);
   const validDemo = routeDemos.some(item => item.id === demo);
-  finderAPI.open(validDemo ? {demo} : validTopic ? {topic} : {});
-  if ((topic && !validTopic) || (demo && !validDemo)) {
+  const mode=params.get('mode'),lens=params.get('lens'),node=params.get('node'),mapDemo=params.get('mapDemo');
+  const validMode=['all','ai'].includes(mode),validLens=routeAtlas.lenses.some(item=>item.id===lens),validNode=routeAtlas.nodes.some(item=>item.id===node),validMapDemo=routeAtlas.demos.some(item=>item.id===mapDemo);
+  finderAPI.open({...(validMode?{mode}:{}),...(validLens?{lens}:{}),...(validNode?{node}:{}),...(validMapDemo?{mapDemo}:{}),...(validDemo?{demo}:{}),...(validTopic?{topic}:{})});
+  if ((topic && !validTopic) || (demo && !validDemo)||(mode&&!validMode)||(lens&&!validLens)||(node&&!validNode)||(mapDemo&&!validMapDemo)) {
     const notice = document.createElement('p');
     notice.className = 'route-notice';
     notice.setAttribute('role', 'status');
-    notice.textContent = '指定された相談例は見つかりませんでした。相談テーマか探索デモから選べます。';
+    notice.textContent = '指定された道や相談例は見つかりませんでした。全体マップか、任意のAI相談から選べます。';
     document.getElementById('route-discovery-host').prepend(notice);
   }
-  if (topic || demo) history.replaceState(null, '', '#/finder');
+  if (topic || demo||mapDemo||lens||node) history.replaceState(null, '', '#/finder?mode='+(validDemo||validTopic?'ai':'all'));
 }
 
 function current() {
