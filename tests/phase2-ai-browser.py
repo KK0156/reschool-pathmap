@@ -1,3 +1,4 @@
+from browser_support import reveal, memo_entry, close_student_detail
 import json
 from pathlib import Path
 from playwright.sync_api import sync_playwright,expect
@@ -5,13 +6,13 @@ proposal={'summary':'比較のための提案です。実際の参加条件は�
 with sync_playwright() as p:
  b=p.chromium.launch(executable_path='/usr/bin/chromium',args=['--no-sandbox']);page=b.new_page(viewport={'width':1024,'height':1000},reduced_motion='reduce');errors=[];posts=[];page.on('pageerror',lambda e:errors.append(str(e)));page.on('dialog',lambda d:d.accept())
  page.on('request',lambda r:posts.append(r.post_data_json) if r.method=='POST' and '/deepen-tree' in r.url else None)
- page.goto('http://localhost:8002/#/tree');page.locator('#memo').fill('教育をどこで学ぶか、自分の言葉で考える');page.locator('#manual-from-memo').click()
- expect(page.locator('#generate')).to_be_disabled();page.locator('.branch-consultation summary').first.click();expect(page.locator('#branch-request')).to_be_disabled();assert not posts
+ page.goto('http://localhost:8002/#/tree');memo_entry(page).fill('教育をどこで学ぶか、自分の言葉で考える');page.locator('#manual-from-memo').click()
+ expect(page.locator('#generate')).to_be_disabled();expect(page.locator('#branch-request')).to_be_disabled();expect(page.locator('.branch-tools')).to_be_hidden();assert not posts
  # Capability is explicitly mocked; no paid endpoint is reachable from the offline server.
  page.route('**/.netlify/functions/generate-tree',lambda r:r.fulfill(status=200,content_type='application/json',body='{"configured":true}'))
- page.locator('#check-ai').click();expect(page.locator('#generate')).to_be_enabled()
- page.locator('.optional-context summary').click();page.locator('#context-grades').fill('成績の非公開メモはこの枝相談に送らない')
- page.locator('#branch-request').click();expect(page.locator('#branch-status')).to_contain_text('チェック');assert not posts
+ reveal(page,'#check-ai').click();expect(page.locator('#generate')).to_be_enabled()
+ reveal(page,'#context-grades');page.locator('#context-grades').fill('成績の非公開メモはこの枝相談に送らない')
+ close_student_detail(page);reveal(page,'#branch-request').click();expect(page.locator('#branch-status')).to_contain_text('チェック');assert not posts
  page.route('**/.netlify/functions/deepen-tree',lambda r:r.fulfill(status=200,content_type='application/json',body=json.dumps(proposal,ensure_ascii=False)))
  page.locator('#branch-consent').check();page.locator('#branch-request').click();expect(page.locator('#branch-status')).to_contain_text('まだ図は変わっていません')
  assert page.locator('.tree-node').count()==1 and page.locator('#branch-accept').is_disabled()
@@ -23,6 +24,7 @@ with sync_playwright() as p:
  assert 'AI提案を本人が追加承認' in page.locator('.node-origin').inner_text()
  assert '自分で書き始めた' not in page.locator('#node-detail .detail-note').inner_text()
  page.locator('[data-edit-start]').click();page.locator('#edit-label').fill('自分で選び直した案');page.locator('#node-edit-form button[type=submit]').click();assert '自分で書き直し' in page.locator('.node-origin').inner_text()
+ close_student_detail(page)
  # Compare only selected context and one explicit second item. Discard never changes nodes.
  page.locator('#branch-intent').select_option('compare');page.locator('#branch-compare').select_option('root');page.locator('#branch-consent').check();page.locator('#branch-request').click();expect(page.locator('#branch-discard')).to_be_visible()
  assert posts[-1]['comparison']['label'].startswith('教育をどこで') and posts[-1]['node']['label']=='自分で選び直した案'
@@ -49,17 +51,17 @@ with sync_playwright() as p:
  held.clear()
  # Clear must remove all proposal previews and delayed clipboard errors must not restore old text.
  page.evaluate("Object.defineProperty(navigator,'clipboard',{value:{writeText:()=>new Promise((resolve,reject)=>window.rejectOldCopy=reject)},configurable:true})")
- page.locator('#copy-summary').click();page.locator('#clear-all').click();page.evaluate('window.rejectOldCopy(new Error("late"))');page.clock.run_for(1)
+ reveal(page,'#copy-summary').click();reveal(page,'#clear-all').click();page.evaluate('window.rejectOldCopy(new Error("late"))');page.clock.run_for(1)
  assert page.locator('#branch-preview').inner_text()=='' and page.locator('#branch-compare option').count()==0
  assert page.locator('#copy-fallback').is_hidden() and page.locator('#copy-fallback').input_value()==''
  # Whole-map generation timeout also preserves the existing diagram.
- page.locator('#memo').fill('タイムアウトでも残す相談');page.locator('#manual-from-memo').click()
+ memo_entry(page).fill('タイムアウトでも残す相談');page.locator('#manual-from-memo').click()
  page.unroute('**/.netlify/functions/generate-tree')
  def stalled_generation(route):
   if route.request.method=='GET':route.fulfill(status=200,content_type='application/json',body='{"configured":true}')
   else:held.append(route)
  page.route('**/.netlify/functions/generate-tree',stalled_generation)
- page.locator('#send-consent').check();page.locator('#generate').click();page.clock.fast_forward(55001)
+ reveal(page,'#send-consent').check();reveal(page,'#generate').click();page.clock.fast_forward(55001)
  expect(page.locator('#tree-status')).to_contain_text('回答に時間がかかっています');assert page.locator('.tree-node').count()==1
  for route in held:
   try:route.abort('failed')

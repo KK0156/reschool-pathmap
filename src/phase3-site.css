@@ -1,0 +1,203 @@
+/* Student work and the RE:School report share a noticeboard, not a workflow. */
+.desk-site.phase3-site .research-desk{padding-top:15px}
+.desk-site.phase3-site .desk-masthead{min-height:82px;padding:15px 24px;border-width:4px;box-shadow:none}
+.desk-site.phase3-site .desk-masthead:after{display:none}
+.desk-site.phase3-site .desk-brand{font-size:27px}
+.desk-site.phase3-site .desk-brand span{display:block;font-size:12px;margin:4px 0 0;letter-spacing:0}
+.desk-site.phase3-site .desk-masthead>p{border:0;padding:0;margin:0;font-size:12px}
+.desk-site.phase3-site .desk-nav{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));padding:0;margin-block:15px 20px;gap:10px}
+.desk-site.phase3-site .desk-nav a{min-width:0;min-height:58px;box-shadow:0 1px 0 #d9cfba;font-size:15px;padding:11px 13px}
+.desk-site.phase3-site .desk-nav a:before{height:7px;top:-4px;width:28px;opacity:.65}
+.desk-site.phase3-site .desk-nav a small{font-size:10px;line-height:1.5}
+.desk-site.phase3-site .desk-main{padding:25px;border-width:4px;background-image:linear-gradient(#f2eadae0,#f2eadae0),url('/src/cork-texture.svg');box-shadow:none}
+.desk-site.phase3-site .desk-page-head{max-width:none;margin:0 0 22px;padding:22px 26px;box-shadow:none}
+.desk-site.phase3-site .desk-page-head h1{font-size:clamp(27px,3vw,38px);margin:8px 0}
+.desk-site.phase3-site .desk-page-head p{max-width:900px;font-size:16px;line-height:1.9}
+.desk-site.phase3-site .paper-card{box-shadow:none}
+.desk-site.phase3-site .desk-footer{margin-top:20px}
+.desk-site .student-home-intro{padding:28px 35px;border-top:4px solid #748369;background:#fffdf7}
+.desk-site .student-home-intro h1{font-size:clamp(32px,3.5vw,46px);line-height:1.55;margin:10px 0 15px;letter-spacing:.04em}
+.desk-site .student-home-intro .home-introduction{max-width:780px;font-size:17px;margin:0}
+.desk-site .student-home-intro .desk-actions{margin:20px 0 12px}
+.desk-site .student-home-intro .home-steps{margin:15px 0 0}
+.home-samples{margin:28px 0 35px}
+.home-section-title h2{font-size:25px;margin:0 0 7px}
+.home-section-title p{font-size:15px;margin:0 0 18px;color:#465651}
+.home-topic-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.home-topic{display:flex;flex-direction:column;min-width:0;min-height:165px;text-decoration:none;padding:19px;background:#fffdf7;border:1px solid #b9bba9;border-top:4px solid #c6d0b6}
+.home-topic:nth-child(2n){border-top-color:#d6c7a6}
+.home-topic:hover{border-color:#627a69;background:#f4f6ed}
+.home-topic h3{font-family:inherit;font-size:17px;line-height:1.7;font-weight:600;margin:9px 0 15px;flex:1;overflow-wrap:anywhere}
+.topic-number{font-size:11px;color:#627168}
+.topic-open{font-size:13px;line-height:1.7;color:#3c5547;border-top:1px solid #d9d3c5;padding-top:11px}
+.home-sample-note{font-size:13px;margin:15px 0;line-height:1.9}
+.home-opportunities{display:grid;grid-template-columns:1fr 1.6fr;gap:30px;padding:28px;margin-bottom:25px}
+.home-opportunities h2{font-size:27px;line-height:1.7;margin:8px 0}
+.home-opportunities p{margin-top:0}
+.student-research-boundary{display:grid;grid-template-columns:1.6fr 1fr;gap:25px;padding:25px 28px;background:#f6f2e8}
+.student-research-boundary h2{font-size:22px;margin:0 0 10px}
+.student-research-boundary .desk-actions{margin:0;align-content:center;align-items:start;flex-direction:column;gap:7px}
+.route-notice,.case-fiction-note{background:#f6f3e8;border:1px solid #c9c6b5;border-left:3px solid #788a70;color:#3f5146;font-size:14px;line-height:1.9;padding:14px 18px;margin:0 0 20px;overflow-wrap:anywhere}
+.route-notice .desk-link{display:block;width:fit-content}
+.desk-site .case-controls{padding:18px 22px;background:#fffdf7;margin:0 0 22px;box-shadow:none}
+.desk-site .student-case-grid{gap:20px}
+.desk-site .student-case{padding:25px;min-width:0}
+.desk-site .student-case h2{font-size:23px;line-height:1.7;margin:12px 0}
+.desk-site .student-case .case-profile{font-size:14px;border-bottom:1px solid #d9d3c5;padding-bottom:14px}
+.student-case section{margin-top:19px}
+.desk-site .student-case section h3{font-family:inherit;font-size:14px;margin:0 0 8px}
+.desk-site .student-case section p,.student-case li{font-size:15px;line-height:1.9;color:#4e5d57;margin:6px 0}
+.student-case ul{padding-left:21px;margin:0}
+.case-tree-action{border-top:1px solid #d9d3c5;margin-top:22px;padding-top:19px}
+.case-tree-action .desk-button{font-size:15px}
+.desk-site .report-opening{padding:26px;margin-bottom:20px}
+.desk-site .report-opening>h2{font-size:24px;margin:0 0 10px}
+.report-evidence-guide{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:22px 0}
+.report-evidence-guide>div{border:1px solid #d9d3c5;padding:16px;background:#f8f6ef}
+.report-evidence-guide b{font-size:14px}
+.desk-site .report-evidence-guide p{font-size:14px;margin:8px 0 0;line-height:1.8}
+.report-limits{border-top:1px solid #d9d3c5;padding-top:8px}
+.report-limits summary,.report-history>summary,.developer-lab>summary{min-height:48px;align-content:center;font-size:15px;font-weight:600;line-height:1.8}
+.report-limits li{font-size:14px;line-height:1.9;margin:10px 0;color:#4e5d57}
+.desk-site .report-toc{padding:23px 26px;margin-bottom:24px}
+.desk-site .report-toc h2{font-size:23px;margin:0 0 14px}
+.report-toc ol{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 35px;padding-left:24px;margin:0}
+.report-toc li{font-size:14px;line-height:1.8;padding-left:3px;min-width:0}
+.report-toc a{font-size:14px;line-height:1.8;display:flex;min-height:44px;align-items:center;overflow-wrap:anywhere}
+.research-chapters{display:grid;gap:13px}
+.research-chapter{background:#fffdf7;border:1px solid #c9c8b8;scroll-margin-top:20px;min-width:0}
+.research-chapter>summary{display:grid;grid-template-columns:35px minmax(0,1fr) 75px;gap:15px;padding:20px 24px;list-style:none;align-items:start;min-height:98px}
+.research-chapter>summary::-webkit-details-marker{display:none}
+.research-chapter>summary:after{display:none}
+.research-chapter>summary h2{font-size:19px;line-height:1.7;margin:0 0 6px}
+.chapter-number{font-size:12px;line-height:2.6;color:#627168}
+.chapter-summary{display:block;font-size:14px;line-height:1.9;color:#66706f}
+.chapter-expand{font-size:12px;line-height:2.6;text-align:right;text-decoration:underline;text-underline-offset:4px}
+.research-chapter[open]>summary{background:#f2f3e9;border-bottom:1px solid #d9d3c5}
+.research-chapter[open] .chapter-expand{font-size:0}
+.research-chapter[open] .chapter-expand:after{content:'閉じる';font-size:12px}
+.chapter-body{padding:22px 30px 28px}
+.chapter-body>.status-tag{margin:0 0 20px;font-size:12px}
+.chapter-record{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px 30px;margin:0}
+.chapter-record>div{min-width:0;border-bottom:1px solid #e6dfd0;padding-bottom:17px}
+.chapter-record dt{font-size:13px;font-weight:600;color:#344b3e;margin-bottom:9px}
+.chapter-record dd{font-size:15px;line-height:1.95;color:#4e5d57;margin:0;overflow-wrap:anywhere}
+.chapter-body h3{font-family:inherit;font-size:16px;margin:25px 0 12px}
+.report-table-wrap{max-width:100%;overflow:auto;border:1px solid #d9d3c5;margin:24px 0}
+.report-table-wrap table{width:100%;border-collapse:collapse;table-layout:fixed;min-width:480px;font-size:14px}
+.report-table-wrap caption{text-align:left;font-size:13px;line-height:1.8;padding:15px;background:#f5f1e6}
+.report-table-wrap th,.report-table-wrap td{text-align:left;vertical-align:top;padding:15px;border:1px solid #d9d3c5;font-size:14px;line-height:1.9;overflow-wrap:anywhere}
+.report-table-wrap thead th{background:#e9eddf}
+.report-table-wrap tbody th{background:#f8f5ed;font-weight:500}
+.report-sources{list-style:none;padding:0;margin:0}
+.report-sources li{border-top:1px solid #e6dfd0;padding:13px 0;font-size:14px;line-height:1.9;overflow-wrap:anywhere}
+.source-availability{display:block;color:#66705a;font-size:12px;margin-bottom:5px}
+.chapter-unknown{border-left:3px solid #a18e68;padding:4px 18px;margin-top:22px;background:#f7f1e5}
+.chapter-unknown h3{margin:12px 0 7px}
+.chapter-unknown p{font-size:15px;margin:0 0 13px;line-height:1.9}
+.report-history{margin:25px 0;background:#fffdf7;border:1px solid #d9d3c5;padding:9px 22px}
+.report-history>.research-timeline{margin-top:20px}
+.desk-site .report-history .research-timeline .paper-card{padding:20px}
+.school-research-directions{margin:35px 0;scroll-margin-top:20px}
+.school-research-directions>h2{font-size:25px}
+.research-directions-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.research-directions-grid .paper-card{padding:23px}
+.research-directions-grid h3{font-size:19px;margin-top:0}
+.desk-site .research-honesty{max-width:none;margin-top:30px}
+.desk-site .archive-stack{max-width:none;grid-template-columns:repeat(2,minmax(0,1fr));gap:30px 22px}
+.desk-site .archive-item{padding:28px;min-width:0}
+.desk-site .archive-item h2{font-size:24px;margin-top:10px}
+.desk-site .archive-date{font-size:13px;line-height:1.8}
+.desk-site .archive-availability{font-size:14px;background:#f3f4e8;border-left:3px solid #8a9d76;padding:13px 16px}
+.desk-site .archive-overview>div{padding:14px 0}
+.desk-site .archive-overview dt{font-size:13px}
+.desk-site .archive-overview dd{font-size:14px}
+.archive-overview dd ul{padding-left:20px;margin:0}
+.archive-overview dd li{font-size:14px;line-height:1.9}
+.desk-site .archive-original-preview{margin-bottom:0}
+.desk-site .archive-preview-label{padding:13px;gap:6px}
+.desk-site .archive-preview-label b{font-size:13px}
+.desk-site .archive-preview-label>span{font-size:13px}
+.developer-lab{margin-top:30px;scroll-margin-top:20px}
+.developer-demo-links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 25px}
+.developer-demo-links a{font-size:14px;overflow-wrap:anywhere}
+@media(max-width:1100px){
+ .home-topic-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .home-topic{min-height:140px}
+ .desk-site.phase3-site .desk-masthead,.desk-site.phase3-site .desk-nav,.desk-site.phase3-site .desk-footer{margin-inline:24px}
+ .desk-site.phase3-site .desk-main{margin-inline:24px;padding:22px 18px}
+ .desk-site.phase3-site .desk-nav{gap:8px}
+ .desk-site.phase3-site .desk-nav a{padding:10px;font-size:14px}
+ .desk-site.phase3-site .desk-nav small{display:none}
+ .home-opportunities{grid-template-columns:1fr 1.4fr;gap:20px}
+ .chapter-record{grid-template-columns:1fr}
+ .desk-site .archive-stack{grid-template-columns:1fr}
+}
+@media(max-width:760px){
+ .desk-site.phase3-site .research-desk{padding-top:10px}
+ .desk-site.phase3-site .desk-masthead,.desk-site.phase3-site .desk-nav,.desk-site.phase3-site .desk-footer{margin-inline:12px}
+ .desk-site.phase3-site .desk-masthead{padding:13px 15px;min-height:76px;gap:10px;align-items:center}
+ .desk-site.phase3-site .desk-brand{font-size:23px;white-space:normal;line-height:1.4}
+ .desk-site.phase3-site .desk-brand span{font-size:10px}
+ .desk-site.phase3-site .desk-masthead>p{font-size:10px;max-width:85px;flex-shrink:0}
+ .desk-site.phase3-site .desk-nav{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-block:12px 15px}
+ .desk-site.phase3-site .desk-nav a{min-height:44px;padding:10px 7px;align-items:center;text-align:center;font-size:13px;line-height:1.7}
+ .desk-site.phase3-site .desk-nav a:before{display:none}
+ .desk-site.phase3-site .desk-nav a[aria-current=page]:after{display:none}
+ .desk-site.phase3-site .desk-main{margin-inline:8px;padding:16px 10px;border-width:3px}
+ .desk-site .student-home-intro{padding:22px 20px}
+ .desk-site .student-home-intro h1{font-size:clamp(28px,7.5vw,39px);letter-spacing:.025em}
+ .desk-site .student-home-intro .home-introduction{font-size:15px;line-height:1.9}
+ .desk-site .student-home-intro .desk-actions{gap:10px}
+ .desk-site .student-home-intro .desk-button{width:100%;justify-content:center;padding:13px 10px;font-size:14px}
+ .desk-site .student-home-intro .home-steps{margin-top:12px}
+ .desk-site .student-home-intro .home-steps li{font-size:12px;margin:7px 0}
+ .home-section-title h2{font-size:22px}
+ .home-section-title p{font-size:14px}
+ .home-topic-grid{gap:10px}
+ .home-topic{min-height:160px;padding:15px 12px}
+ .home-topic h3{font-size:15px;margin:7px 0 12px;line-height:1.8}
+ .topic-open{font-size:11px;line-height:1.8}
+ .home-opportunities,.student-research-boundary{grid-template-columns:1fr;gap:10px;padding:22px}
+ .home-opportunities h2{font-size:24px}
+ .student-research-boundary .desk-actions{gap:5px}
+ .desk-site.phase3-site .desk-page-head{padding:18px}
+ .desk-site.phase3-site .desk-page-head p{font-size:14px}
+ .desk-site .case-controls{padding:17px}
+ .desk-site .student-case{padding:21px}
+ .desk-site .student-case h2{font-size:22px}
+ .desk-site .student-case section p,.student-case li{font-size:14px}
+ .case-tree-action .desk-button{font-size:14px;width:100%;justify-content:center;padding:12px}
+ .desk-site .report-opening,.desk-site .report-toc{padding:20px}
+ .report-evidence-guide{grid-template-columns:1fr}
+ .report-evidence-guide>div{padding:13px}
+ .report-toc ol{grid-template-columns:1fr;padding-left:20px;gap:0}
+ .report-toc a{font-size:14px;padding-block:7px}
+ .research-chapter>summary{grid-template-columns:23px minmax(0,1fr);gap:10px;padding:17px 15px;min-height:90px}
+ .research-chapter>summary h2{font-size:17px}
+ .chapter-summary{font-size:13px;line-height:1.9}
+ .chapter-expand{grid-column:2;text-align:left;font-size:12px;line-height:1.5}
+ .chapter-body{padding:18px 20px}
+ .chapter-record dd,.chapter-unknown p{font-size:14px}
+ .chapter-record{gap:18px}
+ .report-table-wrap table{min-width:440px}
+ .report-history{padding:8px 15px}
+ .report-history>summary,.developer-lab>summary{font-size:14px}
+ .research-directions-grid{grid-template-columns:1fr}
+ .desk-site .archive-item{padding:24px 20px}
+ .desk-site .archive-item h2{font-size:23px}
+ .desk-site .archive-date{font-size:12px}
+ .desk-site .archive-availability{padding:12px}
+ .developer-demo-links{grid-template-columns:1fr}
+}
+@media(max-width:350px){
+ .home-topic-grid{grid-template-columns:1fr}
+ .home-topic{min-height:115px}
+ .desk-site.phase3-site .desk-masthead>p{display:none}
+}
+
+.desk-site .student-home-intro .desk-kicker{font-size:12px;line-height:1.6;margin:0 0 10px}
+.home-write-link{margin-top:10px}
+@media(max-width:760px){.desk-site .student-home-intro{padding:19px}.desk-site .student-home-intro .home-introduction{font-size:14px;line-height:1.85}.home-samples{margin-top:22px}.home-section-title p{font-size:13px;line-height:1.85;margin-bottom:14px}}
+
+@media(max-width:600px){.desk-site.phase3-site .desk-masthead>p{display:none}.desk-site .student-home-intro h1{font-size:28px}.desk-site .student-home-intro{padding:18px}.home-samples{margin-top:18px}}

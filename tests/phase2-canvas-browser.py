@@ -1,7 +1,8 @@
+from browser_support import reveal, memo_entry, close_student_detail
 from pathlib import Path
 import json,time
 from playwright.sync_api import sync_playwright,expect
-out=Path('/workspace/reschool-phase2-review/after');out.mkdir(parents=True,exist_ok=True)
+out=Path('/workspace/reschool-phase3-review/regressions');out.mkdir(parents=True,exist_ok=True)
 def node(i,parent,t='action'):
  return dict(id=i,parent=parent,label='比較して確かめる '+i,type=t,detail='架空の検証用データです。',evidence='未確認',risk='未確認',next_action='学校の先生に相談する。')
 nodes=[node('root',None,'core_question')]
@@ -17,7 +18,7 @@ with sync_playwright() as p:
  page.goto('http://localhost:8002/#/tree')
  page.locator('#import-tree').set_input_files({'name':'large.json','mimeType':'application/json','buffer':json.dumps(tree).encode()})
  expect(page.locator('.tree-node')).to_have_count(200)
- page.locator('[data-map-action=expand]').click()
+ reveal(page,'[data-map-action=expand]').click()
  assert page.locator('#tree-container').get_attribute('aria-modal')=='true'
  assert page.locator('.desk-nav').evaluate('(el)=>el.inert')
  page.locator('[data-map-action=center]').click()
@@ -30,8 +31,8 @@ with sync_playwright() as p:
  assert page.locator('[data-edge-child=g0]').get_attribute('d')!=edge
  assert page.evaluate("window.first===document.querySelector('[data-node=root]')")
  assert page.evaluate('window.rebuilds')==0
- page.locator('[data-map-action=undo]').click();assert page.locator('[data-node=root]').get_attribute('style')==original
- page.locator('[data-map-action=add]').click();expect(page.locator('.canvas-message')).to_contain_text('200個まで');assert page.locator('.canvas-add').is_hidden()
+ reveal(page,'[data-map-action=undo]').click();assert page.locator('[data-node=root]').get_attribute('style')==original
+ reveal(page,'[data-map-action=add]').click();expect(page.locator('.canvas-message')).to_contain_text('200個まで');assert page.locator('.canvas-add').is_hidden()
  for width in [320,390,768,1024,1440]:
   page.set_viewport_size({'width':width,'height':1000});page.locator('[data-map-action=center]').click()
   assert page.locator('.map-zoom output').inner_text()=='100%'
@@ -57,7 +58,7 @@ with sync_playwright() as p:
  page.keyboard.press('Escape');assert not page.locator('.desk-nav').evaluate('(el)=>el.inert')
  # Add dialog traps focus and restores it on cancellation; Escape closes the small
  # dialog before closing the expanded canvas.
- page.locator('#clear-all').click();page.locator('#manual-from-memo').click();page.locator('[data-map-action=expand]').click();page.locator('[data-map-action=add]').click()
+ reveal(page,'#clear-all').click();page.locator('#manual-from-memo').click();reveal(page,'[data-map-action=expand]').click();reveal(page,'[data-map-action=add]').click()
  expect(page.locator('.canvas-add')).to_be_visible();assert page.locator('.canvas-add').get_attribute('role')=='dialog'
  page.keyboard.press('Shift+Tab');assert page.locator('[data-canvas-add-cancel]').evaluate('(el)=>el===document.activeElement')
  page.keyboard.press('Tab');assert page.locator('#canvas-label').evaluate('(el)=>el===document.activeElement')
@@ -67,8 +68,8 @@ with sync_playwright() as p:
  assert not page.locator('.desk-nav').evaluate('(el)=>el.inert')
  # Browser navigation is possible even while a modal is open. It must release
  # isolation and preserve the tree when returning to the consultation.
- page.locator('[data-map-action=expand]').click();page.evaluate("location.hash='/research'")
- expect(page.locator('.research-timeline')).to_be_visible()
+ reveal(page,'[data-map-action=expand]').click();page.evaluate("location.hash='/research'")
+ reveal(page,'.research-timeline');expect(page.locator('.research-timeline')).to_be_visible()
  assert not page.locator('.skip').evaluate('(el)=>el.inert')
  page.locator('.desk-nav a[href="#/tree"]').click()
  assert page.locator('.canvas-expanded').count()==0 and page.locator('.tree-node').count()==1

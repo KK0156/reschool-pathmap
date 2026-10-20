@@ -1,8 +1,9 @@
+from browser_support import reveal, memo_entry, close_student_detail
 from pathlib import Path
 import json
 from playwright.sync_api import sync_playwright,expect
-out=Path('/workspace/reschool-phase2-review/after');out.mkdir(exist_ok=True)
-widths=[320,390,768,1024,1440];routes=['','tree','cases','choices','research','archive'];report=[]
+out=Path('/workspace/reschool-phase3-review/regressions');out.mkdir(exist_ok=True)
+widths=[320,390,768,1024,1440];routes=['','tree','cases','research','archive'];report=[]
 with sync_playwright() as p:
  b=p.chromium.launch(executable_path='/usr/bin/chromium',args=['--no-sandbox'])
  page=b.new_page(viewport={'width':1440,'height':1000});errors=[];external=[]
@@ -22,35 +23,36 @@ with sync_playwright() as p:
    for i,a in enumerate(boxes):
     for z in boxes[i+1:]:assert a['x']+a['width']<=z['x']+1 or z['x']+z['width']<=a['x']+1 or a['y']+a['height']<=z['y']+1 or z['y']+z['height']<=a['y']+1,(width,route,'overlapping nav')
    if route=='':
-    action=page.locator('.cover-paper a.desk-button');r=action.bounding_box();assert r['y']+r['height']<=1000,(width,'primary action below first screen',r)
+    action=page.locator('a[href*="#/tree?sample="]').first;r=action.bounding_box();assert r['y']+r['height']<=1000,(width,'primary action below first screen',r)
    if route=='research':
-    assert '日本とアメリカ' in page.locator('.research-summary').inner_text()
+    assert '日本とアメリカ' in page.locator('.desk-page-head').inner_text()
     assert page.locator('.research-timeline > ol > li').count()==7
+    reveal(page,'.research-timeline')
     assert '原記録' in page.locator('#stage-interview-followup').inner_text()
     for badge in page.locator('.stage-sources li span').all():
-     box=badge.bounding_box();assert box['width']>=55 and box['height']<=40,(width,'source badge wraps vertically',box)
+     reveal(page,badge);box=badge.bounding_box();assert box['width']>=55 and box['height']<=40,(width,'source badge wraps vertically',box)
    page.screenshot(path=str(out/f'{width}-{route or "home"}.png'))
    row={'width':width,'page':route or 'home','horizontalOverflow':False,'navigationUsable':True}
-   if route=='tree':row.update(memoTop=round(page.locator('#memo').bounding_box()['y']),manualTop=round(page.locator('#manual-from-memo').bounding_box()['y']),generateTop=round(page.locator('#generate').bounding_box()['y']))
+   if route=='tree':row.update(generalExamples=page.locator('[data-student-sample]').count(),memoInitiallyDisclosed=page.locator('#memo').is_visible())
    report.append(row)
   page.goto('http://localhost:8002/#/tree')
-  expect(page.locator('#memo')).to_be_visible();page.locator('#memo').fill('文系と理系、まだどちらも考えていたい。')
+  memo_entry(page).fill('文系と理系、まだどちらも考えていたい。')
   page.locator('#manual-from-memo').click();expect(page.locator('.tree-node')).to_have_count(1)
-  page.locator('[data-map-mode=map]').click()
-  page.locator('[data-map-action=add]').click();page.locator('#canvas-label').fill('調べること');page.locator('.canvas-add button[type=submit]').click()
-  page.locator('[data-node=note-1]').focus();page.keyboard.press('Enter');page.locator('[data-edit-start]').click();page.locator('#edit-type').select_option('hypothesis');page.locator('#edit-detail').fill('一度体験すると、考えやすくなるかもしれない。');page.locator('#node-edit-form button[type=submit]').click()
-  page.locator('[data-node=note-1]').focus();page.keyboard.press('Alt+ArrowRight')
+  reveal(page,'[data-map-mode=map]').click()
+  reveal(page,'[data-map-action=add]').click();page.locator('#canvas-label').fill('調べること');page.locator('.canvas-add button[type=submit]').click()
+  page.locator('[data-node=note-1]').focus();page.keyboard.press('Enter');page.locator('[data-edit-start]').click();reveal(page,'#edit-type').select_option('hypothesis');page.locator('#edit-detail').fill('一度体験すると、考えやすくなるかもしれない。');page.locator('#node-edit-form button[type=submit]').click()
+  close_student_detail(page);page.locator('[data-node=note-1]').focus();page.keyboard.press('Alt+ArrowRight')
   assert page.locator('[data-node=note-1]').get_attribute('aria-pressed')=='true'
-  page.locator('[data-map-action=expand]').click();assert page.locator('.mind-map-viewport').bounding_box()['height']>=100
-  page.locator('[data-map-action=selected]').click();assert page.locator('.map-zoom output').inner_text()=='100%'
+  reveal(page,'[data-map-action=expand]').click();assert page.locator('.mind-map-viewport').bounding_box()['height']>=100
+  reveal(page,'[data-map-action=selected]').click();assert page.locator('.map-zoom output').inner_text()=='100%'
   page.screenshot(path=str(out/f'{width}-canvas.png'))
   assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
-  page.keyboard.press('Escape');page.locator('[data-map-mode=list]').click();assert page.locator('.tree-node').count()==2
+  page.keyboard.press('Escape');reveal(page,'[data-map-mode=list]').click();assert page.locator('.tree-node').count()==2
   page.locator('[data-node=note-1]').click();page.locator('[data-edit-delete]').click();expect(page.locator('.tree-node')).to_have_count(1)
   # Clear is explicit and covers file-related status as well.
-  page.locator('#clear-all').click();expect(page.locator('.tree-node')).to_have_count(0)
+  reveal(page,'#clear-all').click();expect(page.locator('.tree-node')).to_have_count(0)
  assert not errors and not external,(errors,external)
  assert page.evaluate('localStorage.length+sessionStorage.length')==0
  (out/'layout-results.json').write_text(json.dumps({'screens':report,'widths':widths,'jsErrors':errors,'externalRequests':external},ensure_ascii=False,indent=2))
- print('PASS: all 6 pages at 320/390/768/1024/1440px, first-screen primary action, nonoverlapping usable nav, honest chronology, add/edit/hypothesis/move/delete/zoom/fullscreen at each width, no overflow/JS errors/external requests/storage; 35 screenshots')
+ print('PASS: all 5 pages at 320/390/768/1024/1440px, first-screen primary action, nonoverlapping usable nav, honest chronology, add/edit/hypothesis/move/delete/zoom/fullscreen at each width, no overflow/JS errors/external requests/storage; 30 screenshots')
  b.close()

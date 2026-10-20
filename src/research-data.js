@@ -63,14 +63,14 @@ const researchEvidence={
   sources:[{label:'Path Map試作品3号の保存版',path:'/reschool.html',availability:'present'},{label:'RE:Treeの実装',path:'retree-mindmap/src/',availability:'present'},{label:'自動テスト',path:'tests/',availability:'present'},{label:'Prototype 2本体・Evidence Pack',path:null,availability:'not_published'},{label:'生徒・先生による効果測定',path:null,availability:'not_verified'}]
  },
  'interview-followup':{
-  fact:'研究経緯に教頭インタビューへの言及がある。実際の発言や日付は確認できない。',
-  observation:'原記録未掲載のため、本人の観察と聞き手の解釈をまだ照合できない。',
+  fact:'本人の説明では、教頭インタビューは実施済みで、本人が確認した要約がある。要約本文と逐語録は未掲載のため、今回その内容や実施日を独立に確認できない。',
+  observation:'本人確認済みの要約があることと、その要約を今回参照できることは別。要約本文・逐語録が未掲載のため、発言、本人の観察、聞き手の解釈をまだ照合できない。',
   hypothesis:'具体的な新仮説は原記録と対応づけてから整理する。設計上の検証候補とは区別する。',
   counterargument:'一人の見解が学校全体を代表するとは限らず、ほかの説明や立場の確認が必要。',
   unresearched:'原記録・公開範囲・発言と仮説の対応。次の元教員インタビューが終わるまで、問題の最終特定は保留。',
   prototype:'原記録の確認項目と、発言ではない検証候補を研究ノートに記録。',
   tested:'インタビュー内容の照合、次の元教員インタビューの結果、仮説の検証は未確認。',
-  sources:[{label:'教頭インタビューへの言及',path:'src/research-data.js',availability:'present'},{label:'教頭インタビューの原記録',path:null,availability:'not_published'},{label:'次の元教員インタビューの結果',path:null,availability:'not_verified'}]
+  sources:[{label:'教頭インタビューの実施・要約の存在についての本人の説明',path:'src/research-data.js',availability:'present'},{label:'教頭インタビューの原記録・本人確認済み要約の本文',path:null,availability:'not_published'},{label:'次の元教員インタビューの結果',path:null,availability:'not_verified'}]
  }
 };
 export const researchStages=[
@@ -80,13 +80,13 @@ export const researchStages=[
  {id:'constraints',title:'既存サービス比較と、安全・責任・教員負担',question:'つなぐ仕組みだけでは扱えない条件は何か。',note:'既存サービスとの違い、安全、同意、責任、学校承認、教員負担が確認すべき課題になった経緯を記録する。どれが最大の原因かは決めない。',status:'経緯の説明・検証課題',source:'既存の研究説明。比較表、観察記録、負担の測定資料は未掲載。'},
  {id:'wider-comparison',title:'日本社会の安全・秩序・信頼・開放性へ',question:'安全や信頼を保ちながら、外部と関わる条件は何か。',note:'教育研究の後に、比較の視野を社会全体へ広げた段階として整理する。国の傾向を学校へそのまま当てはめたり、因果関係を断定したりしない。',status:'比較研究の広がり・仮説',source:'研究経緯の説明（原資料未掲載）。統計の定義・出典・比較結果は未確認。'},
  {id:'path-tree',title:'RE:Path Finder / RE:Treeへの発展',question:'見えていない選択肢を、証拠・仮説・反論・リスクと一緒に並べられるか。',note:'つながる前に考えられるよう、相談を地図にする試作へ。動く画面は確認できるが、対話が改善するかは別に検証する。',status:'実装確認・効果は未検証',source:'reschool.html、現在のキャンバスと変更履歴。Prototype 2本体は未掲載。'},
- {id:'interview-followup',title:'教頭インタビュー後の仮説・未検証事項',question:'インタビューで実際に聞けたことと、そこからの解釈をどう分けるか。',note:'研究経緯には教頭インタビューへの言及があるが、逐語録・日時・具体的な発言はリポジトリで確認できない。内容に基づく新仮説の特定は原記録の確認まで保留する。',status:'原記録未確認・整理待ち',source:'研究経緯の説明。以下の検証候補は設計上の問いであり、教頭の発言やインタビュー結果ではない。'}
+ {id:'interview-followup',title:'教頭インタビュー後の仮説・未検証事項',question:'インタビューで実際に聞けたことと、そこからの解釈をどう分けるか。',note:'本人の説明では実施済みで、本人が確認した要約がある。要約本文・逐語録・日時・具体的な発言は今回参照できない。発言は創作せず、新仮説の根拠との照合と、次の元教員インタビューを待つ。',status:'実施済み・要約あり（本人の説明）／原記録未確認',source:'本人の説明と研究経緯。要約本文は未掲載。検証候補は設計上の問いであり、教頭の発言として扱わない。'}
 ].map(stage=>({...stage,evidence:researchEvidence[stage.id]}));
 export const interviewFollowUp={
- status:'教頭インタビューの原記録は未確認',
+ status:'実施済み・本人確認済み要約あり（本人の説明）／原記録は未確認',
  problemStatus:'次の元教員インタビューが終わるまで、問題の最終特定は保留します。',
  nextInterview:'元教員への次のインタビューによる確認待ちです。日程・対象者・具体的な発言や結果は、この資料には掲載していません。',
- known:'研究経緯の説明には、教頭インタビューへの言及があります。日時、対象、具体的な発言、同意や公開範囲は、このリポジトリの資料では確認できません。',
+ known:'本人の説明では、教頭インタビューは実施済みで、本人が確認した要約があります。その要約の本文と逐語録は今回参照できません。日時、具体的な発言、同意や公開範囲も、このリポジトリの資料では確認できません。',
  pending:['次の元教員インタビュー後に、異なる立場の説明と照合して問題を見直す。','実際に述べられたことと、聞き手の解釈を分ける。','新しい仮説を原記録のどの箇所に対応させるかを確認する。','一校・一人の見解を、学校全体の原因に広げていないかを確認する。'],
  candidates:['資源が機会になるまでの、どの手順が難しいのか。','先生の事務負担、安全、責任、承認、機会の公平性をどう比較するか。','紙のメモや運用の変更でも改善できるか。AIを使わない方法と何が違うか。'],
  boundary:'「教員の事務負担が最大の原因」「AIが最適解」といった結論は、この資料からは導けません。検証候補をインタビューで得た事実として扱いません。'

@@ -1,7 +1,7 @@
 import {renderTree,renderListTree} from './tree-renderer.js';
 import {layoutMindMap} from './mind-map-layout.js';
 import {canvasLayout,syncPositions,connectionPath} from './canvas-state.js';
-export function createMindMapView(host){
+export function createMindMapView(host,{simplified=false}={}){
  const state={tree:null,selected:null,mode:'map',zoom:1,initial:true,x:0,y:0,positions:new Map(),layout:null,undo:[],expanded:false};
  const viewport=()=>host.querySelector('.mind-map-viewport');
  const clamp=z=>Math.min(3,Math.max(.005,z));
@@ -36,10 +36,16 @@ export function createMindMapView(host){
  function fit(){const v=viewport(),b=state.layout.bounds;state.zoom=clamp(Math.min(1,(v.clientWidth-30)/(b.right-b.left),(v.clientHeight-30)/(b.bottom-b.top)));state.x=v.clientWidth/2-(b.left+b.right)/2*state.zoom;state.y=v.clientHeight/2-(b.top+b.bottom)/2*state.zoom;paint();}
  function zoom(next,clientX,clientY){const v=viewport(),r=v.getBoundingClientRect(),px=clientX===undefined?v.clientWidth/2:clientX-r.left-v.clientLeft,py=clientY===undefined?v.clientHeight/2:clientY-r.top-v.clientTop,x=(px-state.x)/state.zoom,y=(py-state.y)/state.zoom;state.zoom=clamp(next);state.x=px-x*state.zoom;state.y=py-y*state.zoom;paint();}
  function draw(){
+  const settingsOpen=host.querySelector('.canvas-settings')?.open||false;
   backgroundInert(false);backgroundInert(state.expanded);
   host.classList.toggle('canvas-expanded',state.expanded);if(state.expanded){host.setAttribute('role','dialog');host.setAttribute('aria-modal','true');host.setAttribute('aria-label','広いキャンバス');}else{host.removeAttribute('role');host.removeAttribute('aria-modal');host.removeAttribute('aria-label');}
   host.innerHTML=`<div class="mind-map-controls" aria-label="キャンバスの操作"><div class="map-mode"><button type="button" data-map-mode="map" aria-pressed="${state.mode==='map'}">キャンバスで考える</button><button type="button" data-map-mode="list" aria-pressed="${state.mode==='list'}">一覧で読む</button></div>${state.mode==='map'?`<div class="map-zoom"><button type="button" data-map-action="out" aria-label="縮小する">−</button><output aria-label="拡大率">${Math.round(state.zoom*100)}%</output><button type="button" data-map-action="in" aria-label="拡大する">＋</button><button type="button" data-map-action="fit">全体を見る</button><button type="button" data-map-action="selected">選んだ項目を読む</button><button type="button" data-map-action="center">中心に戻る</button><button type="button" data-map-action="expand" aria-pressed="${state.expanded}">${state.expanded?'元の画面に戻る':'画面いっぱいに広げる'}</button></div>`:''}</div>${state.mode==='map'?`<div class="canvas-tools"><button type="button" data-map-action="add">選んだ項目に枝を追加</button><button type="button" data-map-action="arrange">枝を並べ直す</button><button type="button" data-map-action="undo" ${state.undo.length?'':'disabled'}>配置を戻す</button><span>${state.tree.nodes.length} / 200項目</span></div><p class="map-instructions">項目をドラッグして自由に配置。余白をドラッグして移動、ホイールでズーム。余白をダブルクリックすると、その場所に枝を追加できます。キーボードでは項目にフォーカスして Alt＋矢印で移動します。</p><div class="mind-map-viewport" tabindex="0" role="region" aria-label="自由なキャンバス。矢印キーで移動。項目はAltと矢印キーで配置変更。"><div class="mind-map-space"></div></div><p class="canvas-message" role="status"></p><form class="canvas-add" hidden role="dialog" aria-modal="true" aria-labelledby="canvas-add-title"><h3 id="canvas-add-title">枝を追加する</h3><label for="canvas-label">新しい項目の見出し</label><input id="canvas-label" required maxlength="180" autocomplete="off"><p>選択中の項目につながる枝を、ここに追加します。</p><button type="submit">この場所に追加</button><button type="button" data-canvas-add-cancel>やめる</button></form>`:renderListTree(state.tree,state.selected)}`;
-  if(state.mode==='map'){redrawScene();if(state.initial){state.initial=false;if(viewport().clientWidth>=600)fit();else focusView(state.tree.nodes.find(n=>n.parent===null).id);}}
+  if(simplified){
+   const settings=document.createElement('details');settings.className='canvas-settings';settings.open=settingsOpen;settings.innerHTML='<summary>表示・配置・操作方法</summary><div class="canvas-settings-content"></div>';const content=settings.lastElementChild;
+   for(const selector of ['.map-mode','.canvas-tools','[data-map-action=selected]','[data-map-action=expand]','.map-instructions']){const part=host.querySelector(selector);if(part)content.append(part);}
+   host.querySelector('.mind-map-controls').after(settings);const instructions=host.querySelector('.map-instructions');if(instructions)instructions.textContent='指1本で余白を動かし、2本指で拡大・縮小できます。項目はドラッグで配置変更。「全体を見る」で図全体、「中心に戻る」で読みやすい大きさに戻ります。キーボードではAlt＋矢印で項目を移動できます。';
+  }
+  if(state.mode==='map'){redrawScene();if(state.initial){state.initial=false;if(simplified){fit();if(state.zoom<.9){state.zoom=.9;focusView(state.tree.nodes.find(n=>n.parent===null).id);}}else if(viewport().clientWidth>=600)fit();else focusView(state.tree.nodes.find(n=>n.parent===null).id);}}
  }
  function requestAdd(point){
   let depth=0,node=state.tree.nodes.find(n=>n.id===state.selected);while(node?.parent!==null&&node){depth++;node=state.tree.nodes.find(n=>n.id===node.parent);}

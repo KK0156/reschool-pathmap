@@ -21,7 +21,7 @@ with sync_playwright() as p:
    assert previews.nth(0).get_attribute('href')=='/original.html' and previews.nth(1).get_attribute('href')=='/reschool.html'
    assert page.locator('.archive-item button:disabled').count()==2
    for image in previews.locator('img').all():
-    image.scroll_into_view_if_needed();expect(image).to_be_visible();assert image.evaluate('(el)=>el.complete&&el.naturalWidth===1280')
+    image.scroll_into_view_if_needed();expect(image).to_be_visible();page.wait_for_function('(el)=>el.complete&&el.naturalWidth===1280',arg=image.element_handle())
    page.evaluate('scrollTo(0,0)');page.screenshot(path=str(out/f'{name}-{width}-archive.png'))
    previews.first.click();page.get_by_role('heading',name='卒業の、その続きを。').wait_for()
    styles=page.locator('.app').evaluate('(el)=>({background:getComputedStyle(el).backgroundColor,color:getComputedStyle(el).color})')
@@ -33,7 +33,7 @@ with sync_playwright() as p:
    assert not page.evaluate('window.__csp'),page.evaluate('window.__csp')
    page.screenshot(path=str(out/f'{name}-{width}-original.png'))
    metrics.append({'width':width,'styles':styles,'heading':heading,'overflow':False})
-   page.locator('.back-to-pathmap').click();page.locator('.desk-cover').wait_for()
+   page.locator('.back-to-pathmap').click();page.locator('.student-home-intro').wait_for()
   page.goto('http://localhost:8002/original.html?view=%2Fgive%2Fdetails');expect(page.locator('textarea')).to_be_visible();assert page.locator('textarea').is_disabled()
   assert page.locator('textarea:enabled,input:not([type=checkbox]):not([type=radio]):enabled').count()==0
   page.screenshot(path=str(out/f'{name}-original-fields.png'))

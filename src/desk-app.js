@@ -1,54 +1,319 @@
-import {samplePrompts,starterSampleIndices} from '../retree-mindmap/src/sample-tree.js';
-import {mountTree} from '../retree-mindmap/src/app.js?v=desk-01';
-import {treeFeatureView} from '../retree-mindmap/src/feature-view.js';
+import {samplePrompts} from '../retree-mindmap/src/sample-tree.js';
+import {mountTree} from '../retree-mindmap/src/app.js?v=phase3-01';
+import {studentTreeFeatureView} from '../retree-mindmap/src/feature-view.js?v=phase3-01';
 import {escapeHtml as esc} from '../retree-mindmap/src/tree-renderer.js';
-import {researchStages,researchEvidenceLabels,researchOrigin,interviewFollowUp,assumptions,researchTopics,resources,conversionConditions,choiceCards,researchCases,caseCategories,archiveItems} from './research-data.js';
-const root=document.querySelector('#root');
-const nav=[['/','Home'],['/tree','Mind Tree'],['/cases','Case Library'],['/choices','Choice Cards'],['/research','Research Note'],['/archive','Archive']];
-const navNotes={'/':'はじめに','/tree':'相談を書く・図を編集','/cases':'架空の事例を読む','/choices':'研究テーマの比較','/research':'制作の背景と未確認事項','/archive':'以前のバージョン'};
-const navLabels={'/':'ホーム','/tree':'相談を整理する','/cases':'事例を見る','/choices':'テーマを比べる','/research':'研究の経緯','/archive':'過去の試作品'};
-const aliases={'/finder':'/tree','/paths':'/choices','/dashboard':'/archive'};
-const seeds=starterSampleIndices.map(i=>samplePrompts[i].memo);
-let treeElement=null,caseFilter='すべて';
-const link=(url,label,cls='desk-link')=>`<a class="${cls}" href="#${url}">${label}</a>`;
-const head=(label,title,text)=>`<header class="desk-page-head"><span class="desk-kicker">${label}</span><h1>${title}</h1><p>${text}</p></header>`;
-const chips=items=>`<ul class="desk-tags">${items.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`;
-const sourceStatus={present:'所在を確認',not_published:'原資料未掲載',not_verified:'内容は未確認'};
-const evidenceView=stage=>`<div class="stage-sources"><h4>資料・証拠の状況</h4><ul>${stage.evidence.sources.map(source=>`<li><span>${sourceStatus[source.availability]}</span> ${esc(source.label)}${source.path&&['/original.html','/reschool.html'].includes(source.path)?` <a href="${source.path}">保存版を見る</a>`:''}</li>`).join('')}</ul></div><details class="evidence-detail"><summary>事実・仮説・反論・検証の区別を読む</summary><dl>${Object.entries(researchEvidenceLabels).map(([key,label])=>`<div><dt>${label}</dt><dd>${esc(stage.evidence[key])}</dd></div>`).join('')}</dl></details>`;
-const field=(name,value)=>`<div><dt>${name}</dt><dd>${esc(value)}</dd></div>`;
-function home(){return `<section class="desk-cover"><div class="notebook-spine" aria-hidden="true"></div><div class="cover-paper"><p class="desk-kicker">RE:Tree / RE:Path Finder — 研究プロトタイプ</p><h1>迷いを、<br>地図にする。</h1><p class="cover-intro">進路や学校生活で迷っていることを書いて、選択肢を整理する場所です。図の項目は、自分で追加したり書き直したりできます。まずは相談の例から試してみてください。</p><div class="desk-actions">${link('/tree','相談を書いて、図にする →','desk-button')}${link('/tree?start=sample','入力せず、相談の例を見る')}</div><ol class="home-steps"><li>メモを書く・例を選ぶ</li><li>ツリーを見て、手直しする</li><li>次に調べることを考える</li></ol><p class="desk-small">AIが作るのは考えるための地図です。進路を決めたり、合格可能性を判定したりするものではありません。</p></div><aside class="cover-scraps" aria-label="掲示板に留めた研究メモ"><span class="board-caption">はじめの一文</span><div class="sticky sticky-yellow"><span>たとえば</span><p>好きなことが<br>まだ分からない。</p></div><div class="sticky sticky-green"><span>たとえば</span><p>二つの選択肢を<br>比べてみたい。</p></div></aside></section><section class="desk-entrances" aria-label="研究机の入口">${[['/tree','01','自分の相談を整理する','進路や学校生活の迷いを書き、選択肢と次に調べることを図で比べます。'],['/research','02','作った理由を読む','日米の教育機会の比較から、問いがどう変わったかを読む。'],['/archive','03','以前の試作品を見る','RE:School v1やPath Mapの画面、未掲載資料の状況を確認する。']].map(([url,no,title,text])=>`<a class="paper-card entrance" href="#${url}"><span class="desk-kicker">${no}</span><h2>${title}</h2><p>${text}</p><span class="card-read">ひらく →</span></a>`).join('')}</section><section class="desk-origin"><div><span class="desk-kicker">研究の出発点</span><h2>日米の教育機会と、<br>資源の違いから。</h2></div><div><p>RE:Schoolは、日本とアメリカの教育機会・資金・人的資源の違いを考えるところから始まりました。Money → Resource → Student Opportunityという見方を経て、卒業生や外部人材を活用する試作へ進んでいます。</p><p>その後、安全・責任・教員負担を含む課題や、日本社会全体の比較へ視野が広がりました。現在は、見えていない選択肢を整理するRE:Treeを試しています。</p><p class="desk-small">研究の経緯、動く試作品、これから確かめることを分けて記録しています。調査資料やインタビューには、まだ掲載・確認できていない部分があります。</p>${link('/research','研究の経緯と、未確認の点を読む →')}</div></section>`;}
-function tree(){return head('Mind Tree / 自分の相談','相談を整理する','一文を書く、例を使う、白紙から始める。途中で書き直せます。')+`<nav class="start-methods" aria-label="相談の始め方"><button type="button" data-start="memo">相談を書く</button><button type="button" data-start="sample">例から試す</button><button type="button" data-start="blank">白紙から作る</button></nav><details class="seed-notes"><summary>身近な相談の例を選ぶ（入力・送信なし）</summary><p>架空の例を表示します。項目を押して、自分の言葉に書き換えられます。</p><div>${starterSampleIndices.map((index,i)=>`<button type="button" data-seed="${i}">${esc(samplePrompts[index].label)}</button>`).join('')}</div></details><div id="desk-tree-host"></div>`;}
-function choiceView(){return head('Choice Cards / 検証する方向','研究テーマを比べる','開発者が検討している7つの研究テーマです。一般の生徒向けの進路一覧とは別の資料です。各テーマの内容、足りない資料、次に聞く相手を整理しています。')+`<div class="choice-grid">${choiceCards.map((c,i)=>`<article class="paper-card choice-sheet" id="choice-${c.id}"><span class="desk-kicker">Possible direction / ${String(i+1).padStart(2,'0')}</span><h2>${esc(c.title)}</h2><p>${esc(c.explores)}</p><dl>${field('使える証拠・確認できるもの',c.evidence)}${field('リスク・足りない証拠',c.risk)}${field('次に相談する人',c.person)}${field('ほかに考えられる方法',c.open)}</dl><div class="card-bottom">${link('/cases?choice='+c.id,'関連するケースを読む →')}<button type="button" data-choice-seed="${c.id}">この方向をツリーで考える</button></div></article>`).join('')}</div>`;}
-function cases(params){const related=params.get('choice');const visible=researchCases.filter(c=>(caseFilter==='すべて'||c.category===caseFilter)&&(!related||c.choices.includes(related)));return head('Case Library / 考えを具体的にする参考資料','相談や研究の事例を見る','卒業生だけでなく、生徒・先生・大学生・地域・保育・AI・国際比較の場面を扱います。すべて架空の表示例で、効果を示す調査結果や実際の人物の記録ではありません。')+`<div class="case-controls"><label for="desk-case-category">分野から見る</label><select id="desk-case-category">${['すべて',...caseCategories].map(c=>`<option ${c===caseFilter?'selected':''}>${esc(c)}</option>`).join('')}</select>${related?`<p>選択肢との関連：${esc(choiceCards.find(c=>c.id===related)?.title||'該当なし')} ${link('/cases','絞り込みを外す')}</p>`:''}<p role="status">${visible.length}件のケース</p></div><div class="case-grid">${visible.map(c=>`<article class="paper-card case-sheet"><span class="desk-kicker">${esc(c.category)} / 架空のケース</span><h2>${esc(c.title)}</h2><p>${esc(c.path)}</p><dl>${field('参考になること',c.evidence)}${field('このケースの限界',c.limitation)}${field('次に確かめたいこと',c.question)}</dl><div class="case-links"><span>関連する研究テーマ</span>${c.choices.map(id=>link('/choices?focus='+id,esc(choiceCards.find(x=>x.id===id).title))).join('')}</div></article>`).join('')||'<p>この条件のケースはありません。分野の選択を変えてください。</p>'}</div>`;}
-function research(){return head('Research Note / 研究の経緯','日米の教育機会の比較から。','RE:Schoolの出発点は、教育機会・資金・人的資源の日米比較です。そこから、学校外の資源を実際の学習機会に変える条件を考えています。資料で確認できる実装、経緯の説明、仮説、未検証事項を分けて記録します。')+`<section class="clipboard research-summary"><span class="clip" aria-hidden="true"></span><h2>研究ノート要約</h2><dl>${[['出発点',researchOrigin],['初期のモデル','Money → Resource → Student Opportunity'],['初期の試作','卒業生・外部人材を活用するRE:School'],['問いの広がり','既存サービス、安全・責任・教員負担、そして日本社会全体の比較'],['現在の試作','RE:Path Finder / RE:Tree。判断の前に選択肢を見える形にする'],['追加確認','教頭インタビューの原記録、新仮説の根拠、効果の検証']].map(([a,b])=>field(a,b)).join('')}</dl></section><section class="note-prose"><h2>何を確認できるのか</h2><div class="knowledge-status"><div><b>実装を確認できるもの</b><p>旧v1、Path Map試作品3号、現在のキャンバスと変更履歴。効果の実証とは区別します。</p></div><div><b>経緯の説明</b><p>日米の教育比較から社会全体の比較へ広がった順番は、研究経緯の説明に基づきます。未掲載の原資料を確認済みとは扱いません。</p></div><div><b>仮説・解釈</b><p>外部資源が機会になる条件、安全と接続、負担などの関係。因果関係や最大の原因は未検証です。</p></div><div><b>未確認の資料</b><p>比較の原資料、既存サービスの比較表、教頭インタビューの逐語録・日時・発言、この試作の効果。</p></div></div></section><section class="research-timeline"><div class="section-label"><span class="desk-kicker">Question Evolution</span><h2>研究の経緯を、順番に読む</h2><p>段階の順番を示すもので、未確認の実施日や因果関係を補った年表ではありません。</p></div><ol>${researchStages.map((stage,i)=>`<li><span class="timeline-number">${String(i+1).padStart(2,'0')}</span><article class="paper-card" id="stage-${stage.id}"><span class="status-tag">${esc(stage.status)}</span><h3>${esc(stage.title)}</h3><p><b>${esc(stage.question)}</b></p><p>${esc(stage.note)}</p><p class="desk-small">確認できる範囲：${esc(stage.source)}</p>${evidenceView(stage)}</article></li>`).join('')}</ol></section><section class="paper-card interview-followup"><h2>インタビューと、問題特定の保留</h2><p class="research-boundary">${esc(interviewFollowUp.problemStatus)}</p><p>${esc(interviewFollowUp.nextInterview)}</p><p>${esc(interviewFollowUp.known)}</p><h3>記録と照合する項目</h3><ul>${interviewFollowUp.pending.map(x=>`<li>${esc(x)}</li>`).join('')}</ul><h3>今後の検証候補（インタビューの発言ではありません）</h3><ul>${interviewFollowUp.candidates.map(x=>`<li>${esc(x)}</li>`).join('')}</ul><p class="research-boundary">${esc(interviewFollowUp.boundary)}</p></section><section class="research-conversion paper-card"><h2>Money → Resource → Student Opportunity</h2><p>資源が存在することと、本人が使える学習機会になることを分けて考えるモデルです。</p><h3>Resourceとして考えるもの</h3>${chips(resources)}<h3>変換するときに確認したい条件</h3>${chips(conversionConditions)}<p class="desk-small">必要な条件や効果が、すべての学校で検証されたという意味ではありません。</p></section><section class="note-prose"><h2>後に広がった、社会全体の比較</h2><p>安全・秩序・信頼・開放性の比較は、教育研究の出発点ではなく、問いが広がった段階です。国全体の傾向を個人や学校へそのまま当てはめず、別の説明や反論も残します。</p>${chips(researchTopics)}<p class="desk-small">指標の定義・年次・数値・出典の原資料は未掲載です。日本の安全や信頼が、成長や開放性の課題を直接生んでいると証明したわけではありません。</p></section><section class="assumptions"><div class="section-label"><h2>そのままでは足りなかった仮説</h2><p>論点の見直しとして残します。各仮説が実証的に否定された、という結論ではありません。</p></div><div class="assumption-grid">${assumptions.map(([before,change,next])=>`<article class="paper-card"><span class="sticky-label">当初の仮説</span><h3>${esc(before)}</h3><dl>${field('見直したこと',change)}${field('次に検証する問い',next)}</dl></article>`).join('')}</div></section><aside class="research-honesty sticky sticky-blue"><h2>この試作品で、これから確かめること</h2><p>迷いを、選択肢・証拠・仮説・反論・リスク・次の行動に分けると、本人や信頼できる大人が話し合いやすくなるかを検証します。実際の生徒・先生への効果は未検証です。AIを使う方法だけでなく、紙のメモや既存の運用とも比較する必要があります。</p><p>研究ノートは、未掲載の原資料やインタビューの記録の代わりにはなりません。</p></aside>`;}
-function archivePreview(href,asset,title){return `<a class="archive-original-preview" href="${href}"><img src="/src/archive-previews/${asset}.jpg" width="1280" height="900" loading="lazy" alt="${title}の保存画面。押すと当時のデザインで開きます。"><span class="archive-preview-label"><b>${title}</b><span>当時の画面をそのまま開く ↗</span></span></a>`;}
-function archive(){return head('Archive / Past Prototypes','過去の試作品','当時の画面を、当時のデザインのまま残しています。プレビューを押すと保存版を開けます。過去の試作も、問いが変わった記録の一部です。')+`<div class="archive-stack">${archiveItems.map((a,i)=>`<article class="paper-card archive-item"><div class="archive-tab">File ${String(i+1).padStart(2,'0')}</div><span class="desk-kicker">当時の画面と、研究の記録</span><h2>${esc(a.title)}</h2><p>${esc(a.description)}</p>${a.href?archivePreview(a.href,'reschool-v1','RE:School v1 — 卒業の、その続きを。'):''}${a.note?`<p class="desk-small">${esc(a.note)}</p>`:''}${a.related?`<div class="archive-related"><h3>関連する保存版：Path Map 試作品3号</h3><p class="desk-small">Prototype 2とは別の試作品です。こちらは当時の画面を開けます。</p>${archivePreview(a.related,'path-map-3','Path Map 試作品3号')}</div>`:''}<details class="archive-research-notes"><summary>この試作で考えていたことを読む</summary><dl>${field('当時の問い',a.question)}${field('残った疑問・見直したこと',a.learned)}${field('今の試作品へのつながり',a.next)}</dl></details>${!a.href?`<div class="desk-actions"><button class="desk-button" disabled aria-label="${a.button}：ファイル未掲載">Coming soon</button><span class="desk-small">${a.related?'Prototype 2本体':'原資料'}は未掲載です。</span></div>`:''}</article>`).join('')}</div><aside class="archive-footer-note"><h2>説明だけでなく、作った画面を残す</h2><p>v1の既存バンドル・スタイルと、Path Mapの紙面・相談・進路一覧・学校ページを保存しています。プレビューは実画面を撮影した画像です。開いた保存版では当時の画面を見られます。v1の入力欄は表示専用で、回答を保存・送信しません。</p>${link('/research','研究ノートに戻る →')}</aside>`;}
-function createTree(){
- treeElement=document.createElement('div');treeElement.className='tree-feature';treeElement.innerHTML=treeFeatureView;
- const clipboard=document.createElement('aside');clipboard.className='clipboard today-clipboard';clipboard.id='today-summary';clipboard.setAttribute('aria-label','今日の整理');clipboard.innerHTML='<span class="clip" aria-hidden="true"></span><h2>今日の整理</h2><p>メモやサンプルからツリーを作ると、ここに整理が表示されます。</p>';
- treeElement.querySelector('.tree-board').after(clipboard);
- mountTree(treeElement,{defaultSample:28});
- // Keep the growing sample library off the writing surface until requested.
- const samples=treeElement.querySelector('#sample-prompts');const drawer=document.createElement('details');drawer.className='desk-sample-drawer';drawer.innerHTML='<summary>一般向けの相談例・開発者の研究例を見る</summary>';samples.before(drawer);drawer.append(samples);const consultation=treeElement.querySelector('#consultation'),form=treeElement.querySelector('#memo-form'),guide=treeElement.querySelector('.tree-guide');const sampleHeading=consultation.querySelector(':scope > h3');if(sampleHeading){sampleHeading.nextElementSibling?.remove();sampleHeading.remove();}const help=document.createElement('details');help.className='tree-help';help.innerHTML='<summary>使い方を確認する（3ステップ）</summary>';help.append(guide);form.after(drawer);drawer.after(help);treeElement.querySelector('#memo').rows=5;
- return treeElement;
+import {researchStages,researchEvidenceLabels,interviewFollowUp,assumptions} from './research-data.js';
+import {studentSamples,featuredSampleIds,studentCases,studentCaseCategories,legacySampleAudit} from './student-data.js';
+import {researchChapters,reportSummary,schoolResearchDirections} from './research-report.js';
+
+const root = document.querySelector('#root');
+const nav = [
+  ['/', 'ホーム', 'はじめに'],
+  ['/tree', '進路を考える', 'RE:Path Finder / Mind Tree'],
+  ['/cases', '事例を見る', '架空の高校生の相談例'],
+  ['/research', '研究について', 'RE:School Research'],
+  ['/archive', '開発の歴史', '以前の試作品と記録']
+];
+const featured = featuredSampleIds.map(id => studentSamples.find(sample => sample.id === id)).filter(Boolean);
+const openChapters = new Set();
+const developerSampleIndices = new Set(legacySampleAudit.filter(item => item.placement === 'developer-archive').map(item => item.index));
+let treeElement = null;
+let caseFilter = 'すべて';
+let developerTree = false;
+const field = (title, value) => '<div><dt>' + esc(title) + '</dt><dd>' + esc(value) + '</dd></div>';
+const list = items => '<ul>' + items.map(item => '<li>' + esc(item) + '</li>').join('') + '</ul>';
+const link = (path, label, className = 'desk-link') => '<a class="' + className + '" href="#' + esc(path) + '">' + esc(label) + '</a>';
+const head = (label, title, text) => '<header class="desk-page-head"><span class="desk-kicker">' + esc(label) + '</span><h1>' + esc(title) + '</h1><p>' + esc(text) + '</p></header>';
+const sampleLink = sample => '/tree?sample=' + encodeURIComponent(sample.id);
+
+function home() {
+  return '<section class="student-home-intro paper-card"><p class="desk-kicker">高校生向けの研究プロトタイプ</p>' +
+    '<h1>進路、どう考えよう。</h1>' +
+    '<p class="home-introduction">進路や学校外の活動を、例の図から考えられます。気になる枝を読んで、自分の言葉に書き換えてみてください。</p>' +
+    '</section>' +
+    '<section class="home-samples" aria-labelledby="home-samples-title"><div class="home-section-title"><h2 id="home-samples-title">いま、気になっていることは？</h2><p>押すと、編集できる例のツリーが開きます。入力・AIへの送信は不要です。</p></div>' +
+    '<div class="home-topic-grid">' + featured.map((sample, index) => '<a class="home-topic" data-student-sample="' + esc(sample.id) + '" href="#' + sampleLink(sample) + '"><span class="topic-number">' + String(index + 1).padStart(2, '0') + '</span><h3>' + esc(sample.label) + '</h3><span class="topic-open">例のツリーを開く →</span></a>').join('') + '</div>' +
+    '<div class="home-write-link">' + link('/tree?start=memo', '自分の相談から始める →') + '</div><ol class="home-steps"><li>気になる例を開く</li><li>枝を読んで、自分の言葉に直す</li><li>次に調べることを残す</li></ol><p class="home-sample-note">相談例と事例はすべて架空です。AIが未接続でも、読む・編集する・JSONファイルに保存する操作を使えます。</p></section>' +
+    '<section class="home-opportunities paper-card"><div><p class="desk-kicker">進路の名前だけでなく、学び方も</p><h2>興味はあるけど、<br>学校に活動がないときは。</h2></div><div><p>先生に相談する、大学や地域の公開プログラムを調べる、参加に必要な費用や時間を比べる。まだ知らない学び方も、選択肢に加えて考えられます。</p>' +
+    link(sampleLink(featured[5]), '学校外の活動の例を開く →') + '<p class="desk-small">ここでは実在の参加先を紹介・予約しません。実際の募集条件と安全性は、学校や保護者と公式資料で確認します。</p></div></section>' +
+    '<section class="student-research-boundary paper-card"><div><h2>このサイトを作っている理由</h2><p>RE:Path Finderは、RE:Schoolの研究から生まれた試作品です。日米の教育機会の比較、過去の試作、まだ確かめていないことは、研究報告に分けて掲載しています。</p></div><div class="desk-actions">' + link('/research', 'RE:Schoolの研究報告を読む →') + link('/archive', '以前の試作品を見る →') + '</div></section>';
 }
-function current(){const raw=location.hash.slice(1)||'/';const [path,query]=raw.split('?');return {path:aliases[path]||path,params:new URLSearchParams(query)};}
-function render(focus=false){
- const {path,params}=current();const body=path==='/'?home():path==='/tree'?tree():path==='/cases'?cases(params):path==='/choices'?choiceView():path==='/research'?research():path==='/archive'?archive():head('ページを確認してください','このページは見つかりません。','Homeから、読みたい資料やMind Treeへ進めます。');
- root.innerHTML=`<div class="research-desk"><header class="desk-masthead"><a class="desk-brand" href="#/">RE:Tree <span>/ RE:Path Finder</span></a><p>個人の研究机 <span>Research Prototype</span></p></header><nav class="desk-nav" aria-label="メインメニュー">${nav.map(([url,label])=>`<a data-nav-kind="${url==='/'||url==='/tree'?'work':'reference'}" href="#${url}" ${path===url?'aria-current="page"':''}>${navLabels[url]}<small>${label} · ${navNotes[url]}</small></a>`).join('')}</nav><main id="main" class="desk-main ${path==='/tree'?'working-page':''}" tabindex="-1">${body}</main><footer class="desk-footer"><div><b>RE:Tree</b><p>迷いを、地図にする。</p></div><div><p>これは研究用の試作品です。AIは答えを決めません。<br>個人情報は入力しすぎないでください。重要な判断は、信頼できる大人と相談してください。</p><p class="desk-small">自動保存は行わず、再読み込みで消えます。必要なツリーは自分でJSONファイルとして保存・復元できます。実際のマッチング・連絡先の交換・ログイン・解析は行いません。AIへ送信するときだけ確認済みのメモと任意欄を送ります。</p>${link('/archive','研究の過程を残すアーカイブ →')}</div></footer></div>`;
- if(path==='/tree')document.querySelector('#desk-tree-host').append(treeElement||createTree());
- document.title=(nav.find(([url])=>url===path)?.[1]||'ページの確認')+' | RE:Tree — 迷いを、地図にする。';
- if(focus){document.querySelector('#main').focus({preventScroll:true});window.scrollTo(0,0);}
- if(path==='/tree'&&params.get('start')==='sample'){treeElement.querySelector('[data-preview="28"]').click();}
- if(path==='/choices'&&params.has('focus'))document.querySelector('#choice-'+CSS.escape(params.get('focus')))?.scrollIntoView({block:'start'});
+
+function tree(params) {
+  const legacy = params.has('legacy') || developerTree;
+  return head('RE:Path Finder / Mind Tree', '進路を考える', '例の図を手直しする、自分の相談を書く、白紙から始める。選択肢を比べて、次に調べることを残せます。') +
+    (legacy ? '<p class="route-notice developer-notice" role="status">開発者の研究デモを表示しています。一般向けの進路例は「例から試す」から開けます。これらのデモは研究成果や調査結果を示すものではありません。</p>' : '') +
+    '<nav class="start-methods" aria-label="相談の始め方"><button type="button" data-start="sample">例から試す</button><button type="button" data-start="memo">自分の相談を書く</button><button type="button" data-start="blank">白紙から作る</button></nav><div id="desk-tree-host"></div>';
 }
-root.addEventListener('click',e=>{
- const button=e.target.closest('button');if(!button)return;
- if(button.dataset.start){if(button.dataset.start==='sample'){const examples=root.querySelector('.seed-notes');examples.open=true;examples.querySelector('button').focus();}else if(button.dataset.start==='blank'){treeElement.dispatchEvent(new CustomEvent('tree-blank-start'));}else {treeElement.querySelector('#memo').focus();treeElement.querySelector('#memo').scrollIntoView({block:'center'});}return;}
- if(button.hasAttribute('data-seed'))treeElement.dispatchEvent(new CustomEvent('tree-sample-open',{detail:{index:starterSampleIndices[Number(button.dataset.seed)]}}));
- if(button.dataset.choiceSeed){const c=choiceCards.find(c=>c.id===button.dataset.choiceSeed);location.hash='/tree';render();const memo=treeElement.querySelector('#memo');memo.value=`${c.title}について考えたい。${c.explores}\nまだ確かめていないこと：${c.risk}\nどの証拠や反論を調べ、誰に相談するかを整理したい。`;memo.dispatchEvent(new Event('input',{bubbles:true}));memo.focus();memo.scrollIntoView({block:'center'});}
+
+function cases(params) {
+  const filter = params.get('category');
+  if (filter && ['すべて', ...studentCaseCategories].includes(filter)) caseFilter = filter;
+  const visible = studentCases.filter(item => caseFilter === 'すべて' || item.category === caseFilter);
+  return head('Case Library / 一般向けの架空事例', '事例を見る', '同じような迷いを持つ高校生なら、何を比べ、何を確認できるか。事例から例のツリーを開き、自分の言葉に書き換えられます。') +
+    '<p class="case-fiction-note">すべて架空の相談例です。実在の生徒の記録や、進路・適性・合格可能性を判断した結果ではありません。</p>' +
+    (params.has('choice') ? '<p class="route-notice">以前の研究テーマ別ケースは、開発用デモとしてアーカイブに分けました。ここでは高校生の進路や学習機会に関する事例を掲載しています。' + link('/archive?section=developer-demos', '以前のデモを見る') + '</p>' : '') +
+    '<div class="case-controls"><label for="desk-case-category">相談の内容で絞る</label><select id="desk-case-category">' +
+    ['すべて', ...studentCaseCategories].map(category => '<option' + (category === caseFilter ? ' selected' : '') + '>' + esc(category) + '</option>').join('') +
+    '</select><p role="status">' + visible.length + '件の架空の事例</p></div>' +
+    '<div class="student-case-grid case-grid">' + visible.map(item => '<article class="paper-card case-sheet student-case" data-case-id="' + esc(item.id) + '">' +
+      '<span class="desk-kicker">' + esc(item.category) + ' / 架空の相談例</span><h2>' + esc(item.title) + '</h2><p class="case-profile">' + esc(item.profile) + '</p>' +
+      '<section><h3>最初の悩み</h3><p>' + esc(item.concern) + '</p></section>' +
+      '<section><h3>考えられる選択肢</h3>' + list(item.options) + '</section>' +
+      '<section><h3>何を比較・確認するか</h3>' + list(item.compared) + '</section>' +
+      '<section><h3>まだ分からないこと</h3>' + list(item.unknown) + '</section>' +
+      '<section><h3>次にできる行動</h3>' + list(item.actions) + '</section>' +
+      '<div class="case-tree-action">' + link('/tree?sample=' + encodeURIComponent(item.sampleId), 'このケースをツリーで試す →', 'desk-button') + '</div></article>').join('') + '</div>';
+}
+
+function sources(items) {
+  return '<ul class="report-sources">' + items.map(source => {
+    const safe = typeof source.href === 'string' && /^(\/(?!\/)|https:\/\/)/.test(source.href);
+    return '<li><span class="source-availability">' + esc(source.status) + '</span>' +
+      (safe ? '<a href="' + esc(source.href) + '">' + esc(source.label) + '</a>' : '<span>' + esc(source.label) + '</span>') + '</li>';
+  }).join('') + '</ul>';
+}
+
+function tableView(table) {
+  if (!table) return '';
+  return '<div class="report-table-wrap" tabindex="0" role="region" aria-label="' + esc(table.caption) + '"><table><caption>' + esc(table.caption) +
+    '</caption><thead><tr>' + table.headers.map(label => '<th scope="col">' + esc(label) + '</th>').join('') + '</tr></thead><tbody>' +
+    table.rows.map(row => '<tr>' + row.map((cell, index) => index === 0 ? '<th scope="row">' + esc(cell) + '</th>' : '<td>' + esc(cell) + '</td>').join('') + '</tr>').join('') + '</tbody></table></div>';
+}
+
+function chapterView(chapter, index, params) {
+  const open = openChapters.has(chapter.id) || params.get('chapter') === chapter.id;
+  return '<details class="research-chapter" data-research-chapter="' + esc(chapter.id) + '" id="chapter-' + esc(chapter.id) + '"' + (open ? ' open' : '') + '>' +
+    '<summary><span class="chapter-number">' + String(index + 1).padStart(2, '0') + '</span><span><h2>' + esc(chapter.title) + '</h2><span class="chapter-summary">' + esc(chapter.summary) + '</span></span><span class="chapter-expand">詳しく読む</span></summary>' +
+    '<div class="chapter-body"><p class="status-tag">' + esc(chapter.status) + '</p><dl class="chapter-record">' +
+    [['最初の問い', 'question'], ['そのとき考えた仮説', 'hypothesis'], ['実際に行った調査・今回確認した範囲', 'investigation'], ['確認できた内容', 'findings'], ['反証・別の説明', 'counterpoint'], ['問いがどう変わったか', 'evolution']].map(([label, key]) => field(label, chapter[key])).join('') +
+    '</dl>' + tableView(chapter.table) + '<h3>使用した資料・出典の所在</h3>' + sources(chapter.sources) +
+    '<div class="chapter-unknown"><h3>分からないこと</h3><p>' + esc(chapter.unknown) + '</p></div></div></details>';
+}
+
+const evidenceStatus = {present: '所在を確認', not_published: '原資料未掲載', not_verified: '内容は未確認'};
+function timelineView() {
+  return '<section class="research-timeline" id="question-timeline"><h2>問いの変化を7段階でたどる</h2><p>研究経緯の順序です。未確認の制作日や因果関係を補った年表ではありません。</p><ol>' +
+    researchStages.map((stage, index) => '<li><span class="timeline-number">' + String(index + 1).padStart(2, '0') + '</span><article class="paper-card" id="stage-' + esc(stage.id) + '">' +
+      '<span class="status-tag">' + esc(stage.status) + '</span><h3>' + esc(stage.title) + '</h3><p><b>' + esc(stage.question) + '</b></p><p>' + esc(stage.note) + '</p>' +
+      '<details class="evidence-detail"><summary>事実・仮説・反論・検証と資料の区別を読む</summary><dl>' +
+      Object.entries(researchEvidenceLabels).map(([key, label]) => field(label, stage.evidence[key])).join('') + '</dl><ul class="stage-sources">' +
+      stage.evidence.sources.map(source => '<li>' + esc(evidenceStatus[source.availability]) + '：' + esc(source.label) + '</li>').join('') + '</ul></details></article></li>').join('') + '</ol></section>';
+}
+
+function research(params) {
+  const wanted = params.get('chapter');
+  return head('RE:School Research / 生徒向け機能の背景', '研究について', reportSummary.intro) +
+    '<section class="report-opening paper-card"><h2>' + esc(reportSummary.title) + '</h2><p>進路を考える機能とは別に、何を調べ、何を作り、何がまだ分からないかを記録しています。</p>' +
+    '<div class="report-evidence-guide">' + reportSummary.evidenceGuide.map(item => '<div><b>' + esc(item.label) + '</b><p>' + esc(item.detail) + '</p></div>').join('') + '</div>' +
+    '<details class="report-limits"><summary>資料の確認範囲と、結論を保留していること</summary>' + list(reportSummary.limitations) + '</details></section>' +
+    '<nav class="report-toc paper-card" aria-label="研究報告の目次"><h2>研究報告の目次</h2><ol>' + researchChapters.map(chapter => '<li>' + link('/research?chapter=' + chapter.id, chapter.title) + '</li>').join('') + '</ol></nav>' +
+    (wanted && !researchChapters.some(chapter => chapter.id === wanted) ? '<p class="route-notice" role="status">指定された章は見つかりませんでした。目次から選び直せます。</p>' : '') +
+    '<section class="research-chapters" aria-label="研究報告の13章">' + researchChapters.map((chapter, index) => chapterView(chapter, index, params)).join('') + '</section>' +
+    '<details class="report-history"><summary>研究の流れを、7段階の年表で読む</summary>' + timelineView() + '</details>' +
+    '<section id="directions" class="school-research-directions"><h2>RE:Schoolで、これから検討すること</h2><p>ここは開発上の研究課題です。生徒本人の進路を比較・評価する一覧ではありません。</p><div class="research-directions-grid">' +
+    schoolResearchDirections.map(item => '<article class="paper-card"><h3>' + esc(item.title) + '</h3><dl>' + field('問い', item.question) + field('検討の方法', item.approach) + field('確認できていないこと', item.limits) + field('次に確かめること', item.next) + '</dl></article>').join('') + '</div></section>' +
+    '<details class="report-history assumptions"><summary>見直してきた6つの仮説を読む</summary><div class="assumption-grid">' +
+    assumptions.map(([before, change, next]) => '<article class="paper-card"><h3>' + esc(before) + '</h3><dl>' + field('見直したこと', change) + field('次に確かめること', next) + '</dl></article>').join('') + '</div></details>' +
+    '<aside class="research-honesty paper-card"><h2>まだ、問題の最終特定はしていません</h2><p>' + esc(interviewFollowUp.problemStatus) + '</p><p>実際の生徒・先生への効果は未検証です。操作できる試作品があることと、役立つことが実証されたことは別です。紙のメモや既存の面談資料、AIを使わない方法とも比べる必要があります。</p>' +
+    link('/tree', '進路を考える画面へ戻る →') + '</aside>';
+}
+
+const archives = [
+  {
+    id: 'school-v1', title: 'RE:School v1', when: 'Gitの保存履歴：2026年10月14日。画面の版記は2026.08ですが、制作開始日の資料は未確認です。',
+    purpose: '学校と卒業生の新しい関係を考え、学校外の人・経験・知識を生徒の学習機会にする仕組みを試作しました。',
+    features: ['卒業生が学校へ関われることを読む画面', '先生・学校向けの案内', '関わり方を選ぶ試作フロー'],
+    learned: 'つなぐ画面を作っても、安全、責任、同意、選定、学校承認、先生の負担は残ります。実際の接続や教育効果を検証した記録とは区別します。',
+    next: '直接つなぐ前に、生徒本人がどんな選択肢を知り、何を比べたいかを整理する方向へ進みました。',
+    href: '/original.html', asset: 'reschool-v1', availability: '保存版あり。当時のデザインを維持し、入力欄は表示専用です。'
+  },
+  {
+    id: 'finder-v2', title: 'RE:Path Finder Prototype 2', when: '構想の順序を記録しています。制作日・本体ファイルは今回確認できません。',
+    purpose: '興味や活動、学校の環境、先輩のケースから、まだ知らなかった進路を見える形にする構想です。',
+    features: ['AI相談と先輩ケースを使う構想', '興味・活動・学習環境を手がかりにする設計'],
+    learned: '「誰につなぐか」の前に、本人が「どんな道があるか」を考えられることが重要ではないか、という問いが残りました。効果の実証は未確認です。',
+    next: '試作品3号では進路の下調べを、RE:Treeでは選択肢・証拠・反論・次の行動の編集を試しています。',
+    href: null, availability: 'Prototype 2本体は未掲載です。下の試作品3号とは別の版です。'
+  },
+  {
+    id: 'path-map-3', title: 'Path Map 試作品3号', when: '保存版を確認できる履歴：2026年10月14日以降。相談・編集機能の追加履歴も残っています。',
+    purpose: '興味から学ぶ内容・仕事・進み方を調べ、先生に聞きたいことを用意するための試作です。',
+    features: ['選択式の進路相談', '16分野の進路一覧と比較', '架空の卒業生事例・学校ページ', '相談メモとツリー機能'],
+    learned: '進路情報を並べるだけでなく、本人が自分の問いに合わせて比較・編集できることを検討しています。掲載情報は架空のサンプルです。',
+    next: '現在のRE:Path Finderでは、一般の高校生の相談例から、編集と次の行動までを続けて試せる構成へ進めています。',
+    href: '/reschool.html', asset: 'path-map-3', availability: '保存版あり。Prototype 2とは別の試作品で、当時の画面を開けます。'
+  },
+  {
+    id: 'evidence-pack', title: 'Evidence / Research Pack', when: '資料群としての言及があります。統合版の公開日・ファイル本体は未確認です。',
+    purpose: '調査、反証、既存サービス比較、アンケート、問いの変化をまとめるための資料群です。',
+    features: ['調査や反証を照合するための資料構想', 'アンケート・新聞資料・既存サービス比較の記録'],
+    learned: '資料の所在と内容を確認し、本人の記録・仮説・未確認事項を分ける必要があります。MASTERや原資料の本文は今回参照できていません。',
+    next: '現在の研究報告では13章に分け、資料を確認できる範囲と、まだ分からないことを記録しています。',
+    href: null, availability: '原資料・Evidence Pack本体は未掲載です。研究報告は原資料の代わりにはなりません。'
+  }
+];
+
+function archivePreview(item) {
+  return '<a class="archive-original-preview" href="' + item.href + '"><img src="/src/archive-previews/' + item.asset + '.jpg" width="1280" height="900" loading="lazy" alt="' +
+    esc(item.title) + 'の実画面。押すと当時のデザインで保存版を開きます。"><span class="archive-preview-label"><b>' + esc(item.title) + '</b><span>当時の画面を開く ↗</span></span></a>';
+}
+
+function archive() {
+  return head('Archive / 過去の画面と記録', '開発の歴史', '過去の試作品は、問いを考え直してきた記録です。何を作り、何が残ったのかを読んでから、当時のデザインの保存版を開けます。') +
+    '<div class="archive-stack">' + archives.map((item, index) => '<article class="paper-card archive-item" data-archive-id="' + item.id + '">' +
+    '<div class="archive-tab">File ' + String(index + 1).padStart(2, '0') + '</div><h2>' + esc(item.title) + '</h2><p class="archive-date">' + esc(item.when) + '</p>' +
+    '<p class="archive-availability"><b>' + (item.href ? '開ける保存版があります' : '本体は未掲載です') + '</b><br>' + esc(item.availability) + '</p>' +
+    '<dl class="archive-overview">' + field('当時、何を作ろうとしたか', item.purpose) +
+    '<div><dt>主な機能・構想</dt><dd>' + list(item.features) + '</dd></div>' +
+    field('何が分かり、何が残ったか', item.learned) + field('次の試作品へのつながり', item.next) + '</dl>' +
+    (item.href ? archivePreview(item) : '<button class="desk-button" disabled>' + esc(item.title) + '：保存版は未掲載</button>') + '</article>').join('') + '</div>' +
+    '<details class="developer-lab paper-card" id="developer-demos"><summary>過去の開発用・研究デモを開く</summary><p>旧バージョンの開発者向けサンプルを保管しています。ROOTSはRE:Schoolとは独立したプロジェクトです。ここにあるデモは、一般向け進路例やRE:Schoolの調査成果としては扱いません。</p><div class="developer-demo-links">' +
+    samplePrompts.map((sample, index) => ({sample, index})).filter(({index}) => developerSampleIndices.has(index)).map(({sample, index}) => link('/tree?legacy=' + index, sample.label + '（開発用デモ）')).join('') + '</div></details>' +
+    '<aside class="archive-footer-note"><h2>保存版と、今の研究報告</h2><p>プレビューは保存版の実画面を撮影した画像です。過去のデザインと、当時の画面を動かすファイルは残しています。現在の研究報告は、過去の調査原票・原画像・インタビューの逐語録の代わりにはなりません。</p>' + link('/research', 'RE:Schoolの研究報告を読む →') + '</aside>';
+}
+
+function createTree() {
+  treeElement = document.createElement('div');
+  treeElement.className = 'tree-feature';
+  treeElement.innerHTML = studentTreeFeatureView;
+  const clipboard = document.createElement('aside');
+  clipboard.className = 'clipboard today-clipboard';
+  clipboard.id = 'today-summary';
+  clipboard.setAttribute('aria-label', '今日の整理');
+  clipboard.innerHTML = '<span class="clip" aria-hidden="true"></span><h2>今日の整理</h2><p>例や相談を図にすると、次に調べることをここでも確認できます。</p>';
+  treeElement.querySelector('#map-workspace').after(clipboard);
+  mountTree(treeElement, {defaultSample: 28, studentMode: true});
+  return treeElement;
+}
+
+function current() {
+  const raw = location.hash.slice(1) || '/';
+  const split = raw.indexOf('?');
+  const path = split < 0 ? raw : raw.slice(0, split);
+  const params = new URLSearchParams(split < 0 ? '' : raw.slice(split + 1));
+  let next = path;
+  let notice = '';
+  if (path === '/finder') { next = '/tree'; notice = '以前の相談ページは「進路を考える」にまとめました。'; }
+  if (path === '/paths') { next = '/tree'; notice = '以前の一覧から、相談例を開いて比較する画面へ移動しました。保存版の進路一覧は開発の歴史から開けます。'; }
+  if (path === '/choices') { next = '/research'; params.set('section', 'directions'); notice = '以前の研究テーマ比較は、RE:Schoolの研究報告内へ移しました。一般向けの進路比較とは区別しています。'; }
+  if (path === '/dashboard') { next = '/archive'; notice = '以前の学校ページは、Path Map試作品3号の保存版に残しています。'; }
+  if (next !== path) history.replaceState(null, '', '#' + next + (params.size ? '?' + params.toString() : ''));
+  return {path: next, params, notice};
+}
+
+function routeTree(params) {
+  const api = treeElement.retreeStudy;
+  if (!api) return;
+  let consumed = false;
+  if (params.has('sample')) {
+    const id = params.get('sample');
+    if (studentSamples.some(sample => sample.id === id)) {
+      if (api.loadStudentSample(id) !== false) developerTree = false;
+    }
+    else {
+      const notice = document.createElement('p');
+      notice.className = 'route-notice';
+      notice.setAttribute('role', 'status');
+      notice.textContent = '指定された例は見つかりませんでした。「例から試す」から選べます。';
+      document.querySelector('#desk-tree-host').before(notice);
+      api.showSamples?.();
+    }
+    consumed = true;
+  } else if (params.has('legacy')) {
+    const index = Number(params.get('legacy'));
+    if (Number.isInteger(index) && index >= 0 && index < samplePrompts.length && developerSampleIndices.has(index)) {
+      developerTree = api.loadSeed(index) !== false;
+    } else {
+      developerTree = false;
+      api.showSamples?.();
+    }
+    consumed = true;
+  } else if (params.get('start') === 'memo') {
+    api.focusMemo?.(); consumed = true;
+  } else if (params.get('start') === 'sample') {
+    api.showSamples?.(); consumed = true;
+  } else if (params.get('start') === 'blank') {
+    api.startBlank?.(); consumed = true;
+  }
+  if (consumed) history.replaceState(null, '', '#/tree');
+  syncDeveloperNotice();
+}
+
+function syncDeveloperNotice() {
+  if (!document.querySelector('#desk-tree-host')) return;
+  const source = treeElement?.retreeStudy?.getSource?.();
+  if (source) developerTree = source.source === 'sample' && !source.studentSampleId && developerSampleIndices.has(source.sampleIndex);
+  const currentNotice = document.querySelector('.developer-notice');
+  if (!developerTree) { currentNotice?.remove(); return; }
+  if (!currentNotice) {
+    const notice = document.createElement('p');
+    notice.className = 'route-notice developer-notice';
+    notice.setAttribute('role', 'status');
+    notice.textContent = '開発者の研究デモを表示しています。一般向けの進路例は「例から試す」から開けます。これらのデモは研究成果や調査結果を示すものではありません。';
+    document.querySelector('.start-methods').before(notice);
+  }
+}
+
+function render(focus = false) {
+  const {path, params, notice} = current();
+  const content = path === '/' ? home() : path === '/tree' ? tree(params) : path === '/cases' ? cases(params) :
+    path === '/research' ? research(params) : path === '/archive' ? archive() :
+    head('ページの確認', 'このページは見つかりません。', 'ホームから相談例、事例、研究報告へ進めます。');
+  root.innerHTML = '<div class="research-desk"><header class="desk-masthead"><a class="desk-brand" href="#/">RE:Path Finder<span>考えを整理する Mind Tree</span></a><p>高校生向けの試作品<span>Research Prototype</span></p></header>' +
+    '<nav class="desk-nav" aria-label="メインメニュー">' + nav.map(([url, label, note]) => '<a data-nav-kind="' + (url === '/' || url === '/tree' || url === '/cases' ? 'work' : 'reference') + '" href="#' + url + '"' +
+      (url === path ? ' aria-current="page"' : '') + '>' + label + '<small>' + note + '</small></a>').join('') + '</nav>' +
+    '<main id="main" class="desk-main' + (path === '/tree' ? ' working-page' : '') + '" tabindex="-1">' +
+    (notice ? '<p class="route-notice" role="status">' + esc(notice) + '</p>' : '') + content + '</main>' +
+    '<footer class="desk-footer"><div><b>RE:Path Finder</b><p>選択肢を知り、比べて、次の行動へ。</p></div><div><p>研究用の試作品です。進路や適性、合格可能性を判断するものではありません。大切な判断は先生・保護者など信頼できる大人と相談してください。</p>' +
+    '<p class="desk-small">自動保存はしません。必要な図はJSONファイルとして端末へ保存し、後から復元できます。名前・学校名・連絡先は不要です。AIへ送る場合は内容を確認して同意します。外部の大人への直接連絡・マッチングは行いません。</p>' +
+    link('/research', '背景にあるRE:School研究を読む →') + '</div></footer></div>';
+  if (path === '/tree') document.querySelector('#desk-tree-host').append(treeElement || createTree());
+  document.title = (nav.find(([url]) => url === path)?.[1] || 'ページの確認') + ' | RE:Path Finder';
+  if (focus) {
+    document.querySelector('#main').focus({preventScroll: true});
+    window.scrollTo(0, 0);
+  }
+  if (path === '/tree') routeTree(params);
+  if (path === '/research' && params.has('chapter')) {
+    const chapter = researchChapters.find(item => item.id === params.get('chapter'));
+    if (chapter) {
+      openChapters.add(chapter.id);
+      document.getElementById('chapter-' + chapter.id)?.scrollIntoView({block: 'start'});
+    }
+  }
+  if (params.get('section') === 'directions') document.getElementById('directions')?.scrollIntoView({block: 'start'});
+  if (params.get('section') === 'developer-demos') {
+    const demos = document.getElementById('developer-demos');
+    if (demos) { demos.open = true; demos.scrollIntoView({block: 'start'}); }
+  }
+}
+
+root.addEventListener('click', event => {
+  const button = event.target.closest('button[data-start]');
+  if (!button || !treeElement?.retreeStudy) return;
+  const api = treeElement.retreeStudy;
+  if (button.dataset.start === 'memo') api.focusMemo?.();
+  else if (button.dataset.start === 'blank') { if (api.startBlank?.() !== false) developerTree = false; }
+  else api.showSamples?.();
+  syncDeveloperNotice();
 });
-root.addEventListener('change',e=>{if(e.target.id==='desk-case-category'){caseFilter=e.target.value;render();document.querySelector('#desk-case-category').focus({preventScroll:true});}});
-document.querySelector('.skip').addEventListener('click',e=>{e.preventDefault();document.querySelector('#main').focus();});
-window.addEventListener('hashchange',()=>render(true));
+root.addEventListener('tree-content-change', syncDeveloperNotice);
+root.addEventListener('change', event => {
+  if (event.target.id !== 'desk-case-category') return;
+  caseFilter = event.target.value;
+  history.replaceState(null, '', '#/cases' + (caseFilter === 'すべて' ? '' : '?category=' + encodeURIComponent(caseFilter)));
+  render();
+  document.querySelector('#desk-case-category').focus({preventScroll: true});
+});
+root.addEventListener('toggle', event => {
+  const id = event.target.dataset?.researchChapter;
+  if (!id) return;
+  if (event.target.open) openChapters.add(id); else openChapters.delete(id);
+}, true);
+document.querySelector('.skip').addEventListener('click', event => {
+  event.preventDefault();
+  document.querySelector('#main').focus();
+});
+window.addEventListener('hashchange', () => render(true));
 render();

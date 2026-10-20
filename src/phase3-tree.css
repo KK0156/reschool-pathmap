@@ -1,0 +1,113 @@
+/* Student workspace: the map and the selected note share one reading surface. */
+.tree-feature.student-tree [hidden]{display:none!important}
+.tree-feature.student-tree{--student-line:#c8c8b8;--student-ink:#17283c;min-width:0}
+.student-tree .student-example-start,.student-tree .student-memo-drawer,.student-tree .student-mind-tree{margin:16px 0;padding:22px;background:#fffdf7;border:1px solid #d9d3c5;box-shadow:none}
+.student-tree .student-example-start>h2{margin:0 0 10px;font-size:25px}
+.student-tree .student-example-start>p{font-size:15px;line-height:1.8}
+.student-tree .student-sample-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:16px}
+.student-tree .student-sample-card{display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:8px;font:inherit;min-height:118px;padding:17px 18px;background:#f5f3e9;color:#17283c;border:1px solid #bfc6b4;border-radius:2px;max-width:100%;overflow-wrap:anywhere}
+.student-tree .student-sample-card:hover{background:#edf2e5;border-color:#627a69}
+.student-tree .student-sample-card>span{font-size:12px;color:#5c695c}
+.student-tree .student-sample-card>b{font-size:16px;line-height:1.6;font-weight:600}
+.student-tree .student-sample-card>small{font-size:13px;text-decoration:underline;text-underline-offset:3px;margin-top:auto}
+.student-tree .more-student-samples{margin-top:18px}
+.student-tree details>summary{min-height:44px;align-content:center;font-size:15px;cursor:pointer}
+.student-tree .student-memo-drawer{padding:12px 22px}
+.student-tree .student-memo-drawer>summary{font-weight:600}
+.student-tree .student-memo-drawer[open]>summary{margin-bottom:16px}
+.student-tree .student-memo-drawer .tree-guide{display:block;margin:0 0 14px;padding:0;border:0;background:none}
+.student-tree .student-memo-drawer .tree-guide p{margin:0;font-size:15px}
+.student-tree .student-workspace-heading{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.student-tree .student-workspace-heading h2{font-size:24px;margin:3px 0 8px}
+.student-tree .student-workspace-heading>.secondary{min-height:44px;margin:0;font-size:14px}
+.student-tree .tree-file-tools{margin:10px 0 0;padding:12px 0;border:0;border-bottom:1px solid #d9d3c5;background:none}
+.student-tree .tree-file-tools .file-actions{display:flex;flex-direction:row;flex-wrap:wrap;gap:8px}
+.student-tree .tree-file-tools .file-actions button,.student-tree .tree-file-tools .file-picker{font-size:14px;min-height:44px;padding:8px 12px;background:#f4f4eb;border:1px solid #9ba78f;width:auto;flex:none}
+.student-tree .tree-file-tools .file-actions #export-tree{background:#344d42;color:#fff;border-color:#344d42}
+.student-tree .tree-file-tools>details{margin-top:4px}
+.student-tree .tree-file-tools>details>summary{font-size:13px;min-height:36px;color:#596873}
+.student-tree .tree-file-tools>details p{font-size:13px;line-height:1.8}
+.student-tree #file-status:empty,.student-tree #tree-status:empty{display:none}
+.student-tree #file-status,.student-tree #tree-status{font-size:13px;line-height:1.7;margin:8px 0;padding:8px 10px;overflow-wrap:anywhere}
+.student-tree #map-workspace{display:grid;grid-template-columns:minmax(0,1fr) 320px;align-items:start;gap:18px;margin-top:12px}
+.student-tree #map-workspace>.tree-board{min-width:0;margin:0;padding:0;border:0;background:none;box-shadow:none}
+.student-tree #tree-overview{margin:0;padding:0 0 10px;border:0;background:none}
+.student-tree #tree-overview>span{font-size:12px;line-height:1.7;color:#66706f}
+.student-tree #tree-overview h3{font-size:23px;line-height:1.6;margin:8px 0}
+.student-tree .student-main-branches{display:flex;flex-wrap:wrap;gap:7px;margin:8px 0}
+.student-tree .student-main-branches button{font:inherit;font-size:13px;line-height:1.6;min-height:44px;text-align:left;max-width:100%;padding:8px 12px;background:#edf2e5;color:#17283c;border:1px solid #9daa8d;overflow-wrap:anywhere}
+.student-tree .student-map-hint{font-size:13px;line-height:1.8;margin:5px 0 8px;color:#596873}
+.student-tree .mind-map-controls{display:block;padding:0;margin:0 0 5px}
+.student-tree .map-zoom{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0}
+.student-tree .mind-map-controls button,.student-tree .canvas-settings button{font-size:13px;min-height:44px;padding:8px 10px}
+.student-tree .map-zoom output{font-size:13px;min-width:42px;text-align:center}
+.student-tree .canvas-settings{margin:0 0 8px;border:0;background:none}
+.student-tree .canvas-settings>summary{font-size:13px;min-height:36px;color:#596873}
+.student-tree .canvas-settings-content{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:8px 0}
+.student-tree .canvas-settings .canvas-tools{margin:0;padding:0;gap:6px}
+.student-tree .canvas-settings .map-instructions{font-size:13px;line-height:1.8;margin:4px 0;width:100%}
+.student-tree .mind-map-viewport{height:58vh;min-height:400px;max-height:650px;background-color:#f9f7ef}
+.student-tree .canvas-expanded .mind-map-viewport{height:auto;max-height:none;min-height:0}
+.student-tree .legend-guide{margin:8px 0 0}
+.student-tree .legend-guide summary{font-size:13px;font-weight:400;color:#596873;min-height:36px}
+.student-tree #node-detail{position:sticky;top:14px;align-self:start;box-sizing:border-box;width:100%;max-width:none;min-width:0;max-height:calc(100svh - 28px);overflow:auto;margin:0;padding:16px;background:#fffdf7;border:1px solid #9ca68f;box-shadow:0 2px 5px #17283c10}
+.student-tree #node-detail h2{font-size:23px;margin:12px 0;line-height:1.6}
+.student-tree #node-detail p,.student-tree #node-detail dd{font-size:15px;line-height:1.85;overflow-wrap:anywhere}
+.student-tree #node-detail .node-origin{font-size:12px;padding:6px 9px;margin:8px 0}
+.student-tree #node-detail .edit-actions{gap:7px;margin:10px 0}
+.student-tree #node-detail .edit-actions button{font-size:14px;min-height:44px;padding:9px 11px}
+.student-tree #node-detail [data-edit-start]{background:#344d42;color:#fff;border-color:#344d42}
+.student-tree #node-detail .caption{font-size:12px;line-height:1.7}
+.student-tree .tree-next{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0}
+.student-tree .reflection-drawer{padding:12px 18px;border:1px solid #d9d3c5;background:#fffdf7;margin:18px 0}
+.student-tree .reflection-drawer .discovery-tools{border:0;padding:12px 0;margin:0}
+.student-tree .next-step-form{margin:18px 0}
+.student-tree .branch-tools{margin:12px 0}
+.student-tree .student-mind-tree:focus,.student-tree #map-workspace:focus{outline:0}
+@media(max-width:1099px){
+ .student-tree #map-workspace{grid-template-columns:minmax(0,1fr)}
+ .student-tree #node-detail{display:none;position:fixed;z-index:9000;left:12px;right:12px;bottom:12px;top:auto;width:auto;max-height:68svh;padding:15px 17px;box-shadow:0 0 0 100vmax #17283c26,0 3px 14px #17283c24;overscroll-behavior:contain}
+ .student-tree #node-detail[data-open=true]{display:block}
+ .student-tree #node-detail>[data-tree-go=tree-container]{position:sticky;top:-15px;z-index:1;width:100%;background:#f0f3e8;margin:-1px 0 8px;min-height:44px}
+ .student-tree #node-detail form{margin:0}
+ .student-tree .mind-map-viewport{min-height:400px;height:57vh}
+}
+@media(max-width:600px){
+ .student-tree .student-example-start,.student-tree .student-mind-tree{padding:15px 12px;margin:12px 0}
+ .student-tree .student-example-start>h2{font-size:23px}
+ .student-tree .student-sample-grid{grid-template-columns:minmax(0,1fr);gap:9px}
+ .student-tree .student-sample-card{padding:12px 14px;min-height:100px;gap:5px}
+ .student-tree .student-sample-card>b{font-size:16px}
+ .student-tree .student-memo-drawer{padding:8px 13px}
+ .student-tree .student-workspace-heading h2{font-size:21px}
+ .student-tree .student-workspace-heading>.secondary{font-size:13px}
+ .student-tree #tree-overview h3{font-size:21px}
+ .student-tree .tree-file-tools .file-actions{gap:6px}
+ .student-tree .tree-file-tools .file-actions button,.student-tree .tree-file-tools .file-picker{font-size:13px;padding:8px 9px}
+ .student-tree .student-main-branches{display:grid;grid-template-columns:1fr}
+ .student-tree .student-main-branches button{font-size:14px}
+ .student-tree .mind-map-viewport{min-height:350px;height:52vh;max-height:550px}
+ .student-tree #node-detail{left:6px;right:6px;bottom:6px;max-height:72svh;padding:14px}
+ .student-tree #node-detail p,.student-tree #node-detail dd{font-size:15px}
+ .student-tree .next-step-form{padding:18px 14px}
+}
+.student-tree .node-edit-more{margin:14px 0;border-top:1px solid #d9d3c5;padding-top:6px}
+.student-tree .node-edit-more>summary{font-size:14px;line-height:1.7}
+.student-tree #node-edit-form>h3{font-size:23px;margin:0 0 10px}
+@media(min-width:1100px){
+ .tree-feature.student-tree #map-workspace>.tree-board{grid-column:1;grid-row:1}
+ .tree-feature.student-tree #map-workspace>#node-detail{grid-column:2;grid-row:1}
+}
+/* A readable overview is itself a small tree of real, editable nodes. The free
+   canvas beneath it keeps every branch and every manually saved coordinate. */
+.student-tree .student-overview-center>span{font-size:12px;color:#596873}
+.student-tree .student-overview-center h3>button{display:block;text-align:left;font:inherit;line-height:inherit;color:inherit;background:none;border:0;padding:0;min-height:44px;width:100%;overflow-wrap:anywhere}
+@media(max-width:1099px){
+ .student-tree .student-overview-center{position:relative;border:1px solid #b7b59c;background:#faf0cc;padding:12px 14px;margin:12px 0 0;max-width:100%;box-shadow:0 1px 1px #17283c0a}
+ .student-tree .student-overview-center h3{font-size:20px;margin:5px 0;line-height:1.6}
+ .student-tree .student-overview-center:has(+.student-main-branches)::after{content:'';position:absolute;bottom:-17px;left:12px;height:17px;border-left:1px solid #8c927f}
+ .student-tree .student-main-branches{position:relative;display:grid;grid-template-columns:minmax(0,1fr);gap:9px;padding-left:28px;margin:16px 0 10px}
+ .student-tree .student-main-branches::before{content:'';position:absolute;left:12px;top:0;bottom:22px;border-left:1px solid #8c927f}
+ .student-tree .student-main-branches button{position:relative;width:100%;font-size:15px;min-height:46px;background:#edf2e5;text-align:left;padding:10px 12px}
+ .student-tree .student-main-branches button::before{content:'';position:absolute;left:-17px;top:22px;width:16px;border-top:1px solid #8c927f}
+}

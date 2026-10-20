@@ -19,5 +19,5 @@ test('new research sample trees include explicit counterarguments and research n
 
 test('research origin and interview limits stay distinct from implementation evidence',()=>{
  assert.deepEqual(researchStages.map(s=>s.id),['education-comparison','resource-model','early-school','constraints','wider-comparison','path-tree','interview-followup']);
- researchStages.forEach(s=>assert.ok(s.status&&s.source));assert.ok(researchStages.at(-1).note.includes('確認まで保留'));assert.ok(researchStages.at(-1).status.includes('原記録未確認'));
+ researchStages.forEach(s=>assert.ok(s.status&&s.source));assert.match(researchStages.at(-1).note,/実施済み.*要約/);assert.match(researchStages.at(-1).note,/次の元教員インタビュー.*待つ/);assert.ok(researchStages.at(-1).status.includes('原記録未確認'));
 });

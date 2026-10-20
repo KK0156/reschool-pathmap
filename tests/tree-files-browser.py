@@ -1,3 +1,4 @@
+from browser_support import reveal, memo_entry, close_student_detail
 import json,subprocess,tempfile
 from pathlib import Path
 from playwright.sync_api import sync_playwright,expect
@@ -9,13 +10,13 @@ with sync_playwright() as p:
  page.on('request',lambda r:sent.append(r.url) if '/.netlify/functions/' in r.url and r.method=='POST' else None)
  page.goto('http://localhost:8002/#/tree')
  assert page.locator('#export-tree').is_disabled()
- page.locator('#memo').fill('二つの選択肢を、自分の言葉で比べたい')
- page.locator('.optional-context summary').click();page.locator('#context-grades').fill('これは保存しない成績のメモ')
+ memo_entry(page).fill('二つの選択肢を、自分の言葉で比べたい')
+ reveal(page,'#context-grades');page.locator('#context-grades').fill('これは保存しない成績のメモ')
  page.locator('#manual-from-memo').click();expect(page.locator('.tree-node')).to_have_count(1)
  page.locator('[data-node=root]').focus();page.keyboard.press('Alt+ArrowRight')
- page.locator('[data-map-action=add]').click();page.locator('#canvas-label').fill('一つ目の選択肢');page.locator('.canvas-add button[type=submit]').click()
+ reveal(page,'[data-map-action=add]').click();page.locator('#canvas-label').fill('一つ目の選択肢');page.locator('.canvas-add button[type=submit]').click()
  expect(page.locator('.tree-node')).to_have_count(2)
- page.locator('[data-node=note-1]').focus();page.keyboard.press('Enter');page.locator('[data-edit-start]').click();page.locator('#edit-type').select_option('hypothesis');page.locator('#edit-label').fill('まだ仮説のこと');page.locator('#node-edit-form button[type=submit]').click()
+ page.locator('[data-node=note-1]').focus();page.keyboard.press('Enter');page.locator('[data-edit-start]').click();reveal(page,'#edit-type').select_option('hypothesis');page.locator('#edit-label').fill('まだ仮説のこと');page.locator('#node-edit-form button[type=submit]').click()
  page.locator('[data-node=note-1]').focus();page.keyboard.press('Alt+ArrowDown')
  with page.expect_download() as dl:page.locator('#export-tree').click()
  download=dl.value;assert download.suggested_filename.endswith('.json');text=Path(download.path()).read_text();doc=json.loads(text)
@@ -26,7 +27,7 @@ with sync_playwright() as p:
  page.reload();assert page.locator('#memo').input_value()==''
  page.locator('#import-tree').set_input_files({'name':'re-tree-map.json','mimeType':'application/json','buffer':text.encode()})
  expect(page.locator('#file-status')).to_contain_text('復元しました');expect(page.locator('.tree-node')).to_have_count(2)
- assert 'JSONから復元' in page.locator('#tree-overview').inner_text()
+ assert '保存ファイルから復元' in page.locator('#tree-overview').inner_text()
  for n in doc['positions']:
   style=page.locator('[data-node="'+n['id']+'"]').get_attribute('style');assert f'left:{n["x"]}px' in style and f'top:{n["y"]}px' in style
  assert page.locator('#memo').input_value()=='' and page.locator('#context-grades').input_value()==''

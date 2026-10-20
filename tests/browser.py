@@ -101,8 +101,8 @@ with sync_playwright() as p:
  page.locator('textarea').wait_for(state='visible');assert page.locator('textarea').is_disabled()
  assert page.locator('textarea:enabled').count()==0
  page.locator('.back-to-pathmap').click()
- page.locator('.desk-cover h1').wait_for()
- assert '地図にする' in page.locator('.desk-cover h1').inner_text()
+ page.locator('.student-home-intro h1').wait_for()
+ assert '進路' in page.locator('.student-home-intro h1').inner_text()
  page.keyboard.press('Tab')
  assert page.locator('.skip').evaluate('(el)=>el===document.activeElement')
  page.keyboard.press('Enter')
