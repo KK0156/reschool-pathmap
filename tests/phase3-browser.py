@@ -254,6 +254,7 @@ def aliases_and_archives(page, engine):
 
 def keyboard_review(page):
     page.goto(BASE + '/')
+    expect(page.locator('.desk-nav')).to_be_visible()
     page.keyboard.press('Tab')
     expect(page.locator('.skip')).to_be_focused()
     page.keyboard.press('Enter')

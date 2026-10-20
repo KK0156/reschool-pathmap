@@ -188,7 +188,8 @@ function createTree() {
 }
 
 function current() {
-  const raw = location.hash.slice(1) || '/';
+  // The skip link can be used before the application has finished loading.
+  const raw = location.hash === '#main' ? '/' : location.hash.slice(1) || '/';
   const split = raw.indexOf('?');
   const path = split < 0 ? raw : raw.slice(0, split);
   const params = new URLSearchParams(split < 0 ? '' : raw.slice(split + 1));

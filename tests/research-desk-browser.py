@@ -20,6 +20,7 @@ with sync_playwright() as p:
   expect(page.locator(f'.desk-nav a[href="#/{route}"]')).to_have_attribute('aria-current','page')
  page.goto('http://localhost:8002/')
  assert 'RE:Path Finder' in page.title()
+ expect(page.locator('.desk-nav')).to_be_visible()
  assert page.locator('.desk-nav a').count()==5
  assert page.locator('.desk-nav a[href="#/choices"]').count()==0
  for route in ['tree','cases','research','archive']:

@@ -10,7 +10,8 @@ with sync_playwright() as p:
  page.locator('a[href*="#/tree?sample="]').first.click()
  expect(page.locator('.tree-node')).not_to_have_count(0)
  # Sample entry must reveal the map rather than scroll back to the top.
- page.wait_for_function("document.querySelector('.mind-map-viewport').getBoundingClientRect().top < 500")
+ expect(page.locator('.mind-map-viewport')).to_be_in_viewport(ratio=0.25)
+ expect(page.locator('[data-node=root]')).to_be_in_viewport(ratio=0.5)
  memo_entry(page).fill('文系と理系について自分で考える')
  page.locator('#manual-from-memo').click()
  page.locator('[data-node=root]').focus();page.keyboard.press('Enter')
