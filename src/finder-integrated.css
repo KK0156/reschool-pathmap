@@ -1,0 +1,71 @@
+/* The diagram and the reading surface share one journey and one set of IDs. */
+#finder-flow{grid-template-columns:repeat(5,minmax(0,1fr))}
+#finder-flow li{font-size:13px;min-width:0}
+.finder-journey .finder-modes{flex-wrap:wrap;gap:4px 18px}
+#finder-shared-workspace{display:grid;grid-template-columns:minmax(0,1fr);gap:24px;align-items:start}
+#finder-tree-host,#finder-reading-panel{min-width:0;max-width:100%}
+#finder-tree-host{scroll-margin-top:var(--flow-header-space)}
+#finder-reading-panel :is(#guide-title,#guide-preview-title,#guide-error,#guide-status,#guide-correction,#atlas-title,.atlas-breadcrumbs,.atlas-lenses,#atlas-children,#finder-record-title,#finder-picker-title,#finder-attention-title,#finder-shared-node-title,#finder-save-preview){scroll-margin-top:var(--flow-reading-space,var(--flow-header-space))}
+#finder-shared-workspace{scroll-margin-top:var(--flow-header-space)}
+#finder-shared-workspace[data-exploration-emphasis=balanced] #finder-tree-host:has(details[open]){position:static}
+@media(max-width:1199px){
+ #finder-shared-workspace[data-exploration-emphasis=balanced][data-has-exploration-content=false] #exploration-tree-map{height:82px}
+ #finder-shared-workspace[data-exploration-emphasis=balanced][data-has-exploration-content=false] .exploration-instruction,
+ #finder-shared-workspace[data-exploration-emphasis=balanced][data-has-exploration-content=false] .exploration-map-caption{display:none}
+}
+#finder-reading-panel :is(button,input,textarea,select,summary){scroll-margin-top:var(--flow-reading-space,var(--flow-header-space))}
+.finder-shared-note{padding:22px;background:#fffdf7;border:1px solid #c9c5bb;margin-bottom:20px}
+.finder-shared-note h2{font-size:23px;line-height:1.6;margin:12px 0}
+.finder-shared-prose{white-space:pre-wrap;overflow-wrap:anywhere;font-size:16px;line-height:1.95}
+#finder-thinking-summary{font-size:14px;line-height:1.9;border-top:1px solid #d9d3c5;margin-top:24px;padding:12px 0}
+#finder-thinking-summary summary{cursor:pointer;min-height:44px;align-content:center}
+#finder-thinking-summary h3{font-size:15px;margin:14px 0 5px}
+#finder-thinking-summary p{overflow-wrap:anywhere}
+#finder-reading-panel .guide-paper,#finder-reading-panel .finder-attention,#finder-reading-panel .finder-record{margin-top:0}
+#finder-reading-panel .finder-attention-grid{grid-template-columns:minmax(0,1fr)}
+.guide-initial #guide-answer-form legend{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
+.guide-initial .guide-paper .guide-opening-note{margin:6px 0 10px}
+.guide-initial #guide-capability{padding:8px 11px;font-size:13px;line-height:1.6}
+.guide-initial .guide-paper>.guide-source{font-size:12px;line-height:1.7;margin:10px 0}
+.finder-map-menu{margin-bottom:12px}
+@media(min-width:1200px){
+ #finder-shared-workspace[data-exploration-emphasis=balanced]{grid-template-columns:minmax(330px,.85fr) minmax(0,1.15fr)}
+ #finder-shared-workspace[data-exploration-emphasis=balanced] #finder-tree-host{position:sticky;top:var(--flow-header-space);z-index:4}
+ #finder-shared-workspace[data-exploration-emphasis=balanced] #exploration-tree-map{height:min(48vh,500px);min-height:280px}
+ #finder-shared-workspace[data-exploration-emphasis=map] #exploration-tree-map{height:65vh}
+ #finder-shared-workspace[data-exploration-emphasis=text]{grid-template-columns:minmax(0,1fr)}
+ #finder-shared-workspace[data-exploration-emphasis=text] #exploration-tree-map{height:145px}
+}
+@media(min-width:700px) and (max-width:1199px){
+ #finder-shared-workspace[data-exploration-emphasis=balanced] #finder-tree-host{position:sticky;top:var(--flow-header-space);z-index:8;background:#faf8f2}
+ #finder-shared-workspace[data-exploration-emphasis=balanced] #exploration-tree-map{height:240px}
+ #finder-shared-workspace[data-exploration-emphasis=balanced] .exploration-heading p{margin:0 0 2px}
+ #finder-shared-workspace[data-exploration-emphasis=balanced] .exploration-heading h2{font-size:19px}
+ #finder-shared-workspace[data-exploration-emphasis=balanced] .exploration-instruction{margin:6px 0;font-size:12px}
+ #finder-shared-workspace[data-exploration-emphasis=balanced] .exploration-paper{padding:15px}
+}
+@media(max-width:699px){
+ #finder-flow{gap:4px}
+ #finder-flow li{font-size:11px;line-height:1.5;gap:4px}
+ #finder-flow li{font-size:0}
+ #finder-flow li:after{font-size:11px;line-height:1.5;white-space:nowrap}
+ #finder-flow [data-flow-step="1"]:after{content:'自分のこと'}
+ #finder-flow [data-flow-step="2"]:after{content:'道を広げる'}
+ #finder-flow [data-flow-step="3"]:after{content:'詳しく見る'}
+ #finder-flow [data-flow-step="4"]:after{content:'比べる'}
+ #finder-flow [data-flow-step="5"]:after{content:'次の行動'}
+ #finder-flow li>span{font-size:11px;width:21px;height:21px;flex-basis:21px}
+ .finder-journey .finder-modes{gap:0 13px}
+ .finder-journey .finder-modes button{font-size:12px}
+ #finder-shared-workspace{gap:20px}
+ .finder-shared-note{padding:17px}
+ .finder-shared-note h2{font-size:21px}
+ #finder-tree-host .exploration-tree{margin:0}
+ #finder-shared-workspace[data-exploration-emphasis=balanced] #exploration-tree-map{height:180px}
+ #finder-shared-workspace[data-exploration-emphasis=balanced] .exploration-instruction{margin:5px 0;font-size:10px}
+ #finder-shared-workspace[data-exploration-emphasis=balanced] .exploration-map-caption{margin-top:5px}
+ #finder-shared-workspace[data-exploration-emphasis=balanced][data-has-exploration-content=false] #exploration-tree-map{height:82px}
+ #finder-shared-workspace[data-exploration-emphasis=balanced][data-has-exploration-content=false] .exploration-instruction{display:none}
+ #finder-shared-workspace[data-exploration-emphasis=balanced][data-has-exploration-content=false] .exploration-map-caption{display:none}
+}
+@media(prefers-reduced-motion:reduce){#finder-shared-workspace *{scroll-behavior:auto!important}}

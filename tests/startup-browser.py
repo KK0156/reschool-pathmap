@@ -173,9 +173,10 @@ def run_scenario(browser, engine, scenario):
         page.screenshot(path=str(OUTPUT / f'{engine}-normal-atlas.png'))
         page.locator('[data-finder-mode="ai"]').click()
         expect(page.locator('[data-finder-mode="ai"]')).to_have_attribute('aria-pressed', 'true')
+        expect(page.locator('#guide-capability')).to_contain_text('現在利用できません')
+        page.locator('.guide-inactive-question > summary').click()
         expect(page.locator('#guide-answer-form')).to_be_visible()
         expect(page.locator('[data-guide-choice]')).to_have_count(5)
-        expect(page.locator('#guide-capability')).to_contain_text('接続未設定')
         expect(page.locator('#guide-answer-form button[type="submit"]')).to_be_disabled()
         page.screenshot(path=str(OUTPUT / f'{engine}-normal-guided.png'))
         # The previous three-step tool is retained behind its explicit entry.

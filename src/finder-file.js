@@ -3,6 +3,7 @@ import {validateAtlasSessionState} from './route-atlas.js';
 import {discoveryTopics,validateDiscoveryRequest,validateDiscoveryResult} from './route-model.js';
 import {getRouteDemo} from './route-demos.js';
 import {validateGuideRequest,validateGuideResult} from './guide-model.js';
+import {validateExplorationState} from './exploration-model.js';
 
 export const MAX_FINDER_FILE_BYTES=1024*1024;
 const forbidden=new Set(['__proto__','constructor','prototype']);
@@ -119,23 +120,30 @@ function catalogueSourcesValid(sources,session){
     for(const history of atlas.history){if(history.selected)referenced.add(history.selected);history.path.forEach(id=>referenced.add(id));}
     for(const key of ['records','recordDrafts'])Object.keys(atlas[key]).forEach(id=>referenced.add(id));
   }
+  if(session.exploration){
+    const workspace=session.exploration;
+    const workspaceIds=[workspace.selected,...workspace.expanded,...workspace.notes.flatMap(note=>[note.id,note.parent]),...workspace.overrides.map(override=>override.id),...workspace.positions.map(position=>position.id)];
+    for(const workspaceId of workspaceIds)if(workspaceId?.startsWith('atlas-'))referenced.add(workspaceId.slice(6));
+  }
   return [...referenced].every(id=>atlasNodes.get(id)?.sourceIds.every(sourceId=>included.has(sourceId)));
 }
 
 export function validateFinderDocument(document){
   try{
-    if(!boundedJSON(document)||!exact(document,['format','schemaVersion','catalogueSources','session'])||document.format!=='repath-finder-session'||document.schemaVersion!==1)return false;
+    if(!boundedJSON(document)||!exact(document,['format','schemaVersion','catalogueSources','session'])||document.format!=='repath-finder-session'||![1,2].includes(document.schemaVersion))return false;
     const session=document.session;
-    if(!exact(session,['revision','atlas','discovery','guide','notes','nextActions','view'])||!integer(session.revision,1000000)||!text(session.notes,3000)||!text(session.nextActions,3000)||!['all','ai','legacy','record'].includes(session.view))return false;
+    const keys=['revision','atlas','discovery','guide','notes','nextActions','view',...(document.schemaVersion===2?['exploration']:[])];
+    if(!exact(session,keys)||!integer(session.revision,1000000)||!text(session.notes,3000)||!text(session.nextActions,3000)||!['all','ai','legacy','record'].includes(session.view))return false;
     if(session.atlas!==null&&!validateAtlasSessionState(session.atlas))return false;
     if(session.discovery!==null&&!validateDiscoverySession(session.discovery))return false;
     if(session.guide!==null&&!validateFinderGuide(session.guide))return false;
+    if(document.schemaVersion===2&&!validateExplorationState(session.exploration,session))return false;
     return catalogueSourcesValid(document.catalogueSources,session);
   }catch{return false;}
 }
 
 export function createFinderDocument(session,{includeConversation=false,catalogueSources=routeAtlas.sources}={}){
-  const document={format:'repath-finder-session',schemaVersion:1,catalogueSources,session};
+  const document={format:'repath-finder-session',schemaVersion:session&&Object.hasOwn(session,'exploration')?2:1,catalogueSources,session};
   if(typeof includeConversation!=='boolean'||!validateFinderDocument(document))fail();
   const result=structuredClone(document);
   if(!includeConversation){

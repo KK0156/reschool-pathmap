@@ -137,7 +137,8 @@ def page_fixture(browser,*,configured=True,width=1024,touch=False):
     page=context.new_page()
     errors=[]
     page.on('pageerror',lambda error:errors.append(str(error)))
-    page.on('dialog',lambda dialog:dialog.accept())
+    guard.dialog_handler=lambda dialog:dialog.accept()
+    page.on('dialog',guard.dialog_handler)
     try:
         yield page,guard
         assert not errors,errors
@@ -165,12 +166,33 @@ def research_unchanged():
 
 
 def open_disclosure(locator):
-    for details in locator.locator('xpath=ancestor::details[not(@open)]').all():
-        details.locator('summary').first.click()
+    # Keep ancestor indices stable while opening nested disclosures; filtering
+    # by @open would change the next locator as soon as its parent was opened.
+    for details in locator.locator('xpath=ancestor::details').all():
+        if not details.evaluate('(el)=>el.open'):
+            details.locator(':scope > summary').click()
+
+
+def public_control(locator):
+    """Reveal optional controls through their actual disclosure summaries."""
+    open_disclosure(locator.first)
+    return locator
 
 
 def guide_action(page,action):
-    return page.locator(f'[data-guide-action="{action}"]')
+    return public_control(page.locator(f'[data-guide-action="{action}"]'))
+
+
+def guide_answer(page):
+    return public_control(page.locator('#guide-answer'))
+
+
+def finder_view(page,name):
+    return public_control(page.locator(f'[data-finder-map-view="{name}"]'))
+
+
+def finder_import(page):
+    return public_control(page.locator('#finder-import'))
 
 
 def open_guided(page,guard):
@@ -206,7 +228,7 @@ def send_preview(page,guard,*,to_map=False):
 
 def first_answer(page,guard,*,text='働くことと学ぶことを比べたい。架空メモ qa-guided-marker。'):
     open_guided(page,guard)
-    page.locator('#guide-answer').fill(text)
+    guide_answer(page).fill(text)
     page.locator('#guide-answer-form button[type="submit"]').click()
     assert not guard.posts
     body=send_preview(page,guard)
@@ -221,7 +243,7 @@ def ask_explain_correct_routes(page,guard,engine):
     expect(page.locator('.guide-understanding')).to_contain_text('AIの解釈')
     page.screenshot(path=str(OUTPUT/f'{engine}-dynamic-question.png'))
     guard.action='explain'
-    page.locator('#guide-answer').fill('大学で学ぶ内容と、仕事の中で学ぶ内容の違いを知りたい。')
+    guide_answer(page).fill('大学で学ぶ内容と、仕事の中で学ぶ内容の違いを知りたい。')
     page.locator('#guide-answer-form button[type="submit"]').click()
     second=send_preview(page,guard)
     assert len(second['answers'])==2
@@ -241,9 +263,9 @@ def ask_explain_correct_routes(page,guard,engine):
     assert preview['context']['goal']=='show_routes'
     assert preview['revision']>second['revision']
     send_preview(page,guard,to_map=True)
-    expect(page.locator('[data-finder-map-view="attention"]')).to_have_attribute('aria-pressed','true')
+    expect(finder_view(page,'attention')).to_have_attribute('aria-pressed','true')
     page.screenshot(path=str(OUTPUT/f'{engine}-attention-routes.png'))
-    page.locator('[data-finder-map-view="all"]').click()
+    finder_view(page,'all').click()
     expect(page.locator('.atlas-card-grid > .atlas-card')).to_have_count(7)
     page.screenshot(path=str(OUTPUT/f'{engine}-whole-map-after-ai.png'))
     page.locator('[data-finder-mode="ai"]').click()
@@ -277,7 +299,18 @@ def finder_action(page,name,node=None):
     selector=f'[data-finder-action="{name}"]'
     if node is not None:
         selector+=f'[data-finder-node="{node}"]'
-    return page.locator(selector)
+    controls=page.locator(selector)
+    for control in controls.all():
+        if control.is_visible():
+            return control
+    # A previous step can retain a hidden footer with the same action. Use the
+    # current screen's disclosure entry rather than acting on that stale footer.
+    for control in controls.all():
+        if control.locator('xpath=ancestor::*[@hidden]').count()==0:
+            public_control(control)
+            if control.is_visible():
+                return control
+    return controls
 
 
 def comparison_heading_clear_of_sticky(page):
@@ -290,10 +323,19 @@ def comparison_heading_clear_of_sticky(page):
 
 
 def save_preview(page,include=False):
+    edit=page.locator('[data-finder-action="edit-save"]')
+    if edit.count():
+        public_control(edit).click()
     page.locator('#finder-include-conversation').set_checked(include)
     finder_action(page,'save-preview').click()
     expect(page.locator('#finder-save-preview')).to_be_visible()
-    return json.loads(page.locator('#finder-save-preview pre').text_content())
+    raw=public_control(page.locator('#finder-save-preview pre'))
+    expect(raw).to_be_visible()
+    document=json.loads(raw.text_content())
+    # Inspect the exact optional data, then return to the human-readable review.
+    # This keeps raw JSON secondary to the candidate names and personal memo.
+    raw.locator('xpath=ancestor::details[1]').locator(':scope > summary').click()
+    return document
 
 
 def download_finder(page):
@@ -306,7 +348,7 @@ def full_journey(browser,engine):
     with page_fixture(browser) as (page,guard):
         info=ask_explain_correct_routes(page,guard,engine)
         page.locator('[data-finder-mode="all"]').click()
-        page.locator('[data-finder-map-view="attention"]').click()
+        finder_view(page,'attention').click()
         expect(page.locator('.finder-route-card')).to_have_count(2)
         for node_id in ['route-work','route-university']:
             finder_action(page,'route-keep',node_id).click()
@@ -323,7 +365,8 @@ def full_journey(browser,engine):
         page.locator('#finder-notes').fill(notes)
         page.locator('#finder-next-actions').fill(next_step)
         redacted=save_preview(page)
-        assert redacted['format']=='repath-finder-session' and redacted['schemaVersion']==1
+        assert redacted['format']=='repath-finder-session' and redacted['schemaVersion']==2
+        assert set(redacted['session']['exploration'])=={'expanded','selected','emphasis','notes','overrides','positions','serial','step'}
         assert redacted['session']['guide']['conversation'] is None
         assert redacted['session']['guide']['correspondence']=='not_saved'
         assert info['memo'] not in json.dumps(redacted,ensure_ascii=False)
@@ -340,13 +383,13 @@ def full_journey(browser,engine):
         page.screenshot(path=str(OUTPUT/f'{engine}-save-preview.png'))
         before=len(guard.posts)
         page.reload()
-        page.locator('#finder-import').set_input_files({'name':'finder.json','mimeType':'application/json','buffer':raw.encode()})
+        finder_import(page).set_input_files({'name':'finder.json','mimeType':'application/json','buffer':raw.encode()})
         expect(page.locator('#finder-status')).to_contain_text('復元しました')
         expect(page.locator('#finder-notes')).to_have_value(notes)
         expect(page.locator('#finder-next-actions')).to_have_value(next_step)
         assert len(guard.posts)==before
         page.screenshot(path=str(OUTPUT/f'{engine}-restored-record.png'))
-        page.locator('[data-finder-map-view="attention"]').click()
+        finder_view(page,'attention').click()
         expect(page.locator('.finder-route-card')).to_have_count(2)
         for node_id in ['route-work','route-university']:
             expect(finder_action(page,'route-compare',node_id)).to_have_attribute('aria-pressed','true')
@@ -363,12 +406,12 @@ def full_journey(browser,engine):
         wrong_version['schemaVersion']=999
         invalid=[b'{',b'{"__proto__":{}}',json.dumps(unknown).encode(),json.dumps(wrong_version).encode(),b' '*(1024*1024+1)]
         for value in invalid:
-            page.locator('#finder-import').set_input_files({'name':'invalid.json','mimeType':'application/json','buffer':value})
+            finder_import(page).set_input_files({'name':'invalid.json','mimeType':'application/json','buffer':value})
             expect(page.locator('#finder-error')).to_contain_text('変更していません')
             expect(page.locator('#finder-notes')).to_have_value(sentinel)
             assert len(guard.posts)==before
         # Default redaction must remain a usable file, including another save.
-        page.locator('#finder-import').set_input_files({'name':'redacted.json','mimeType':'application/json','buffer':json.dumps(redacted,ensure_ascii=False).encode()})
+        finder_import(page).set_input_files({'name':'redacted.json','mimeType':'application/json','buffer':json.dumps(redacted,ensure_ascii=False).encode()})
         expect(page.locator('#finder-status')).to_contain_text('復元しました')
         page.locator('[data-finder-mode="ai"]').click()
         expect(page.locator('.guide-understanding')).to_contain_text('元の回答はこのファイルに保存されていません')
@@ -396,9 +439,10 @@ def failure_and_stale_review(browser,engine):
     with page_fixture(browser,configured=False) as (page,guard):
         page.goto(BASE+'/')
         page.locator('.home-finder-start').click()
-        expect(page.locator('#guide-capability')).to_contain_text('未設定')
+        expect(page.locator('#guide-capability')).to_contain_text('現在利用できません')
+        public_control(page.locator('#guide-answer-form button[type=submit]'))
         expect(page.locator('#guide-answer-form button[type=submit]')).to_be_disabled()
-        expect(guide_action(page,'prepare-routes')).to_be_disabled()
+        expect(guide_action(page,'prepare-routes')).to_have_count(0)
         expect(page.locator('.guide-explanation')).to_have_count(0)
         guide_action(page,'map').click()
         expect(page.locator('.atlas-card-grid > .atlas-card')).to_have_count(7)
@@ -409,7 +453,7 @@ def failure_and_stale_review(browser,engine):
             open_guided(page,guard)
             guard.behavior=behavior
             memo='架空の失敗検証。学び方と働き方を比べたい。'
-            page.locator('#guide-answer').fill(memo)
+            guide_answer(page).fill(memo)
             page.locator('#guide-answer-form button[type=submit]').click()
             page.locator('#guide-consent').check()
             guide_action(page,'send').click()
@@ -423,7 +467,7 @@ def failure_and_stale_review(browser,engine):
     findings['failed_malformed_unavailable_keep_answer_no_fake_result']=True
     with page_fixture(browser) as (page,guard):
         open_guided(page,guard)
-        page.locator('#guide-answer').fill('時間切れになっても消さない架空の回答。')
+        guide_answer(page).fill('時間切れになっても消さない架空の回答。')
         page.locator('#guide-answer-form button[type=submit]').click()
         page.clock.install()
         guard.behavior='hold'
@@ -466,7 +510,7 @@ def failure_and_stale_review(browser,engine):
         edit=guide_action(page,'edit-answer').first
         open_disclosure(edit)
         edit.click()
-        page.locator('#guide-answer').fill('元の回答を本人が直した。仕事の内容をまだ知らない。')
+        guide_answer(page).fill('元の回答を本人が直した。仕事の内容をまだ知らない。')
         page.locator('#guide-answer-form button[type=submit]').click()
         guard.release()
         expect(page.locator('#guide-consent')).not_to_be_checked()
@@ -479,7 +523,7 @@ def failure_and_stale_review(browser,engine):
     with page_fixture(browser) as (page,guard):
         open_guided(page,guard)
         draft='まだ送っていない、途中の入力を残す。'
-        page.locator('#guide-answer').fill(draft)
+        guide_answer(page).fill(draft)
         page.locator('[data-finder-mode="all"]').click()
         page.locator('[data-finder-mode="ai"]').click()
         expect(page.locator('#guide-answer')).to_have_value(draft)
@@ -539,12 +583,12 @@ def suspended_draft_review(browser,engine):
         choice=page.locator('[data-guide-choice]').first
         choice_id=choice.get_attribute('data-guide-choice')
         choice.click()
-        page.locator('#guide-answer').fill(draft)
+        guide_answer(page).fill(draft)
         edit=guide_action(page,'edit-answer').first
         open_disclosure(edit)
         edit.click()
         expect(page.locator('#guide-answer')).to_have_value(memo)
-        page.locator('#guide-answer').fill('取り消す予定の、過去の回答の修正。')
+        guide_answer(page).fill('取り消す予定の、過去の回答の修正。')
         guide_action(page,'cancel-edit').click()
         expect(page.locator('#guide-answer-form legend')).to_have_text(question)
         expect(page.locator('#guide-answer')).to_have_value(draft)
@@ -553,7 +597,7 @@ def suspended_draft_review(browser,engine):
         open_disclosure(edit)
         edit.click()
         corrected='元の回答だけを直した。仕事も学びもまだ調べている。'
-        page.locator('#guide-answer').fill(corrected)
+        guide_answer(page).fill(corrected)
         page.locator('#guide-answer-form button[type=submit]').click()
         preview=json.loads(page.locator('#guide-send-preview').text_content())
         assert len(preview['answers'])==1 and preview['answers'][0]['text']==corrected
@@ -569,7 +613,7 @@ def optional_tree_handoff_review(browser,engine):
     with page_fixture(browser) as (page,guard):
         raw=(OUTPUT/f'{engine}-finder-session.json').read_bytes()
         page.goto(BASE+'/#/finder?mode=all')
-        page.locator('#finder-import').set_input_files({'name':'guided.json','mimeType':'application/json','buffer':raw})
+        finder_import(page).set_input_files({'name':'guided.json','mimeType':'application/json','buffer':raw})
         expect(page.locator('#finder-status')).to_contain_text('復元しました')
         transfer=finder_action(page,'tree')
         open_disclosure(transfer)
@@ -626,7 +670,7 @@ def responsive_review(browser,engine):
             primary.click()
             expect(page.locator('#guide-capability')).to_contain_text('毎回')
             capture('guide-initial')
-            page.locator('#guide-answer').fill('進学するか働くか、まだ分からない。授業と生活の違いを見たい。')
+            guide_answer(page).fill('進学するか働くか、まだ分からない。授業と生活の違いを見たい。')
             page.locator('#guide-answer-form button[type=submit]').click()
             capture('send-preview')
             send_preview(page,guard)
@@ -646,13 +690,13 @@ def responsive_review(browser,engine):
             expect(page.locator('.atlas-compare-row')).to_have_count(8)
             comparison_heading_clear_of_sticky(page)
             capture('comparison')
-            page.locator('[data-finder-map-view="all"]').click()
+            finder_view(page,'all').click()
             # The whole view may retain comparison until the explicit overview.
             if page.locator('.atlas-card-grid > .atlas-card').count()!=7:
                 page.locator('[data-atlas-action="overview"]').first.click()
             expect(page.locator('.atlas-card-grid > .atlas-card')).to_have_count(7)
             capture('whole-map')
-            page.locator('[data-finder-map-view="unopened"]').click()
+            finder_view(page,'unopened').click()
             expect(page.locator('#finder-attention-title')).to_have_text('まだ開いていない方向')
             capture('unopened')
             finder_action(page,'record').first.click()
@@ -697,7 +741,7 @@ def touch_keyboard_security(browser,engine):
         page.keyboard.press('Enter')
         expect(choice).to_have_attribute('aria-pressed','true')
         attack='<img src=x onerror="window.__guidedInjected=true">文字として扱う架空の入力。'
-        page.locator('#guide-answer').fill(attack)
+        guide_answer(page).fill(attack)
         page.locator('#guide-answer-form button[type=submit]').click()
         body=json.loads(page.locator('#guide-send-preview').text_content())
         guard.payload=guide_fixture(body)

@@ -115,6 +115,7 @@ with sync_playwright() as playwright:
                 assert not page.evaluate('window.__csp'), page.evaluate('window.__csp')
                 assert context.cookies() == []
             audit.append({'width': width, 'styles': styles, 'typography': typography, 'button': button, 'overflow': False})
+            context.unroute_all(behavior='wait')
             context.close()
 
         browser.close()
