@@ -165,4 +165,14 @@
 .route-atlas .atlas-overview-intro h2{font-size:26px;margin:0 0 8px}
 .route-atlas .atlas-overview-intro p{font-size:14px;line-height:1.75;margin:8px 0}
 .route-atlas .atlas-demo-notice>div{display:flex;gap:12px;flex-wrap:wrap}
+.route-atlas .atlas-guide-mark{border:1px solid #b9c8b4;border-left:3px solid #627a69;background:#f1f4e9;padding:14px 17px;margin:19px 0}
+.route-atlas .atlas-guide-mark p{font-size:14px;line-height:1.85;margin:8px 0}
+.route-atlas .atlas-guide-mark .atlas-guide-label{font-size:12px;font-weight:600;color:#425f4e;margin-top:0}
+.route-atlas .atlas-guide-mark h3{font-size:15px;margin:15px 0 8px}
+.route-atlas .atlas-guide-mark li{font-size:14px;line-height:1.85}
+.route-atlas .atlas-guide-mark .atlas-small{font-size:12px}
+.route-atlas .atlas-guide-stale{border-color:#c9b992;border-left-style:dashed;background:#f7f1e3}
+.route-atlas .atlas-guide-stale .atlas-guide-label{color:#6d5734}
+.route-atlas .atlas-card .atlas-guide-mark{padding:11px 13px;margin:17px 0 0}
+.route-atlas .atlas-card .atlas-guide-mark p{font-size:12px}
 @media(max-width:600px){.route-atlas .atlas-overview-intro{padding:17px 19px}.route-atlas .atlas-overview-intro h2{font-size:25px}.route-atlas .atlas-demo-notice>div{display:grid;grid-template-columns:1fr}}

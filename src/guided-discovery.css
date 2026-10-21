@@ -1,0 +1,86 @@
+/* A reading surface on the school research desk, with one main task at a time. */
+.path-finder{font-size:16px;line-height:1.85;overflow-wrap:anywhere}
+.path-finder button,.path-finder input,.path-finder textarea{font:inherit}
+.path-finder button{min-height:44px;cursor:pointer;color:#17283c;background:#fffdf7;border:1px solid #a8b2a3;padding:9px 15px;line-height:1.65;text-align:left;max-width:100%;overflow-wrap:anywhere}
+.path-finder button:disabled{cursor:default;opacity:.65}
+.path-finder :focus-visible{outline:3px solid #627a69;outline-offset:3px}
+.path-finder .guide-primary{background:#344d42;color:#fffdf7;border-color:#344d42}
+.path-finder [hidden]{display:none!important}
+.finder-modes{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.finder-modes button{font-size:18px;min-height:60px;text-align:center}
+.finder-carry{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:0 0 16px}
+.finder-carry label{font-size:14px;margin-left:auto;text-decoration:underline;text-underline-offset:4px;cursor:pointer}
+.finder-carry input{font-size:13px;max-width:210px;min-width:0}
+.finder-map-views{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 22px;border-bottom:1px solid #c9c5bb;padding-bottom:15px}
+.finder-map-views button{font-size:14px;padding:9px 12px}
+.finder-map-views button[aria-pressed=true],.guide-choices button[aria-pressed=true]{background:#e3eadc;border-color:#3b5949;box-shadow:inset 0 0 0 1px #3b5949}
+.finder-mode-note{margin:12px 0 16px}
+#finder-status:empty,#finder-error:empty,#guide-error:empty,#guide-status:empty{display:none}
+#finder-error,.guide-error{border-left:3px solid #96592e;color:#793d24;background:#fbefdf;padding:12px 16px}
+#finder-status,#guide-status{color:#425a49;font-size:14px}
+.guide-paper,.finder-attention,.finder-record{background:#fffdf7;border:1px solid #d9d3c5;padding:30px 36px;max-width:100%;min-width:0}
+.guide-paper{max-width:820px;margin:auto;border-top:4px solid #627a69}
+.guide-paper h2,.finder-attention h2,.finder-record h2{font-family:serif;font-size:29px;line-height:1.65;margin:0 0 15px}
+.guide-paper h3,.finder-attention h3,.finder-record h3{font-size:20px;margin:24px 0 12px;line-height:1.65}
+.guide-paper p,.finder-record p,.finder-attention p{margin:12px 0}
+.guide-kicker,.guide-source{color:#536258;font-size:13px;display:block;line-height:1.8}
+.guide-small,.finder-small{color:#536258;font-size:14px;line-height:1.8}
+#guide-capability{font-size:14px;color:#425c4e;padding:9px 12px;border-left:2px solid #a9b89f;background:#f0f3e9}
+.guide-paper fieldset{padding:0;border:0;min-width:0;margin-top:24px}
+.guide-paper legend{font-family:serif;font-size:24px;line-height:1.7;font-weight:600;padding:0;width:100%}
+.guide-choices{display:grid;gap:10px;margin:17px 0 24px;grid-template-columns:1fr}
+.guide-choices button{padding:13px 17px;min-height:50px}
+.guide-paper label,.finder-record label:not(.guide-consent){display:block;font-weight:600;margin:20px 0 8px}
+.guide-paper textarea,.finder-record textarea{display:block;width:100%;box-sizing:border-box;resize:vertical;border:1px solid #a8b2a3;background:#fffcf3;color:#17283c;border-radius:0;padding:12px 14px;font-size:16px;line-height:1.85;min-height:100px}
+.guide-paper details,.finder-attention details,.finder-record details{margin:17px 0}
+.guide-paper summary,.finder-attention summary,.finder-record summary{cursor:pointer;min-height:44px;align-content:center;color:#344d42;font-size:15px}
+.guide-actions,.guide-secondary-actions,.finder-card-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:20px}
+.guide-secondary-actions{border-top:1px solid #d9d3c5;padding-top:20px}
+.guide-secondary-actions button{font-size:14px}
+.guide-map-entry{margin:24px 0 10px;border-top:1px solid #d9d3c5;padding-top:20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.guide-map-entry button{font-weight:600;border:2px solid #627a69;padding:11px 18px}
+.guide-map-entry span{font-size:13px;color:#536258}
+.guide-explanation{border-left:3px solid #b6bea9;padding:13px 20px;background:#f2f2e9;white-space:pre-line;margin:23px 0}
+.guide-stale,.guide-pause-note{border-left:3px solid #a87c4f;background:#f6eedf;padding:11px 16px;font-size:14px}
+.guide-understanding{margin-top:30px;border-top:1px solid #d9d3c5}
+.guide-understanding article,.guide-answer-history article{border-bottom:1px solid #d9d3c5;padding:14px 0}
+.guide-understanding article button,.guide-answer-history article button{font-size:14px}
+.guide-consent{display:flex;gap:10px;align-items:flex-start;font-size:15px;font-weight:400!important;margin:20px 0!important}
+.guide-consent input{width:22px;height:22px;flex:0 0 22px;margin-top:3px;accent-color:#425f4e}
+.guide-preview pre,#finder-save-preview pre{box-sizing:border-box;white-space:pre-wrap;word-break:break-word;max-height:320px;overflow:auto;padding:15px;font-size:13px;line-height:1.7;border:1px solid #d9d3c5;background:#f4efe3;max-width:100%}
+.finder-attention-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:22px}
+.finder-route-card{border:1px solid #d9d3c5;padding:22px;min-width:0;background:#fffdf7;border-top:3px solid #a8b79a}
+.finder-route-card h3{font-family:serif;font-size:24px;line-height:1.6;margin:14px 0}
+.finder-route-card h4{font-size:16px;margin:20px 0 9px}
+.finder-route-card p{font-size:15px}
+.finder-attention-reason{border-top:1px solid #d9d3c5;margin-top:18px}
+.finder-card-actions button{font-size:14px;min-height:44px}
+.finder-card-actions button[aria-pressed=true]{background:#e3eadc;border-color:#3b5949}
+.finder-record{max-width:850px;margin:auto;border-top:4px solid #a87c4f}
+.finder-record .finder-kept-list{padding-left:20px}
+.finder-kept-list li{margin:8px 0}
+.finder-file-section{margin-top:30px;padding-top:14px;border-top:1px solid #c9c5bb}
+.finder-retained{margin:32px 0;font-size:14px;border-top:1px solid #d9d3c5;padding:15px 0}
+.finder-retained summary{cursor:pointer;min-height:44px;align-content:center}
+.phase4-site .finder-home-actions{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.phase4-site .finder-home-actions .home-map-start,.phase4-site .finder-home-actions .home-finder-start{width:100%;padding:15px 20px!important;display:flex;align-items:center;justify-content:center;border:1px solid #344d42;background:#fffdf7;color:#17283c;min-height:58px;font-size:17px;box-sizing:border-box;font-weight:600;text-decoration:none}
+.phase4-site .finder-home-actions .home-finder-start{background:#344d42;color:#fffdf7}
+@media(max-width:900px){.guide-paper,.finder-record,.finder-attention{padding:25px}.finder-attention-grid{grid-template-columns:1fr}}
+@media(max-width:600px){
+ .finder-modes{grid-template-columns:1fr 1fr;gap:8px}.finder-modes button{padding:10px!important;font-size:15px;min-height:56px}
+ .finder-carry{gap:10px}.finder-carry label{margin-left:0}.finder-carry input{max-width:100%;width:100%}
+ .finder-map-views{display:grid;grid-template-columns:1fr 1fr;gap:7px}.finder-map-views button{font-size:13px;padding:8px}
+ .guide-paper,.finder-attention,.finder-record{padding:22px 17px}.guide-paper h2,.finder-attention h2,.finder-record h2{font-size:24px}
+ .guide-paper legend{font-size:21px}.guide-actions{gap:8px}.guide-actions>button{flex:1 1 42%;font-size:14px}.guide-actions .guide-primary{flex-basis:100%}
+ .guide-secondary-actions{display:grid;grid-template-columns:1fr}.guide-secondary-actions button{font-size:14px}
+ .guide-explanation{padding:12px}.guide-choices button{padding:12px;font-size:15px}.finder-route-card{padding:18px}
+ .phase4-site .finder-home-actions{grid-template-columns:1fr;gap:10px}.phase4-site .finder-home-actions .home-map-start,.phase4-site .finder-home-actions .home-finder-start{font-size:16px;min-height:54px}
+}
+/* File picking stays secondary to the current question or map. The labelled
+   native control is focusable and can still be set by a keyboard/file picker. */
+.finder-carry input[type=file]{position:absolute;width:1px;height:1px;padding:0;margin:-1px;clip-path:inset(50%);overflow:hidden}
+.finder-carry:focus-within label{outline:2px solid #627a69;outline-offset:3px}
+.finder-carry label{display:inline-flex;align-items:center;min-height:44px;margin:0;font-size:14px}
+.finder-modes{position:sticky;top:0;z-index:12;background:#f4efe3;padding-top:8px;padding-bottom:8px}
+#guide-title,#guide-preview-title,#guide-error,#guide-status,#guide-correction,#finder-error,#finder-status,#finder-save-preview,#finder-attention-title,#finder-record-title,.path-finder .atlas-lenses,.path-finder .atlas-breadcrumbs,.path-finder #rd-view-title{scroll-margin-top:90px}
+.path-finder #atlas-title,.path-finder #atlas-children{scroll-margin-top:90px}

@@ -39,7 +39,8 @@ if(studentMode){const saveAgain=document.createElement('button');saveAgain.type=
 $('#summaries').append(summaryTools);
 const state={tree:null,selected:null,source:null,pending:false,revision:0,sampleIndex:defaultSample,edited:false,editing:false,undo:null,nodeOrigins:{},configured:false,generation:null,studentSampleId:null,memoBaseline:'',discoveryOrigin:null};
 const hasPersonalNotes=()=>Object.values(state.nodeOrigins).some(origin=>origin==='manual'||origin==='user_edited');
-const referenceLabel=()=>hasPersonalNotes()?'全体マップの一般資料と本人のメモ（内容は未確認）':nodeOriginLabels.reference;
+const hasAIAddition=()=>Object.values(state.nodeOrigins).includes('ai_proposal');
+const referenceLabel=()=>hasAIAddition()?(hasPersonalNotes()?'全体マップの一般資料・本人のメモ・AIの補足（内容は未確認）':'全体マップの一般資料とAIの補足（内容は未確認）'):hasPersonalNotes()?'全体マップの一般資料と本人のメモ（内容は未確認）':nodeOriginLabels.reference;
 let controller=null,capabilityController=null;
 const branchHost=document.createElement('section');branchHost.className='branch-tools';branchHost.hidden=studentMode;$('#node-detail').after(branchHost);
 const branch=mountBranchConsultation(branchHost,{hideUnavailable:studentMode,getState:()=>state,isConfigured:()=>state.configured,onUnavailable:()=>{state.configured=false;updateAvailability();},onAccept:(parent,proposal)=>{const next=applyProposal(state.tree,parent,proposal);applyChange(next.tree,next.addedIds[0],true,'ai_proposal');}});
@@ -124,7 +125,7 @@ function renderSummaries(){
  const rootNode=t.nodes.find(n=>n.parent===null);
  const choices=nodes('project').map(n=>n.label),people=nodes('person').map(n=>n.label),missing=nodes('evidence').map(n=>`${n.label}（${n.evidence.includes('未確認')?'未確認':'出典・内容の確認が必要'}）`);
  const todayActions=[...new Set([...nodes('action').filter(n=>n.parent===rootNode.id).map(n=>n.detail),rootNode.next_action])];
- $('#today-summary').innerHTML=`<span class="clip" aria-hidden="true"></span><h2>今日の整理</h2><p class="caption">${state.discoveryOrigin==='mixed'?'架空デモとAI提案から、本人が候補を選んで整理したメモです。':state.source==='reference'?(hasPersonalNotes()?'全体マップの一般資料と本人のメモを整理しています。内容や、本人の条件への当てはまりは未確認です。':'全体マップの一般資料を整理したメモです。本人の条件への当てはまりは未確認です。'):state.source==='sample'?'架空のサンプルを整理したメモです。':state.source==='imported'?'端末から復元した地図の整理です。':state.source==='manual'?'自分で書いた地図の整理です。':'AIが作った地図を整理したメモです。'}判断や資料の検証を代わりに行うものではありません。</p><dl>${brief('今日の中心問い',[t.core_question])}${brief('残すべき選択肢',choices.slice(0,6))}${brief('足りない証拠',missing.slice(0,4))}${brief('相談すべき人',people.slice(0,4))}${brief('次の一歩',todayActions.slice(0,2))}</dl><p class="caption">重要な判断は、信頼できる大人と一緒に。名前や連絡先を交換する機能はありません。</p>`;
+ $('#today-summary').innerHTML=`<span class="clip" aria-hidden="true"></span><h2>今日の整理</h2><p class="caption">${state.discoveryOrigin==='mixed'?'架空デモとAI提案から、本人が候補を選んで整理したメモです。':state.source==='reference'?(hasAIAddition()?'全体マップの一般資料に、AIの補足'+(hasPersonalNotes()?'と本人のメモ':'')+'を加えた整理です。AIの補足や、本人の条件への当てはまりは未確認です。':hasPersonalNotes()?'全体マップの一般資料と本人のメモを整理しています。内容や、本人の条件への当てはまりは未確認です。':'全体マップの一般資料を整理したメモです。本人の条件への当てはまりは未確認です。'):state.source==='sample'?'架空のサンプルを整理したメモです。':state.source==='imported'?'端末から復元した地図の整理です。':state.source==='manual'?'自分で書いた地図の整理です。':'AIが作った地図を整理したメモです。'}判断や資料の検証を代わりに行うものではありません。</p><dl>${brief('今日の中心問い',[t.core_question])}${brief('残すべき選択肢',choices.slice(0,6))}${brief('足りない証拠',missing.slice(0,4))}${brief('相談すべき人',people.slice(0,4))}${brief('次の一歩',todayActions.slice(0,2))}</dl><p class="caption">重要な判断は、信頼できる大人と一緒に。名前や連絡先を交換する機能はありません。</p>`;
  }
 
 }
@@ -145,7 +146,7 @@ $('#sample-prompts').addEventListener('click',e=>{
 });
 container.addEventListener('tree-sample-open',e=>{const index=e.detail?.index;if(!Number.isInteger(index)||!samplePrompts[index])return;const memo=samplePrompts[index].memo;if((shouldConfirm()||($('#memo').value.trim()&&$('#memo').value!==memo))&&!confirm('今の相談メモと図を、相談例に置き換えますか？残す場合は先にファイルへ保存してください。'))return;cancel();state.sampleIndex=index;$('#memo').value=memo;$('#send-consent').checked=false;updateCount();display(samplePrompts[index].tree,'sample','架空の相談例です。自分の言葉で書き直したり、項目を加えたりして試せます。');});
 function updateCount(){ $('#memo-count').textContent=`${completeMemo().length} / 3000文字（任意欄を含む）`;$('#send-preview-text').textContent=completeMemo()||'まだ入力されていません。';$('#memo-error').textContent='';$('#memo').removeAttribute('aria-invalid'); }
-$('#memo-form').addEventListener('input',e=>{if(!e.target.matches('#memo,[data-context]'))return;cancel();$('#send-consent').checked=false;updateCount();if(state.tree)$('#tree-status').textContent=state.source==='reference'?(hasPersonalNotes()?'メモが変更されています。表示中の図は全体マップの一般資料と本人のメモです。変更した相談メモをもとに更新した図ではありません。':'メモが変更されています。表示中の図は全体マップの一般資料です。変更したメモをもとに更新した図ではありません。'):'メモが変更されています。表示中のツリーは前のメモのもの、またはサンプルです。';});
+$('#memo-form').addEventListener('input',e=>{if(!e.target.matches('#memo,[data-context]'))return;cancel();$('#send-consent').checked=false;updateCount();if(state.tree)$('#tree-status').textContent=state.source==='reference'?(hasAIAddition()?'メモが変更されています。表示中の図には全体マップの一般資料とAIの補足が含まれます。変更した相談メモをもとに更新した図ではありません。':hasPersonalNotes()?'メモが変更されています。表示中の図は全体マップの一般資料と本人のメモです。変更した相談メモをもとに更新した図ではありません。':'メモが変更されています。表示中の図は全体マップの一般資料です。変更したメモをもとに更新した図ではありません。'):'メモが変更されています。表示中のツリーは前のメモのもの、またはサンプルです。';});
 $('#clear-all').addEventListener('click',()=>{
  if((state.tree||$('#memo').value.trim()||contextFields.some(([id])=>$('#context-'+id).value.trim()))&&!confirm('入力と図をすべて消しますか？残したい図は先にファイルに保存してください。'))return;
  cancel();state.memoBaseline='';$('#memo').value='';contextFields.forEach(([id])=>$('#context-'+id).value='');$('#send-consent').checked=false;updateCount();state.tree=null;state.nodeOrigins={};state.source=null;state.selected=null;state.undo=null;state.edited=false;state.editing=false;
@@ -266,8 +267,9 @@ function loadStudentSample(id){
 }
 function loadDiscoveryTree(tree,{origin,nodeOrigins}={}){
  if(!validateTree(tree)||!['demo','ai','mixed','reference'].includes(origin))return false;
- const allowedOrigins=origin==='reference'?['reference','manual']:['sample','generated','manual'];
+ const allowedOrigins=origin==='reference'?['reference','manual','ai_proposal']:['sample','generated','manual'];
  if(nodeOrigins!==undefined&&(!nodeOrigins||typeof nodeOrigins!=='object'||Array.isArray(nodeOrigins)||Object.keys(nodeOrigins).length!==tree.nodes.length||tree.nodes.some(node=>!Object.hasOwn(nodeOrigins,node.id)||!allowedOrigins.includes(nodeOrigins[node.id]))))return false;
+ if(origin==='reference'&&nodeOrigins&&!tree.nodes.some(node=>nodeOrigins[node.id]==='reference'))return false;
  if(origin==='mixed'&&!nodeOrigins)return false;
  const unfinished=state.pending||state.generation||contextFields.some(([id])=>$('#context-'+id).value.trim())||[...stepForm.querySelectorAll('input')].some(input=>input.value.trim());
  if((shouldConfirm()||memoNeedsConfirmation()||unfinished)&&!confirm('今の図と書きかけの相談メモを、探索で選んだ候補に置き換えますか？残す図は先にJSONで保存してください。'))return false;
@@ -278,7 +280,8 @@ function loadDiscoveryTree(tree,{origin,nodeOrigins}={}){
  state.discoveryOrigin=origin;
  if(origin==='mixed')state.source='generated';
  if(nodeOrigins)state.nodeOrigins=Object.fromEntries(tree.nodes.map(node=>[node.id,nodeOrigins[node.id]]));
- if(origin==='reference'&&hasPersonalNotes())$('#tree-status').textContent='全体マップの一般資料と本人のメモを引き継ぎました。内容や、本人の条件への当てはまりは未確認です。';
+ if(origin==='reference'&&hasAIAddition())$('#tree-status').textContent='全体マップの一般資料に、AIの補足'+(hasPersonalNotes()?'と本人のメモ':'')+'を加えて引き継ぎました。AIの補足や、本人の条件への当てはまりは未確認です。';
+ else if(origin==='reference'&&hasPersonalNotes())$('#tree-status').textContent='全体マップの一般資料と本人のメモを引き継ぎました。内容や、本人の条件への当てはまりは未確認です。';
  renderOverview();renderMap();renderSummaries();
  return true;
 }

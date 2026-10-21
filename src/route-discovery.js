@@ -1,5 +1,6 @@
 import {discoveryTopics,discoveryStatusLabels,validateDiscoveryRequest,validateDiscoveryResult,createDiscoveryTransfer} from './route-model.js';
 import {routeDemos,getRouteDemo} from './route-demos.js';
+import {validateDiscoverySession} from './finder-file.js';
 
 const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const topicName = topic => discoveryTopics.find(item => item.id === topic)?.label || '進路';
@@ -9,7 +10,7 @@ const fields = [['何をする・学ぶ方向か','description'],['この方向�
 const fieldList = (route,items=fields) => '<dl>' + items.map(([title,key]) => '<div><dt>' + title + '</dt><dd>' + (Array.isArray(route[key]) ? list(route[key]) : escape(route[key])) + '</dd></div>').join('') + '</dl>';
 
 /** A retained, memory-only consultation. The parent owns routing and tree replacement. */
-export function mountRouteDiscovery(container,{onTransfer=()=>false,onResults=()=>{},onShowAtlas=()=>{}}={}) {
+export function mountRouteDiscovery(container,{onTransfer=()=>false,onResults=()=>{},onShowAtlas=()=>{},onChange=()=>{}}={}) {
   container.classList.add('route-discovery');
   const state = {
     draft:{topic:'',wish:'',situation:'',conditions:[],conditionText:''}, step:1, view:'wizard',
@@ -18,6 +19,12 @@ export function mountRouteDiscovery(container,{onTransfer=()=>false,onResults=()
     error:'',notice:'',consent:false,panel:null,job:null,capController:null,capSequence:0
   };
   const $ = selector => container.querySelector(selector);
+  let changeQueued=false,lastSessionJSON=null,restoring=false;
+  function getSessionState(){return structuredClone({draft:state.draft,step:state.step,view:state.view,graph:[...state.graph.values()],roots:state.roots,selected:state.selected,path:state.path,back:state.back,compare:state.compare,keep:state.keep,summary:state.summary,answer:state.answer,consultation:state.consultation,demoId:state.demoId,source:state.source,serial:state.serial});}
+  function scheduleChange(){
+    if(restoring||changeQueued)return;changeQueued=true;
+    queueMicrotask(()=>{changeQueued=false;if(restoring)return;const snapshot=getSessionState(),json=JSON.stringify(snapshot);if(json===lastSessionJSON)return;const initial=lastSessionJSON===null;lastSessionJSON=json;if(!initial)onChange(snapshot);});
+  }
   const consultation = () => ({topic:state.draft.topic,wish:state.draft.wish.trim(),situation:state.draft.situation.trim(),conditions:[...state.draft.conditions,state.draft.conditionText.trim()].filter(Boolean).join('\n')});
   const routes = keys => keys.map(key => state.graph.get(key)).filter(Boolean);
   const originLabel = entry => entry?.origin === 'demo' ? '固定デモ・架空の表示例' : 'AIからの提案・未確認';
@@ -91,7 +98,7 @@ export function mountRouteDiscovery(container,{onTransfer=()=>false,onResults=()
   }
   function sourceNote() {
     const hasAI=[...state.graph.values()].some(entry=>entry.origin==='ai');
-    return '<aside class="rd-source-note"><strong>'+(state.source==='demo'?(hasAI?'固定デモにAIの提案を追加しています':'固定デモ・架空の相談例'):'AIからの提案・未確認')+'</strong><p>'+(state.source==='demo'?'相談入力を分析したデモではありません。':'入力から考えられる方向を整理したものです。')+'実在する資料や募集情報を検索・確認する機能はありません。実際の参加条件・履修条件・募集要件は、公式情報や学校で確認してください。</p>'+(state.source==='ai'&&JSON.stringify(state.consultation)!==JSON.stringify(consultation())?'<p class="rd-context-changed">相談の入力が変わっています。いまの候補は、変更前の相談から作ったものです。新しい入力は、確認して送信するまでAIへ送りません。</p>':'')+'</aside>';
+    return '<aside class="rd-source-note"><strong>'+(state.source==='demo'?(hasAI?'固定デモにAIの提案を追加しています':'固定デモ・架空の相談例'):'AIからの提案・未確認')+'</strong><p>'+(state.source==='demo'?'相談入力を分析したデモではありません。':'入力から考えられる方向を整理したものです。')+'実在する資料や募集情報を検索・確認する機能はありません。実際の参加条件・履修条件・募集要件は、公式情報や学校で確認してください。</p>'+(state.consultation===null?'<p class="rd-context-changed">元の相談入力は保存されていません。候補と入力内容の対応は未確認です。AIへ聞く場合は、相談の入力を書き直し、送信する内容を確認してください。</p>':state.source==='ai'&&JSON.stringify(state.consultation)!==JSON.stringify(consultation())?'<p class="rd-context-changed">相談の入力が変わっています。いまの候補は、変更前の相談から作ったものです。新しい入力は、確認して送信するまでAIへ送りません。</p>':'')+'</aside>';
   }
   function routeCard(entry) {
     const route=entry.route;
@@ -142,6 +149,7 @@ export function mountRouteDiscovery(container,{onTransfer=()=>false,onResults=()
     const selection=active?.tagName==='TEXTAREA'?[active.selectionStart,active.selectionEnd]:null;
     container.innerHTML='<div class="rd-shell"><div id="rd-error" class="rd-error" role="alert" tabindex="-1">'+escape(state.error)+'</div><p id="rd-status" class="rd-status" role="status" aria-live="polite">'+escape(state.notice)+'</p>'+(state.view==='wizard'?wizard():state.view==='detail'?detailMarkup():state.view==='compare'?comparisonMarkup():state.view==='kept'?comparisonMarkup(true):resultMarkup())+'<footer class="rd-footer"><p>研究用の試作品です。提案は正解や参加資格の判定ではありません。重要なことは、先生・保護者など信頼できる大人と確認してください。</p><p>入力・候補はこの画面のメモリにだけ残り、再読み込みで消えます。外部の人と直接連絡する機能はありません。</p></footer></div>';
     const replacement=restore?$(restore):null;if(replacement&&!replacement.disabled){replacement.focus({preventScroll:true});if(selection)replacement.setSelectionRange(...selection);}
+    scheduleChange();
   }
   async function checkCapability() {
     state.capController?.abort();const revision=++state.capSequence;const controller=new AbortController();state.capController=controller;state.capability='checking';state.consent=false;if(state.panel)state.panel.consent=false;render();
@@ -176,9 +184,9 @@ export function mountRouteDiscovery(container,{onTransfer=()=>false,onResults=()
   }
   function updateInput(target) {
     const key=target.dataset.rdInput;
-    if(key==='question'&&state.panel){const wasPending=state.pending;cancelJob();state.panel.question=target.value;const entry=state.graph.get(state.selected);if(entry)entry.questionDraft=target.value;state.panel.consent=false;const preview=$('#rd-panel-preview');if(preview)preview.textContent=requestText(panelRequest());const check=$('#rd-panel-consent');if(check)check.checked=false;const send=$('[data-rd-action="send-panel"]');if(send){send.disabled=true;send.textContent='この内容でAIに聞く';}if(wasPending)render();return;}
+    if(key==='question'&&state.panel){const wasPending=state.pending;cancelJob();state.panel.question=target.value;const entry=state.graph.get(state.selected);if(entry)entry.questionDraft=target.value;state.panel.consent=false;const preview=$('#rd-panel-preview');if(preview)preview.textContent=requestText(panelRequest());const check=$('#rd-panel-consent');if(check)check.checked=false;const send=$('[data-rd-action="send-panel"]');if(send){send.disabled=true;send.textContent='この内容でAIに聞く';}if(wasPending)render();scheduleChange();return;}
     if(!['wish','situation','conditionText'].includes(key))return;
-    const wasPending=state.pending;cancelJob();state.draft[key]=target.value;state.consent=false;state.error='';const error=$('#rd-error');if(error)error.textContent='';const check=$('#rd-consent');if(check)check.checked=false;const send=$('[data-rd-action="discover"]');if(send)send.disabled=true;const preview=$('#rd-preview');if(preview)preview.textContent=requestText({intent:'discover',consultation:consultation()});if(wasPending)render();
+    const wasPending=state.pending;cancelJob();state.draft[key]=target.value;state.consent=false;state.error='';const error=$('#rd-error');if(error)error.textContent='';const check=$('#rd-consent');if(check)check.checked=false;const send=$('[data-rd-action="discover"]');if(send)send.disabled=true;const preview=$('#rd-preview');if(preview)preview.textContent=requestText({intent:'discover',consultation:consultation()});if(wasPending)render();scheduleChange();
   }
   container.addEventListener('input',event=>{if(event.target.matches('[data-rd-input]'))updateInput(event.target);});
   container.addEventListener('change',event=>{
@@ -239,6 +247,18 @@ export function mountRouteDiscovery(container,{onTransfer=()=>false,onResults=()
   });
   render();checkCapability();
   return {
+    getSessionState,
+    restoreSessionState(snapshot){
+      if(!validateDiscoverySession(snapshot))return false;
+      const restored=structuredClone(snapshot);
+      cancelJob();state.capSequence++;state.capController?.abort();state.capController=null;if(state.capability==='checking')state.capability='error';
+      restoring=true;
+      try{
+        Object.assign(state,restored,{graph:new Map(restored.graph.map(entry=>[entry.key,entry])),pending:false,consent:false,panel:null,job:null,error:'',notice:restored.graph.length&&restored.consultation===null?'保存ファイルから候補を復元しました。元の相談入力は未保存のため、入力との対応は未確認です。外部へは送信していません。':'保存ファイルから相談と候補を復元しました。内容・由来はファイル内の記録であり未確認です。外部へは送信していません。'});
+        lastSessionJSON=JSON.stringify(getSessionState());notifyResults();render();
+      }finally{restoring=false;}
+      return true;
+    },
     open({topic,demo}={}) {
       if(topic&&discoveryTopics.some(item=>item.id===topic)){
         if(state.draft.topic&&state.draft.topic!==topic&&(state.draft.wish||state.draft.situation||state.draft.conditions.length||state.draft.conditionText)&&!confirm('相談のテーマを変えますか？入力した文章と、表示中の候補は残ります。'))return;

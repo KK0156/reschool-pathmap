@@ -15,6 +15,9 @@ def reveal(page, selector):
 def memo_entry(page):
     """Use the public writing entry; legacy/standalone forms stay directly visible."""
     memo = page.locator('#memo')
+    # Bootstrap imports asynchronously after document load. Wait for the tool
+    # to mount before deciding which visible entry opens its memo disclosure.
+    memo.wait_for(state='attached')
     if not memo.is_visible():
         entry = page.locator('[data-start=memo]')
         if entry.count():

@@ -200,9 +200,26 @@ def action(page, name, key=None):
     return page.locator(selector)
 
 
+def open_retained_explorer(page, keyboard=False):
+    """The main AI entry now opens guided consultation; retain old-tool coverage."""
+    summary = page.locator('.finder-retained > summary')
+    if not page.locator('.finder-retained').evaluate('(el)=>el.open'):
+        if keyboard:
+            summary.focus();page.keyboard.press('Enter')
+        else:
+            summary.click()
+    entry = page.locator('[data-finder-action="legacy"]')
+    if keyboard:
+        entry.focus();page.keyboard.press('Enter')
+    else:
+        entry.click()
+    expect(page.locator('.route-discovery')).to_be_visible()
+
+
 def fill_consultation(page, mock, topic='subjects'):
     page.goto(BASE + '/')
     page.locator('.home-finder-start').click()
+    open_retained_explorer(page)
     expect(page.locator('[data-rd-step="1"]')).to_be_visible()
     page.locator(f'[data-rd-topic="{topic}"]').click()
     action(page, 'next').click()
@@ -748,6 +765,7 @@ def keyboard_archive_review(browser, engine):
         page.locator('.home-finder-start').focus()
         page.keyboard.press('Enter')
         expect(page.locator('.desk-nav a[href="#/finder"]')).to_have_attribute('aria-current','page')
+        open_retained_explorer(page,keyboard=True)
         page.locator('[data-rd-topic="subjects"]').focus()
         page.keyboard.press('Enter')
         expect(action(page,'next')).to_be_focused()

@@ -1,6 +1,6 @@
 // Keep a readable page when the application module graph cannot start. This
 // loader does not send diagnostics, save input, or automatically reload a page.
-const revision = 'phase4-atlas-01';
+const revision = 'guided-discovery-01';
 const root = document.getElementById('root');
 const originalPanel = document.getElementById('app-startup');
 const boundRetries = new WeakSet();

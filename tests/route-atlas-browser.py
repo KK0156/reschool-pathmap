@@ -376,6 +376,10 @@ def ai_is_optional(browser,engine):
         private_marker='この希望メモはAIに自動送信しない。'
         page.locator('#atlas-wish').fill(private_marker)
         page.locator('[data-finder-mode="ai"]').click()
+        # Guided consultation is the main AI entry; this regression exercises
+        # the explicitly retained Phase 4 API tool and its keyword-only overlay.
+        page.locator('.finder-retained > summary').click()
+        page.locator('[data-finder-action="legacy"]').click()
         expect(page.locator('[data-rd-step="1"]')).to_be_visible()
         page.locator('[data-rd-topic="undecided"]').click()
         page.locator('[data-rd-action="next"]').click()
@@ -397,7 +401,7 @@ def ai_is_optional(browser,engine):
         assert page.locator('.atlas-keyword-mark').count()>0
         expect(page.locator('#atlas-wish')).to_have_value(private_marker)
         page.screenshot(path=str(OUTPUT/f'{engine}-ai-candidates-reference-whole-map.png'))
-        page.locator('[data-finder-mode="ai"]').click()
+        page.locator('[data-finder-action="legacy"]').click()
         expect(page.locator('.rd-route-card')).to_have_count(3)
         page.locator('[data-finder-mode="all"]').click()
         assert roots(page)==root_ids
