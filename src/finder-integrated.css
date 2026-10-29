@@ -1,4 +1,14 @@
 /* The diagram and the reading surface share one journey and one set of IDs. */
+.path-finder[data-reference-open=true] #finder-shared-workspace{grid-template-columns:minmax(0,1fr)}
+.path-finder[data-reference-open=true] #finder-tree-host{display:none}
+.path-finder .reference-library .reference-return{scroll-margin-top:var(--flow-header-space,20px)}
+.path-finder label[for=atlas-record-note]{display:block;scroll-margin-top:var(--flow-reading-space,var(--flow-header-space,20px))}
+.atlas-reference-entry{margin:24px 0;padding:17px 18px;background:#f3f4eb;border-left:2px solid #8b9b7d}
+.atlas-reference-entry h3{font-size:18px;margin:0 0 8px}
+.atlas-reference-entry p{font-size:15px;line-height:1.9;margin:8px 0 14px}
+.atlas-compare-heading button+button{margin-top:10px}
+.home-reference-option{border-top:1px solid #d9d3c5;padding-top:16px;margin-top:22px}
+.home-reference-option span{display:block;font-size:13px;line-height:1.9;margin-top:8px;color:#53635d}
 #finder-flow{grid-template-columns:repeat(5,minmax(0,1fr))}
 #finder-flow li{font-size:13px;min-width:0}
 .finder-journey .finder-modes{flex-wrap:wrap;gap:4px 18px}

@@ -23,6 +23,14 @@
 `src/desk-app.js`がメイン5画面と任意のRE:Tree、`src/path-finder.js`が全体マップ・対話・検討記録をつなぎます。`src/guided-discovery.js`は一問ずつの対話と送信ごとの同意、`src/guide-model.js`は厳格な入出力契約、`src/finder-file.js`は独立した保存形式です。`src/route-atlas-{data,model,sources}.js`が分類・検証・出典、`src/route-atlas.js`がマップ操作です。既存の`src/route-discovery.js`、`src/route-model.js`、`src/route-demos.js`はAI探索と固定デモです。`src/student-data.js`は一般向け相談例とケース、`src/research-report.js`は研究報告13章。`src/research-data.js`と保存版、共有の`retree-mindmap/src/`も維持します。
 
 
+## 複数のサイトを参考にする（2026-10-29）
+
+ホームの「参考サイトからも調べる」、または道の説明・比較の「参考サイト」で、仕事・学問・制度・費用・学校外の学びを調べる18件の参照先を開けます。今見ている道との関係、発行元、確かめたいこと、案内ページの確認範囲を示します。官公庁の制度資料と編集サイトを区別し、リンク先は本人の操作で別タブへ開きます。相談文や本人メモをURLへ付けず、ページ本文をAIが取得した結果とは表示しません。
+
+道の参照先から「確認したいことをメモへ」を選ぶと、そのサイトと問いを、既存の確認メモの**下書き**に加えます。複数サイトを残せますが、読んだ日・本人の確認状態・公式ページ欄は自動で変更しません。700文字を超える場合は現在のメモを保ち、整理してから追加するよう案内します。下書きも既存のFinder JSON v1/v2で持ち帰れます。参考サイトの一覧や絞り込み自体は保存対象に追加していません。
+
+開発で参考にする16サービスの仕組み、適用先、模倣しない点は [参考サイトの設計ガイド](docs/REFERENCE-DESIGN-GUIDE.md) に整理しました。UI変更前に、改善する場面に対応する一次ページとガイドを確認してください。[実装レビュー](docs/REFERENCE-SITES-REVIEW.md) に画面と検証範囲を記録します。既存Atlasの分類・制度説明の出典12件や、研究報告の確認状態は変更していません。
+
 ## AIの案内・全体マップの統合（2026-10-21）
 
 新しい案内は `/.netlify/functions/guide-discovery` を通します。最初の質問は共通UI文です。その後は、実際に表示した質問・回答・本人の訂正を送り、AIが質問・説明・道の提示・比較・小さな試行・要約を選ぶ契約です。固定の質問列をAIとして表示しません。モデルは既存設定と同じ `OPENAI_ROUTE_MODEL || OPENAI_MODEL || 'gpt-4.1-mini'`。接続未設定では無効になり、用意されたデモや全体マップへ案内します。公式の最新情報を検索する機能はありません。
@@ -60,6 +68,7 @@ npm run build
 python tests/guided-discovery-browser.py
 python tests/finder-flow-browser.py
 python tests/integrated-exploration-browser.py
+REFERENCE_BASE_URL=http://localhost:8003 python tests/reference-sites-browser.py
 ```
 
 ブラウザテストにはPython PlaywrightとChromiumが必要です。利用可能なWebKit実行ファイルも使います。有料APIは呼びません。スクリーンショットはテスト用の合成データです。

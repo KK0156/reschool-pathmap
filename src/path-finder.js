@@ -9,6 +9,9 @@ import {createExplorationState,createExplorationStore,projectExploration,editExp
 import {mountExplorationTree} from './exploration-tree.js';
 import {createTreeDocument,stringifyTreeDocument} from '../retree-mindmap/src/tree-file.js';
 import {layoutMindMap} from '../retree-mindmap/src/mind-map-layout.js';
+import {mountReferenceLibrary} from './reference-library.js';
+import {getAllReferences,getRouteReferences} from './reference-sites.js';
+import {appendReferenceMemo} from './reference-memo.js';
 
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const nodes=new Map(routeAtlas.nodes.map(node=>[node.id,node]));
@@ -18,16 +21,17 @@ const action=(name,label,extra='',disabled=false)=>'<button type="button" data-f
 // generated routes and fixed demos remain available as a retained tool.
 export function mountPathFinder(container,{onTransfer=()=>false}={}){
   container.classList.add('path-finder');
-  container.innerHTML='<header class="finder-journey"><ol id="finder-flow" aria-label="進路を考える流れ">'+['自分を知る','可能性を広げる','道を深く知る','比較して考える','次の行動を整理する'].map((label,index)=>'<li data-flow-step="'+(index+1)+'" aria-label="'+label+'"><span aria-hidden="true">'+(index+1)+'</span>'+label+'</li>').join('')+'</ol><p id="finder-flow-current" role="status"></p><div class="finder-modes" role="group" aria-label="相談と全体マップの行き来"><button type="button" data-finder-mode="ai" aria-pressed="false">相談に戻る</button><button type="button" data-finder-mode="all" aria-pressed="false">全体の道を見る</button><button type="button" data-finder-action="show-map">地図を見る</button></div></header><p class="finder-mode-note" id="finder-mode-note"></p><details class="finder-map-menu"><summary>道の見方を変える</summary><nav class="finder-map-views" aria-label="マップと検討記録"><button type="button" data-finder-map-view="all" aria-pressed="true">全体像</button><button type="button" data-finder-map-view="attention" aria-pressed="false">相談から見えてきた道</button><button type="button" data-finder-map-view="unopened" aria-pressed="false">まだ開いていない道</button><button type="button" data-finder-map-view="record" aria-pressed="false">次の一歩と保存</button></nav></details><p id="finder-status" role="status" tabindex="-1"></p><p id="finder-error" role="alert" tabindex="-1"></p><section id="finder-shared-workspace" data-exploration-emphasis="balanced"><div id="finder-tree-host"></div><div id="finder-reading-panel"><div id="finder-node-detail" hidden></div><div id="finder-tool-host"></div><div id="finder-thinking-summary" hidden></div></div></section><section id="finder-next-step" class="finder-next-step" aria-label="ここからの進め方" hidden></section><details class="finder-session-tools"><summary>途中の記録・保存したファイルを開く</summary><div class="finder-carry"><button type="button" data-finder-action="record">途中の候補・メモをファイルに残す</button><label for="finder-import">端末ファイルを開く</label><input type="file" id="finder-import" accept=".json,application/json"></div></details><details class="finder-retained"><summary>以前の探索・固定デモを使う</summary><p>以前のAI探索と、用意された架空の相談例も残しています。デモは本人の回答を分析したものではありません。</p>'+action('legacy','以前の探索を開く')+'</details>';
+  container.innerHTML='<header class="finder-journey"><ol id="finder-flow" aria-label="進路を考える流れ">'+['自分を知る','可能性を広げる','道を深く知る','比較して考える','次の行動を整理する'].map((label,index)=>'<li data-flow-step="'+(index+1)+'" aria-label="'+label+'"><span aria-hidden="true">'+(index+1)+'</span>'+label+'</li>').join('')+'</ol><p id="finder-flow-current" role="status"></p><div class="finder-modes" role="group" aria-label="相談と全体マップの行き来"><button type="button" data-finder-mode="ai" aria-pressed="false">相談に戻る</button><button type="button" data-finder-mode="all" aria-pressed="false">全体の道を見る</button><button type="button" data-finder-action="show-map">地図を見る</button></div></header><p class="finder-mode-note" id="finder-mode-note"></p><details class="finder-map-menu"><summary>道の見方を変える</summary><nav class="finder-map-views" aria-label="マップと検討記録"><button type="button" data-finder-map-view="all" aria-pressed="true">全体像</button><button type="button" data-finder-map-view="attention" aria-pressed="false">相談から見えてきた道</button><button type="button" data-finder-map-view="unopened" aria-pressed="false">まだ開いていない道</button><button type="button" data-finder-map-view="record" aria-pressed="false">次の一歩と保存</button><button type="button" data-finder-action="references">参考サイトで調べる</button></nav></details><p id="finder-status" role="status" tabindex="-1"></p><p id="finder-error" role="alert" tabindex="-1"></p><section id="finder-shared-workspace" data-exploration-emphasis="balanced"><div id="finder-tree-host"></div><div id="finder-reading-panel"><div id="finder-node-detail" hidden></div><div id="finder-tool-host"></div><div id="finder-thinking-summary" hidden></div></div></section><section id="finder-next-step" class="finder-next-step" aria-label="ここからの進め方" hidden></section><details class="finder-session-tools"><summary>途中の記録・保存したファイルを開く</summary><div class="finder-carry"><button type="button" data-finder-action="record">途中の候補・メモをファイルに残す</button><label for="finder-import">端末ファイルを開く</label><input type="file" id="finder-import" accept=".json,application/json"></div></details><details class="finder-retained"><summary>以前の探索・固定デモを使う</summary><p>以前のAI探索と、用意された架空の相談例も残しています。デモは本人の回答を分析したものではありません。</p>'+action('legacy','以前の探索を開く')+'</details>';
 
   const host=container.querySelector('#finder-tool-host'),note=container.querySelector('#finder-mode-note');
-  const atlasElement=document.createElement('div'),guideElement=document.createElement('div'),recordElement=document.createElement('div'),attentionElement=document.createElement('div'),pickerElement=document.createElement('div');
+  const atlasElement=document.createElement('div'),guideElement=document.createElement('div'),recordElement=document.createElement('div'),attentionElement=document.createElement('div'),pickerElement=document.createElement('div'),referenceElement=document.createElement('div');
   let mode='ai',mapView='all',pickingComparison=false,guide=null,guideState=null,discovery=null,discoveryElement=null,revision=0,notes='',nextActions='',includeConversation=false,saveDocument=null,restoredSources=null,restoreToken=0,emptyDiscovery=null;
   const $=selector=>container.querySelector(selector);
   let explorationStore=null,treeView=null,syncing=false,restoringSession=false,lastSharedGraph=null,summaryReturn=false;
+  let referenceLibrary=null,referenceActive=false,referenceReturn=null;
   function clear(){saveDocument=null;$('#finder-error').textContent='';$('#finder-status').textContent='';}
   function notify(text,error=false){const target=$(error?'#finder-error':'#finder-status');target.textContent=text;target.focus({preventScroll:true});target.scrollIntoView({block:'nearest'});}
-  const atlas=mountRouteAtlas(atlasElement,{onTransfer:transferWithNotes,onConsult:()=>show('ai'),onDiscoveryReturn:()=>show('legacy'),onChange:snapshot=>{if(restoringSession)return;const changed=snapshot.selected!==explorationStore?.getState().atlas?.selected;revision++;saveDocument=null;renderFlow();if(changed)alignReadingTitle();}});
+  const atlas=mountRouteAtlas(atlasElement,{onTransfer:transferWithNotes,onConsult:()=>show('ai'),onReferences:({routeId})=>openReferences(routeId),onDiscoveryReturn:()=>show('legacy'),onChange:snapshot=>{if(restoringSession)return;const changed=snapshot.selected!==explorationStore?.getState().atlas?.selected;revision++;saveDocument=null;renderFlow();if(changed&&!referenceActive)alignReadingTitle();}});
   const emptyAtlas=atlas.getSessionState();
   explorationStore=createExplorationStore({revision,atlas:emptyAtlas,guide:null,discovery:null,notes,nextActions,view:mode,exploration:createExplorationState()});
   treeView=mountExplorationTree($('#finder-tree-host'),{
@@ -51,12 +55,14 @@ export function mountPathFinder(container,{onTransfer=()=>false}={}){
     return 2;
   }
   function alignReadingTitle(){
-    if(innerWidth<700||innerWidth>=1200||mode!=='all'||mapView!=='all'||pickingComparison||atlas.getSessionState().view!=='detail')return;
+    if(innerWidth>=1200||mode!=='all'||mapView!=='all'||pickingComparison||referenceActive||atlas.getSessionState().view!=='detail')return;
+    if(innerWidth<700&&explorationStore.getState().exploration.emphasis==='map')return;
     const id=atlas.getSessionState().selected;
     requestAnimationFrame(()=>{if(container.isConnected&&host.firstElementChild===atlasElement&&atlas.getSessionState().selected===id){updateFlowSpacing();const title=!$('#finder-node-detail').hidden?$('#finder-shared-node-title'):atlasElement.querySelector('#atlas-title');title?.scrollIntoView({block:'start',behavior:'instant'});}});
   }
   function alignMobileScene(element){
     if(innerWidth>=700||explorationStore.getState().exploration.emphasis!=='balanced'||treeView.hasDraft())return;
+    if(element===atlasElement&&atlas.getSessionState().view==='detail')return;
     requestAnimationFrame(()=>{if(container.isConnected&&host.firstElementChild===element)$('#finder-shared-workspace').scrollIntoView({block:'start',behavior:'instant'});});
   }
   function captureSession(){
@@ -91,6 +97,7 @@ export function mountPathFinder(container,{onTransfer=()=>false}={}){
   }
   function renderSharedText(session,graph){
     const node=graph.nodes.find(item=>item.id===graph.selectedId),panel=$('#finder-node-detail');
+    if(referenceActive){panel.hidden=true;$('#finder-thinking-summary').hidden=true;return;}
     const personal=node&&(!['root','group','route'].includes(node.kind)||node.origin==='user_edited');
     panel.hidden=!personal;
     if(personal){
@@ -137,13 +144,42 @@ export function mountPathFinder(container,{onTransfer=()=>false}={}){
   function guided(){if(!guide)guide=mountGuidedDiscovery(guideElement,{getRouteIds:()=>atlas.getSessionState().compare,onAvailability:available=>{const button=$('[data-finder-action=summarize-guide]');if(button)button.disabled=!available;},onMap:options=>{if(options?.compare){const snapshot=atlas.getSessionState();snapshot.view='compare';snapshot.selected=null;snapshot.path=[];atlas.restoreSessionState(snapshot);if(guideState)atlas.setGuideOverlay({routes:guideState.routes,stale:guideState.stale});mapView='all';}else mapView=options?.attention?'attention':'all';show('all',{},true);},onUpdate:snapshot=>{const receivedAI=!!snapshot.summary&&(snapshot.summary!==guideState?.summary||snapshot.requestsUsed!==guideState?.requestsUsed);guideState=snapshot;atlas.setGuideOverlay({routes:snapshot.routes,stale:snapshot.stale});if(!restoringSession){revision++;saveDocument=null;syncShared();if(receivedAI&&summaryReturn&&guide?.getLastAction()==='summarize'){summaryReturn=false;pickingComparison=false;mapView='record';show('all');}else if(receivedAI){summaryReturn=false;alignMobileScene(guideElement);}}}});return guide;}
   function oldDiscovery(){if(!discovery){discoveryElement=document.createElement('div');discovery=mountRouteDiscovery(discoveryElement,{onTransfer,onResults:result=>atlas.setHighlights(result),onShowAtlas:()=>{mapView='all';show('all',{overview:true});},onChange:()=>{if(restoringSession)return;revision++;saveDocument=null;renderFlow();}});emptyDiscovery=discovery.getSessionState();}return discovery;}
   function state(){syncShared();return explorationStore.getState();}
+  function closeReferences(){
+    referenceActive=false;container.dataset.referenceOpen='false';referenceReturn=null;referenceLibrary?.close();
+  }
+  function returnFromReferences(){
+    const previous=referenceReturn||{mode:'all',mapView:'all',pickingComparison:false};
+    closeReferences();mapView=previous.mapView;pickingComparison=previous.pickingComparison;
+    show(previous.mode);
+  }
+  function prepareReferenceMemo({routeId,referenceId,url}){
+    if(!nodes.has(routeId))return;
+    const reference=[...getRouteReferences(routeId),...getAllReferences()].find(site=>site.id===referenceId&&site.url===url);
+    if(!reference){notify('参照先を確認できませんでした。今の探索は残っています。',true);return;}
+    const snapshot=atlas.getSessionState(),previous=snapshot.recordDrafts[routeId]||snapshot.records[routeId];
+    let planned;try{planned=appendReferenceMemo(previous?.note||'',reference);}catch(error){notify(error.message,true);return;}
+    closeReferences();pickingComparison=false;mapView='all';
+    show('all',snapshot.selected===routeId?{}:{node:routeId});
+    // Let the normal route heading align first, then take the user to the draft.
+    requestAnimationFrame(()=>{if(container.isConnected&&host.firstElementChild===atlasElement)atlas.setReferenceDraft(routeId,planned.note);});
+  }
+  function openReferences(routeId=null,allSites=false){
+    const validId=nodes.has(routeId)?routeId:null;
+    if(!referenceActive)referenceReturn={mode,mapView,pickingComparison};
+    guide?.pause();discovery?.pause();atlas.pause();summaryReturn=false;
+    if(!referenceLibrary)referenceLibrary=mountReferenceLibrary(referenceElement,{onBack:returnFromReferences,onMemo:prepareReferenceMemo});
+    referenceActive=true;container.dataset.referenceOpen='true';host.replaceChildren(referenceElement);
+    referenceLibrary.open({routeId:validId,allSites:allSites||!validId});
+    renderFlow();renderSharedText(explorationStore.getState(),lastSharedGraph);updateFlowSpacing();
+    requestAnimationFrame(()=>{if(referenceActive&&container.isConnected){$('#reference-library-title')?.focus({preventScroll:true});referenceElement.querySelector('.reference-return')?.scrollIntoView({block:'start',behavior:'instant'});}});
+  }
   function sourcesForSave(){if(!restoredSources)return routeAtlas.sources;const restoredIds=new Set(restoredSources.map(source=>source.id));return [...restoredSources,...routeAtlas.sources.filter(source=>!restoredIds.has(source.id))];}
   function renderFlow(){
     const snapshot=atlas.getSessionState(),step=currentStep(snapshot);
     for(const item of container.querySelectorAll('[data-flow-step]')){if(Number(item.dataset.flowStep)===step)item.setAttribute('aria-current','step');else item.removeAttribute('aria-current');}
     container.dataset.finderStep=String(step);
     const currentMessage=['今の状況や、気になることから話せます。','まだ知らなかった学び方・働き方も見渡せます。','選んだ道の中身と、確かめたい条件を読みます。','同じ項目で読み、気になる違いを見つけます。','未定のまま、次に確かめたいことを一つ残せます。'][step-1];if($('#finder-flow-current').textContent!==currentMessage)$('#finder-flow-current').textContent=currentMessage;
-    const next=$('#finder-next-step');next.hidden=step===1||step===5;
+    const next=$('#finder-next-step');next.hidden=referenceActive||step===1||step===5;
     $('[data-finder-mode=ai]').textContent=guide?'相談に戻る':'相談してみる';
     if(step===2||step===3){const count=snapshot.compare.length,kept=snapshot.keep.length;
       const primary=count===2?action('compare','この二つの違いを見る →','class="flow-primary"'):count===0&&kept&&!pickingComparison?action('record','残した候補から、次の一歩へ →','class="flow-primary"'):action('comparison-picker',count===1?'もう一つ、比べる道を選ぶ →':'気になる道を二つ比べてみる →','class="flow-primary"',pickingComparison&&count<2);
@@ -151,7 +187,7 @@ export function mountPathFinder(container,{onTransfer=()=>false}={}){
     }else if(step===4)next.innerHTML='<div><strong>違いを見たら、次に確かめたいことへ</strong><p>どちらか一つを選ばなくても大丈夫です。</p></div><div class="flow-next-actions">'+action('record','次の一歩をメモする →','class="flow-primary"')+action('comparison-picker','比べる道を選び直す')+'</div>';
     syncShared();
   }
-  function updateFlowSpacing(){const header=$('.finder-journey').getBoundingClientRect().height,footer=$('#finder-next-step').getBoundingClientRect().height;if(header)container.style.setProperty('--flow-header-space',Math.ceil(header+14)+'px');container.style.setProperty('--flow-footer-space',Math.ceil(footer+20)+'px');const map=$('#finder-tree-host'),sticky=innerWidth>=700&&innerWidth<1200&&getComputedStyle(map).position==='sticky',extra=sticky?map.getBoundingClientRect().height+24:0;container.style.setProperty('--flow-reading-space',Math.ceil(header+14+extra)+'px');}
+  function updateFlowSpacing(){const header=$('.finder-journey').getBoundingClientRect().height,footer=$('#finder-next-step').getBoundingClientRect().height;if(header)container.style.setProperty('--flow-header-space',Math.ceil(header+14)+'px');container.style.setProperty('--flow-footer-space',Math.ceil(footer+20)+'px');const map=$('#finder-tree-host'),sticky=innerWidth>=700&&innerWidth<1200&&map.getClientRects().length>0&&getComputedStyle(map).position==='sticky',extra=sticky?map.getBoundingClientRect().height+24:0;container.style.setProperty('--flow-reading-space',Math.ceil(header+14+extra)+'px');}
   if(typeof ResizeObserver==='function'){const observer=new ResizeObserver(updateFlowSpacing);observer.observe($('.finder-journey'));observer.observe($('#finder-next-step'));observer.observe($('#finder-tree-host'));}else window.addEventListener('resize',updateFlowSpacing);
   function comparisonPicker(){
     const snapshot=atlas.getSessionState(),roots=routeAtlas.lenses.find(lens=>lens.id===snapshot.lens).rootIds;
@@ -174,6 +210,7 @@ export function mountPathFinder(container,{onTransfer=()=>false}={}){
   }
   function show(next,options={},sync=true){
     if(!['all','ai','legacy'].includes(next))return;
+    if(referenceActive)closeReferences();
     if(next!=='ai')summaryReturn=false;
     if(mode!==next){guide?.pause();discovery?.pause();atlas.pause();}
     mode=next;
@@ -225,11 +262,12 @@ export function mountPathFinder(container,{onTransfer=()=>false}={}){
     const control=event.target.closest('[data-finder-action]');if(!control||control.disabled)return;
     const name=control.dataset.finderAction,id=control.dataset.finderNode;
     if(name!=='download')clear();
-    if(name==='show-map'){updateWorkspace({emphasis:'map'},false);$('#exploration-tree-title')?.focus({preventScroll:true});$('#finder-tree-host').scrollIntoView({block:'start'});}
+    if(name==='show-map'){if(referenceActive)returnFromReferences();updateWorkspace({emphasis:'map'},false);$('#exploration-tree-title')?.focus({preventScroll:true});$('#finder-tree-host').scrollIntoView({block:'start'});}
     else if(name==='correct-shared'){show('ai');const statementId=id.slice('interpretation-'.length),control=[...guideElement.querySelectorAll('[data-guide-action=correct]')].find(button=>button.dataset.guideStatement===statementId);control?.click();}
     else if(name==='summarize-guide'){summaryReturn=true;show('ai');guide.prepareSummary();}
     else if(name==='record'){pickingComparison=false;mapView='record';show('all');}
     else if(name==='overview'){pickingComparison=false;mapView='all';show('all',{overview:true});}
+    else if(name==='references')openReferences(null,true);
     else if(name==='guide')show('ai');
     else if(name==='legacy')show('legacy');
     else if(name==='route-detail'){pickingComparison=false;mapView='all';show('all',{node:id});}
@@ -247,8 +285,8 @@ export function mountPathFinder(container,{onTransfer=()=>false}={}){
     else if(name==='tree'){mapView='all';show('all');atlasElement.querySelector('[data-atlas-action="transfer"]')?.click();}
   });
   return {
-    open({mode:requested,lens,node,mapDemo,topic,demo}={}){if(topic||demo){pickingComparison=false;show('legacy',{...(topic?{topic}:{}),...(demo?{demo}:{})},false);return;}if(mapDemo||lens||node){pickingComparison=false;mapView='all';show('all',{...(lens?{lens}:{}),...(node?{node}:{}),...(mapDemo?{demo:mapDemo}:{})},false);return;}if(requested==='all'){pickingComparison=false;mapView='all';}show(requested||mode,requested==='all'?{overview:true}:{},false);},
-    pause(){summaryReturn=false;restoreToken++;guide?.pause();discovery?.pause();atlas.pause();},
+    open({mode:requested,lens,node,mapDemo,topic,demo,references}={}){if(references==='all'){pickingComparison=false;mapView='all';show('all',{},false);openReferences(null,true);return;}if(topic||demo){pickingComparison=false;show('legacy',{...(topic?{topic}:{}),...(demo?{demo}:{})},false);return;}if(mapDemo||lens||node){pickingComparison=false;mapView='all';show('all',{...(lens?{lens}:{}),...(node?{node}:{}),...(mapDemo?{demo:mapDemo}:{})},false);return;}if(requested==='all'){pickingComparison=false;mapView='all';}show(requested||mode,requested==='all'?{overview:true}:{},false);},
+    pause(){summaryReturn=false;restoreToken++;closeReferences();guide?.pause();discovery?.pause();atlas.pause();},
     getSessionState:state,
     getExploration:()=>({session:state(),graph:projectExploration(state())})
   };

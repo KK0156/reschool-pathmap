@@ -36,7 +36,8 @@ function home() {
   return '<section class="student-home-intro finder-home-intro paper-card"><p class="desk-kicker">進路と、学校内外の学びを探す研究プロトタイプ</p>' +
     '<h1>まだ知らない道を、<br>一緒に探そう。</h1><p class="home-introduction">進学するかまだ分からなくても、学び方・働き方を比べられます。気になる道の生活や費用、あとから変える方法まで見てみてください。</p>' +
     '<ol class="home-flow-preview" aria-label="使う流れ"><li>自分を知る</li><li>可能性を広げる</li><li>道を深く知る</li><li>比較する</li><li>次の行動を残す</li></ol><div class="finder-home-actions">' + link('/finder?mode=ai', 'AIの案内で考える →', 'home-finder-start') + link('/finder?mode=all', 'まず全体を見る →', 'desk-button home-map-start') + '</div>' +
-    '<p class="desk-small">一つずつ相談しても、質問に答えず全体から探しても。話したことや開いた道が地図に残り、文章でも詳しく読めます。成績や詳しいプロフィールは不要です。</p></section>' +
+    '<p class="desk-small">一つずつ相談しても、質問に答えず全体から探しても。話したことや開いた道が地図に残り、文章でも詳しく読めます。成績や詳しいプロフィールは不要です。</p>' +
+    '<p class="home-reference-option">' + link('/finder?references=all', '参考サイトからも調べる →', 'desk-link home-reference-start') + '<span>仕事・授業・制度を、複数の説明で確かめたいときに。</span></p></section>' +
     '<section class="home-map-options" aria-labelledby="home-map-title"><div class="home-section-title"><h2 id="home-map-title">高校の、その先。どんな過ごし方がある？</h2><p>どれか一つに決めず、組み合わせたり、あとから変えたりする方法も見られます。</p></div><div class="home-map-grid">'+
     firstRoutes.map(node=>'<a class="home-map-route paper-card" data-home-map-node="'+esc(node.id)+'" href="#/finder?mode=all&lens=after-school&node='+esc(node.id)+'"><h3>'+esc(node.title)+'</h3><p>'+esc(node.summary)+'</p><span class="topic-open">内容と条件を見る →</span></a>').join('')+'</div></section>'+
     '<section class="home-atlas-demos" aria-labelledby="home-atlas-demos-title"><div class="home-section-title"><h2 id="home-atlas-demos-title">地図の使い方を試す</h2><p>あらかじめ用意した探索の順路です。あなたの入力を分析するものではありません。</p></div><div class="home-atlas-demo-grid">'+routeAtlas.demos.map(demo=>'<a class="home-atlas-demo paper-card" data-home-map-demo="'+esc(demo.id)+'" href="#/finder?mapDemo='+esc(demo.id)+'"><h3>'+esc(demo.title)+'</h3><p>'+esc(demo.description)+'</p><span class="topic-open">この順路から見る →</span></a>').join('')+'</div></section>'+
@@ -223,9 +224,9 @@ function routeFinder(params) {
   const demo = params.get('demo');
   const validTopic = discoveryTopics.some(item => item.id === topic);
   const validDemo = routeDemos.some(item => item.id === demo);
-  const mode=params.get('mode'),lens=params.get('lens'),node=params.get('node'),mapDemo=params.get('mapDemo');
+  const mode=params.get('mode'),lens=params.get('lens'),node=params.get('node'),mapDemo=params.get('mapDemo'),references=params.get('references');
   const validMode=['all','ai'].includes(mode),validLens=routeAtlas.lenses.some(item=>item.id===lens),validNode=routeAtlas.nodes.some(item=>item.id===node),validMapDemo=routeAtlas.demos.some(item=>item.id===mapDemo);
-  finderAPI.open({...(validMode?{mode}:{}),...(validLens?{lens}:{}),...(validNode?{node}:{}),...(validMapDemo?{mapDemo}:{}),...(validDemo?{demo}:{}),...(validTopic?{topic}:{})});
+  finderAPI.open({...(validMode?{mode}:{}),...(validLens?{lens}:{}),...(validNode?{node}:{}),...(validMapDemo?{mapDemo}:{}),...(validDemo?{demo}:{}),...(validTopic?{topic}:{}),...(references==='all'?{references}:{} )});
   if ((topic && !validTopic) || (demo && !validDemo)||(mode&&!validMode)||(lens&&!validLens)||(node&&!validNode)||(mapDemo&&!validMapDemo)) {
     const notice = document.createElement('p');
     notice.className = 'route-notice';
